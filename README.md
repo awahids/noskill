@@ -64,6 +64,16 @@ Agent tidak berbicara langsung satu sama lain. Mereka terhubung lewat file di `d
 
 Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-prototype` dipakai di luar siklus inti. Setelah semua DONE, `user-guide` dan `standup-update` bisa dipakai untuk dokumentasi dan laporan.
 
+## Eval
+
+`evals/` berisi 4 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan aturan inti dari hook berlaku tanpa skill. Jalankan setelah mengubah skill atau agent:
+
+```bash
+claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
+```
+
+Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $1.
+
 ## Cara pakai
 
 **Claude Code (sebagai plugin):**
