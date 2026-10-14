@@ -1,6 +1,7 @@
 ---
 name: standup-update
-description: Merangkum aktivitas kerja (commit, task, progress) menjadi update standup harian atau status report mingguan dengan format Yesterday/Today/Blockers atau format Notion-friendly. Gunakan skill ini setiap kali user minta bantuan bikin "standup", "update harian", "status report", "progress report", atau minta rangkuman dari daftar commit/task/aktivitas jadi laporan yang rapi.
+description: >-
+  Merangkum commit, task, atau catatan kerja jadi update standup (Yesterday/Today/Blockers) atau status report mingguan. Gunakan saat user minta standup, update harian, status report, atau progress report.
 ---
 
 # Standup & Status Update Generator

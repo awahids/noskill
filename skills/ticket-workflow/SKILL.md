@@ -1,6 +1,7 @@
 ---
 name: ticket-workflow
-description: Format file tiket dan alur status tiket development (TODO → IN_PROGRESS → REVIEW → QA → DONE, dengan jalur BUG dan HOLD) yang dipakai bersama oleh skill `feature-flow` dan agent developer, ticket-reviewer, qa-tester, task-planner. Gunakan saat membuat, membaca, memindahkan status, atau melaporkan tiket di `docs/tickets/`, atau saat user tanya "status tiket", "board", "tiket mana yang hold/bug".
+description: >-
+  Format file tiket di docs/tickets/ dan alur statusnya (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG dan HOLD), verdict agent, dan board. Gunakan saat membuat, memindahkan, atau melaporkan tiket, atau user tanya status/board tiket.
 ---
 
 # Ticket Workflow

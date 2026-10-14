@@ -1,6 +1,7 @@
 ---
 name: task-planner
-description: Memecah PRD dan dokumen BRD (US/AC/TECH/TC) menjadi file tiket di docs/tickets/ berstatus TODO, menyesuaikan struktur codebase yang sudah ada. Dipanggil oleh skill feature-flow di Tahap 4.
+description: >-
+  Memecah PRD dan dokumen BRD menjadi file tiket berstatus TODO di docs/tickets/. Dipanggil feature-flow mode lengkap.
 tools: Read, Write, Glob, Grep
 skills:
   - task-breakdown

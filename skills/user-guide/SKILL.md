@@ -1,6 +1,7 @@
 ---
 name: user-guide
-description: Menyusun dokumentasi untuk end-user (user guide/manual book) yang mudah dipahami orang non-teknis — bahasa sederhana, panduan step-by-step per fitur, flowchart untuk alur yang punya percabangan, dan slot screenshot aplikasi (opsional, diisi kalau user upload gambar). BEDA dari `prd-writer` (dokumen requirement untuk tim dev) dan `api-doc-standard` (dokumentasi teknis untuk developer) — skill ini untuk end-user/pengguna aplikasi yang tidak paham istilah teknis. Gunakan setiap kali user minta "buatkan user guide", "panduan pengguna", "manual book", "dokumentasi untuk user/karyawan/admin", atau "cara pakai aplikasi ini untuk end-user".
+description: >-
+  Menyusun user guide untuk pengguna non-teknis: bahasa sederhana, langkah per fitur, flowchart bahasa awam, dan slot screenshot. Gunakan saat user minta user guide, panduan pengguna, manual book, atau dokumentasi untuk karyawan/admin.
 ---
 
 # User Guide Writer

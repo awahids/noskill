@@ -1,6 +1,7 @@
 ---
 name: task-breakdown
-description: Memecah PRD menjadi daftar task development yang actionable, dikelompokkan per fase/modul/layer, dengan acceptance criteria dan dependency. KHUSUS untuk project yang terintegrasi ke sistem existing atau menambah ke codebase yang sudah ada — task disesuaikan dengan struktur, konvensi, dan file/folder yang SUDAH ADA di project tersebut (bukan scaffolding generik dari nol), termasuk task integrasi yang presisi sesuai bagian Architecture/Integrasi di PRD. Gunakan skill ini setelah PRD selesai (dari `prd-writer` atau PRD yang di-upload user) — atau setelah dokumen `erp-brd-traceability` selesai, di mana tiap task wajib merujuk ID US/AC/TECH-nya — dan user minta "buatkan task", "pecah jadi task", "breakdown PRD ini", "buat backlog dari PRD", atau "task list untuk development".
+description: >-
+  Memecah PRD atau dokumen BRD menjadi task actionable per fase dengan dependency, acceptance criteria, cara verifikasi, dan kolom Trace ke US/AC/TECH; menyesuaikan struktur codebase yang sudah ada. Gunakan saat user minta "pecah jadi task", "breakdown PRD", atau backlog dari PRD.
 ---
 
 # PRD to Task Breakdown

@@ -1,7 +1,7 @@
 ---
 name: prd-writer
 description: >-
-  Menyusun Product Requirements Document (PRD) lengkap dengan struktur baku — Overview, Requirements, Core Features, User Flow, Architecture, Database Schema, API Design, Design & Technical Constraints — WAJIB menyertakan diagram (flowchart/sequence diagram/ERD) dalam format Mermaid. Alur wajib: user kasih deskripsi singkat, Claude ajukan minimal 5 pertanyaan klarifikasi sesuai deskripsi tersebut, setelah dijawab baru PRD di-generate — jangan langsung drafting tanpa tanya dulu. Gunakan setiap kali user minta "buatkan PRD", "susun product requirements", "dokumen requirement", atau scoping sistem baru. Juga cakup mode Reverse-PRD: menyusun PRD dari kode/project yang SUDAH ADA tapi belum terdokumentasi ("buatkan PRD dari project ini"). Merujuk ke skill coding-standards untuk konvensi teknis di bagian Architecture/Database/API.
+  Menyusun PRD baku (overview, requirements/RBAC, fitur, user flow, arsitektur, database, API) dengan diagram Mermaid wajib; selalu ajukan minimal 5 pertanyaan klarifikasi dulu. Juga mode Reverse-PRD dari kode yang sudah ada. Gunakan saat user minta PRD, dokumen requirement, atau scoping sistem baru.
 ---
 
 # PRD Writer

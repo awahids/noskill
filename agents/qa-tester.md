@@ -1,6 +1,7 @@
 ---
 name: qa-tester
-description: Menguji satu tiket berstatus QA terhadap Acceptance Criteria dan Test Case-nya dengan menjalankan test dan langkah verifikasi nyata, lalu memberi verdict PASS, FAIL (dengan bug report), atau BLOCKED. Tidak mengubah kode. Dipanggil oleh skill feature-flow di Tahap 5.
+description: >-
+  Menguji satu tiket terhadap AC dan Test Case (positif, negatif, batas) dengan menjalankan test nyata; verdict PASS, FAIL, atau BLOCKED. Tidak mengubah kode. Dipanggil feature-flow.
 tools: Read, Bash, Glob, Grep
 skills:
   - ticket-workflow

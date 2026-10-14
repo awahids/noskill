@@ -1,6 +1,7 @@
 ---
 name: mockup-prototype
-description: Membuat mockup/prototype UI (HTML atau React interaktif) berdasarkan PRD yang sudah ada — menerjemahkan Core Features, User Flow, dan Requirements/RBAC di PRD menjadi wireframe/mockup per layar dan per role. Gunakan skill ini setiap kali user minta "buatkan mockup", "buatkan prototype", "wireframe untuk PRD ini", "desain UI dari requirement ini", atau setelah PRD selesai dibuat dan user mau lanjut ke tahap visual. Bekerja sama dengan skill `frontend-design` untuk kualitas visual dan `prd-writer` sebagai sumber requirement.
+description: >-
+  Membuat mockup/prototype UI (HTML atau React) dari PRD, per layar dan per role, termasuk state loading/empty/error. Gunakan saat user minta mockup, prototype, wireframe, atau desain UI dari requirement.
 ---
 
 # Mockup & Prototype Builder

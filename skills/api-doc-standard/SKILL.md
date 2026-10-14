@@ -1,6 +1,7 @@
 ---
 name: api-doc-standard
-description: Standar dokumentasi API (Swagger/OpenAPI) untuk NestJS, Laravel, dan Golang/Gin (swaggo) — konvensi penulisan decorator/annotation, struktur response schema, dan penamaan tag/endpoint agar dokumentasi konsisten antar service. Gunakan skill ini setiap kali membuat endpoint baru, menulis dokumentasi API, menambahkan Swagger decorator di NestJS (@ApiOperation, @ApiResponse), anotasi OpenAPI di Laravel, komentar swaggo (`// @Summary`, `// @Router`) di Golang, atau saat user minta "dokumentasi endpoint", "swagger", "openapi", atau "api spec".
+description: >-
+  Standar dokumentasi Swagger/OpenAPI untuk NestJS, Laravel, dan Golang (swaggo): decorator/anotasi per endpoint, response schema, tag, dan versioning. Gunakan saat membuat atau mendokumentasikan endpoint, atau user menyebut "swagger", "openapi", "api spec", "dokumentasi endpoint".
 ---
 
 # API Documentation Standard

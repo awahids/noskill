@@ -1,6 +1,7 @@
 ---
 name: brd-tracer
-description: Mengubah PRD yang sudah disetujui menjadi dokumen requirement traceable BR → PROC → US → AC → TECH → TC (→ UAT) di docs/01-business sampai docs/05-testing. Dipanggil oleh skill feature-flow di Tahap 3, setelah PRD disetujui user.
+description: >-
+  Mengubah PRD yang disetujui menjadi dokumen BR → PROC → US → AC → TECH → TC di docs/01..05. Dipanggil feature-flow mode lengkap.
 tools: Read, Write, Glob, Grep
 skills:
   - erp-brd-traceability

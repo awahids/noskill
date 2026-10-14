@@ -1,6 +1,7 @@
 ---
 name: debug-assistant
-description: Panduan debugging terstruktur untuk masalah backend/API/integrasi (NestJS, Laravel, Golang/Gin, WMS API, integrasi n8n/Power Automate, dll) — reproduce, isolasi, diagnosa akar masalah, dan verifikasi fix, bukan tebak-tebakan. Gunakan skill ini setiap kali user melaporkan error, bug, stack trace, "kok error", "gak jalan", "works in staging tapi gak di production", API call gagal (curl/Postman), atau minta bantuan troubleshoot masalah teknis apa pun.
+description: >-
+  Alur debugging terstruktur: reproduce → isolasi → diagnosa root cause → fix → verifikasi dengan bukti, termasuk integrasi eksternal (WMS API, n8n, Power Automate, Microsoft Graph). Gunakan saat user melaporkan error, stack trace, bug, "kok error", "gak jalan", atau API call gagal.
 ---
 
 # Debug Assistant

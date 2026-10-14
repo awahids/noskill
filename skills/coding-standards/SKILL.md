@@ -1,6 +1,7 @@
 ---
 name: coding-standards
-description: Standar penamaan (naming convention), struktur folder/proyek, dan konvensi kode untuk stack NestJS, Laravel, Golang/Gin, Vue.js, Next.js, TypeScript, PHP, dan database (PostgreSQL/MySQL). Gunakan skill ini setiap kali menulis kode baru, membuat file/folder baru, menamai variable/function/class/struct, mendesain endpoint API, membuat migration database, atau melakukan code review — bahkan jika user tidak secara eksplisit menyebut "standar" atau "convention". Wajib dipakai sebagai acuan saat user memakai frasa seperti "sesuai standar kita", "code review", "buatkan struktur folder", "naming yang benar", atau saat generate kode untuk project Rasa Group / proyek pribadi Wahid (Proyatim, aw-prd, dll) — termasuk project Golang/Gin seperti sistem absensi.
+description: >-
+  Standar kode lengkap untuk NestJS, Laravel, Golang/Gin, Vue, Next.js, dan PostgreSQL/MySQL: naming, struktur folder, ORM & migration, format response API, state management, TDD, quality gates, dan checklist code review. Gunakan saat membuat project/modul/endpoint/migration baru, melakukan code review, atau user menyebut "sesuai standar", "naming", "struktur folder".
 ---
 
 # Coding Standards — Acuan Penulisan & Review Kode

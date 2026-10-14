@@ -1,7 +1,7 @@
 ---
 name: erp-domain-design
 description: >-
-  Checklist dan prinsip desain domain untuk sistem ERP, WMS, inventory, purchasing, sales, dan finance SEBELUM menulis database schema atau CRUD — mencakup master data terpusat, stock ledger/stock movement (jangan simpan field stock langsung), document numbering tersentralisasi, source-of-truth per entity, status workflow tiap transaksi, RBAC (bukan hardcode role), audit trail (who-what-when-before-after-reason), roadmap MVP bertahap (Foundation-Master-Inventory-Purchasing-Sales-Finance), dan modular monolith dengan bounded context sebelum microservices. WAJIB dipakai saat user mendesain modul baru ERP/WMS, bikin ERD atau database schema sistem transaksional, menentukan arsitektur ERP baru, tanya "desain stock/inventory yang benar", "modul apa duluan buat MVP ERP", atau menyusun blueprint ERP dengan NestJS/Prisma/PostgreSQL. Rujuk sebelum skill erp-brd-traceability masuk ke Technical Task.
+  Checklist desain domain ERP/WMS sebelum menulis schema: master data terpusat, stock ledger (bukan field stock), workflow status, RBAC, audit trail, document numbering, roadmap MVP, modular monolith. Gunakan saat mendesain modul/ERD ERP, inventory, purchasing, sales, atau finance.
 ---
 
 # ERP Domain Design Checklist

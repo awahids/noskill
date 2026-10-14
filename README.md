@@ -32,9 +32,20 @@ Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field 
 | [`ticket-reviewer`](agents/ticket-reviewer.md) | Cek perubahan sesuai AC tiket & standar → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
 | [`qa-tester`](agents/qa-tester.md) | Jalankan test terhadap AC & TC → PASS / FAIL (bug report) / BLOCKED | `ticket-workflow` | Tidak |
 
-## Alur pemakaian (siklus fitur lengkap)
+## Aturan inti yang selalu aktif
 
-Panggil `/noskill:feature-flow` lalu jelaskan fiturnya.
+Plugin ini memasang hook `SessionStart` ([`hooks/core-rules.md`](hooks/core-rules.md)) yang memuat ±10 baris aturan kerja ke setiap sesi, juga saat tidak ada skill yang dipanggil: ubah hanya yang diminta, pikir dulu, solusi paling sederhana, reuse helper yang ada, test positif/negatif/batas dengan bukti RED, klaim selesai hanya dengan bukti. Detail lengkapnya tetap ada di `coding-standards`.
+
+## Alur pemakaian
+
+Panggil `/noskill:feature-flow` lalu jelaskan pekerjaannya.
+
+- **Mode cepat** — bug fix atau fitur kecil. Orkestrator langsung menulis satu tiket (AC positif & negatif, File/Lokasi, Cara Verifikasi), kamu setujui, lalu masuk loop developer → reviewer → QA.
+- **Mode lengkap** — fitur atau modul baru, mulai dari PRD.
+
+Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket. Di akhir kamu memilih: push + PR, merge lokal, atau biarkan dulu.
+
+Mode lengkap:
 
 ```
 [sesi utama, interaktif]           [agent]

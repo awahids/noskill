@@ -1,6 +1,7 @@
 ---
 name: developer
-description: Mengerjakan satu tiket (status TODO, IN_PROGRESS, atau BUG) dari docs/tickets/ — menulis kode dan test sampai Cara Verifikasi tiket lolos, lalu melapor READY_FOR_REVIEW atau BLOCKED. Dipanggil oleh skill feature-flow di Tahap 5.
+description: >-
+  Mengerjakan satu tiket (TODO, revisi, atau BUG) sesuai scope, lalu melapor READY_FOR_REVIEW atau BLOCKED. Dipanggil feature-flow.
 tools: Read, Write, Edit, Bash, Glob, Grep
 skills:
   - coding-standards

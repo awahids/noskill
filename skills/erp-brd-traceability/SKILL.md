@@ -1,7 +1,7 @@
 ---
 name: erp-brd-traceability
 description: >-
-  Framework dokumentasi requirement untuk fitur ERP/WMS/enterprise dengan traceability penuh dari bisnis sampai UAT — BR (Business Requirement) menuju PROC (Business Process) menuju US (User Story) menuju AC (Acceptance Criteria) menuju TECH (Technical Task) menuju TC (Test Case) menuju UAT. Gunakan setiap kali user minta bikin BRD, requirement fitur ERP/WMS, "user story dan acceptance criteria", breakdown requirement jadi technical task dengan ID traceable, traceability matrix, atau dokumentasi fitur cross-functional (purchasing, inventory, sales, finance, manufacturing) yang butuh audit trail requirement-code-test. WAJIB dipakai sebelum menulis technical task, schema, atau API untuk fitur ERP baru. Beda dari PRD generik karena fokus rantai ID dan matrix ownership per layer.
+  Dokumen requirement ERP/WMS dengan rantai ID traceable BR → PROC → US → AC → TECH → TC → UAT dan matrix ownership. Gunakan saat user minta BRD, user story + acceptance criteria, traceability matrix, atau requirement fitur ERP sebelum technical task.
 ---
 
 # ERP BRD Traceability Framework

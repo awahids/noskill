@@ -1,6 +1,7 @@
 ---
 name: freelance-proposal
-description: Template dan alur untuk membuat proposal/scoping project freelance web development — struktur fase pengerjaan, format harga dalam Rupiah (IDR), timeline, dan deliverable yang jelas. Gunakan skill ini setiap kali user diminta membuat proposal untuk client baru, scoping project freelance, estimasi harga/timeline project, atau menyebut nama project seperti Proyatim/KolaborasiBaik, atau kata "proposal", "scoping", "quotation", "penawaran harga" untuk client.
+description: >-
+  Template proposal dan scoping project freelance: fase dengan deliverable yang bisa didemokan, timeline, harga dalam Rupiah per fase, dan syarat pembayaran. Gunakan saat user minta proposal, quotation, penawaran harga, atau estimasi project untuk client.
 ---
 
 # Freelance Proposal & Scoping

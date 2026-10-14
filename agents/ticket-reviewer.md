@@ -1,6 +1,7 @@
 ---
 name: ticket-reviewer
-description: Mengecek apakah perubahan kode untuk satu tiket berstatus REVIEW sudah sesuai ekspektasi tiket (AC, trace, scope) dan standar coding, lalu memberi verdict APPROVED, CHANGES_REQUESTED, atau BLOCKED. Tidak mengubah kode. Dipanggil oleh skill feature-flow di Tahap 5.
+description: >-
+  Mengecek perubahan satu tiket terhadap AC, scope, reuse, kesederhanaan, dan test; verdict APPROVED, CHANGES_REQUESTED, atau BLOCKED. Tidak mengubah kode. Dipanggil feature-flow.
 tools: Read, Bash, Glob, Grep
 skills:
   - coding-standards
