@@ -19,7 +19,7 @@ Langkah:
    - **Scope:** bandingkan `git diff --stat` dengan `## File/Lokasi` tiket. Setiap file atau baris yang tidak dibutuhkan untuk AC tiket — refactor, rename, reformat, dependency baru, kode lain yang ikut diubah — adalah CHANGES_REQUESTED, kecuali developer menulis alasan yang valid (AC tidak bisa terpenuhi tanpanya)
    - **Kesederhanaan:** kalau ada cara yang jelas lebih sederhana dengan hasil sama (helper/pola yang sudah ada di codebase, standard library, lebih sedikit kode, tanpa abstraksi/config/opsi baru yang tidak diminta), itu CHANGES_REQUESTED dengan menyebut cara sederhananya. Ukurannya `coding-standards` prinsip 9. Selera gaya pribadi bukan alasan menolak.
    - **Standar:** checklist code review di `coding-standards` bagian 9
-   - **Test:** logic bisnis punya test yang bisa gagal kalau logic-nya salah; tidak ada test yang ekspektasinya diubah supaya lolos
+   - **Test:** logic bisnis punya test, dan laporan developer menyertakan output test RED (gagal) sebelum implementasi — tanpa bukti itu, CHANGES_REQUESTED. Tidak ada test lama yang ekspektasinya diubah supaya lolos
    - **Quality gates:** jalankan typecheck, lint, dan test sendiri — jangan percaya laporan developer saja
 4. Kalau ini revisi, cek bahwa semua poin catatan review sebelumnya sudah ditangani.
 
