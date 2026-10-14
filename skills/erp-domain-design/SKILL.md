@@ -119,4 +119,4 @@ Skill ini jadi langkah paling awal sebelum PRD/requirement ditulis:
 erp-domain-design (skill ini) → prd-writer → erp-brd-traceability → task-breakdown
                                                                     → coding-standards / api-doc-standard
 ```
-Untuk menjalankan seluruh alur desain-sampai-task dalam satu permintaan, gunakan agent `erp-feature-builder`.
+Untuk menjalankan seluruh alur dari desain sampai tiket DONE (develop → review → QA), gunakan skill `feature-flow`.

@@ -211,4 +211,4 @@ coding-standards / api-doc-standard  (saat implementasi)
         ↓
    user-guide       (dokumentasi akhir untuk end-user)
 ```
-Untuk menjalankan seluruh alur ini otomatis dalam satu request ("bikinkan requirement sampai task untuk fitur X"), gunakan agent `erp-feature-builder`.
+Untuk menjalankan seluruh alur ini sampai tiket DONE (develop → review → QA), gunakan skill `feature-flow` — tahap BRD-nya dikerjakan agent `brd-tracer` yang memuat skill ini.

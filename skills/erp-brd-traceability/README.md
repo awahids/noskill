@@ -29,4 +29,4 @@ Copy folder ini (termasuk `references/`) ke `skills/erp-brd-traceability/` di pl
 ## Terkait
 
 - `erp-domain-design` — dipakai sebelum skill ini, untuk desain modul/ERD
-- `agents/erp-feature-builder.md` — menjalankan skill ini sebagai bagian dari pipeline penuh
+- `feature-flow` — orkestrator yang menjalankan skill ini sebagai bagian dari siklus fitur penuh

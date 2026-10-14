@@ -1,6 +1,6 @@
 # noskill
 
-Koleksi Claude Skills & Agent untuk kerja development sehari-hari Wahid (Rasa Group + freelance) — dipaketkan sebagai plugin `noskill`, termasuk skill dan agent untuk kerja ERP/WMS.
+Koleksi Claude Skills & Agent untuk kerja development sehari-hari Wahid (Rasa Group + freelance) — dipaketkan sebagai plugin `noskill`, termasuk alur tiket lengkap (develop → review → QA) dengan agent.
 
 ## Skills
 
@@ -17,23 +17,41 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari Wahid (Rasa Gr
 | [`freelance-proposal`](skills/freelance-proposal/) | Template proposal/scoping project freelance dengan harga IDR |
 | [`erp-domain-design`](skills/erp-domain-design/) | Checklist desain domain ERP/WMS sebelum bikin schema — stock ledger, RBAC, audit trail, roadmap MVP |
 | [`erp-brd-traceability`](skills/erp-brd-traceability/) | Framework requirement ERP dengan traceability: Business Requirement → Process → User Story → Acceptance Criteria → Technical Task → Test Case → UAT |
+| [`feature-flow`](skills/feature-flow/) | Orkestrator siklus fitur penuh: PRD → BRD → tiket → develop → review → QA → DONE (atau BUG/HOLD) |
+| [`ticket-workflow`](skills/ticket-workflow/) | Format file tiket dan alur status (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG & HOLD) |
 
 ## Agent
 
-| Agent | Fungsi |
-|---|---|
-| [`agents/erp-feature-builder.md`](agents/erp-feature-builder.md) | Orkestrator yang menjalankan `erp-domain-design` → `prd-writer` → `erp-brd-traceability` → `task-breakdown` → (`coding-standards`/`api-doc-standard`/`debug-assistant`/`user-guide` sesuai kebutuhan) secara berurutan untuk satu fitur ERP dari ide sampai task siap kerja |
+Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field `skills:`.
+
+| Agent | Peran | Skill yang dimuat | Bisa ubah kode? |
+|---|---|---|---|
+| [`brd-tracer`](agents/brd-tracer.md) | PRD → BR/PROC/US/AC/TECH/TC di `docs/01..05` | `erp-brd-traceability`, `erp-domain-design` | Tidak (hanya tulis dokumen) |
+| [`task-planner`](agents/task-planner.md) | BRD → file tiket `docs/tickets/*.md` status TODO | `task-breakdown`, `ticket-workflow` | Tidak (hanya tulis tiket) |
+| [`developer`](agents/developer.md) | Kerjakan satu tiket / fix BUG sampai Cara Verifikasi lolos | `coding-standards`, `debug-assistant`, `ticket-workflow` | Ya |
+| [`ticket-reviewer`](agents/ticket-reviewer.md) | Cek perubahan sesuai AC tiket & standar → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
+| [`qa-tester`](agents/qa-tester.md) | Jalankan test terhadap AC & TC → PASS / FAIL (bug report) / BLOCKED | `ticket-workflow` | Tidak |
 
 ## Alur pemakaian (siklus fitur lengkap)
 
+Panggil `/noskill:feature-flow` lalu jelaskan fiturnya.
+
 ```
-erp-domain-design → prd-writer → erp-brd-traceability → task-breakdown
-                                → coding-standards / api-doc-standard (saat implementasi)
-                                → debug-assistant (kalau ada bug)
-                                → user-guide (dokumentasi akhir)
-                                → standup-update (reporting progress)
+[sesi utama, interaktif]           [agent]
+erp-domain-design → prd-writer ──► brd-tracer ──► task-planner ──► tiket TODO
+   (tanya-jawab + persetujuan)      docs/01..05     docs/tickets/
+
+Per tiket:
+TODO ─► IN_PROGRESS ─► REVIEW ─► QA ─► DONE (commit lokal)
+        (developer)   (reviewer)  (qa-tester)
+             ▲           │          │
+             └─ revisi ──┘          └─► BUG ─► developer (debug-assistant)
+Blocker / 3x gagal ─► HOLD ─► ditanyakan ke user
 ```
-`freelance-proposal` dan `mockup-prototype` dipakai di luar siklus inti — masing-masing untuk scoping client baru dan tahap visual setelah PRD.
+
+Agent tidak berbicara langsung satu sama lain. Mereka terhubung lewat file di `docs/`, dan hanya `feature-flow` yang memindahkan status tiket. Hasil setiap tahap jadi bisa direview, diedit, dan di-commit ke repo project.
+
+Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-prototype` dipakai di luar siklus inti. Setelah semua DONE, `user-guide` dan `standup-update` bisa dipakai untuk dokumentasi dan laporan.
 
 ## Cara pakai
 

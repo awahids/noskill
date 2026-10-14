@@ -27,4 +27,4 @@ Copy folder ini ke `skills/erp-domain-design/` di plugin atau proyek Claude kamu
 ## Terkait
 
 - `erp-brd-traceability` — lanjutan skill ini untuk dokumentasi requirement formal
-- `agents/erp-feature-builder.md` — menjalankan skill ini sebagai bagian dari pipeline penuh
+- `feature-flow` — orkestrator yang menjalankan skill ini sebagai bagian dari siklus fitur penuh
