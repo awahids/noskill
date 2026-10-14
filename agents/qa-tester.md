@@ -18,6 +18,8 @@ Langkah:
 4. Jalankan test suite yang lebih luas di area yang tersentuh untuk menangkap regresi.
 5. AC/TC yang tidak bisa diverifikasi sama sekali (tidak ada test dan tidak bisa dijalankan manual) dihitung **FAIL** dengan bug report "tidak bisa diverifikasi — perlu test untuk AC-xxx", bukan PASS.
 
+Laporan ringkas, maksimal ±30 baris: tulis hanya ringkasan output command (jumlah pass/fail, nama test yang gagal, baris error penting), bukan log penuh.
+
 Baris pertama jawabanmu adalah verdict:
 - `PASS` — lalu tabel AC/TC → jenis (positif/negatif/batas) → cara dites → hasil, dengan bukti output
 - `FAIL` — lalu bug report per kegagalan dalam format `ticket-workflow` (Langkah, Expected, Actual, Bukti). Kalau ada bug di luar AC tiket ini, pisahkan di bagian "Bug di luar tiket" supaya orkestrator membuat tiket BUG baru.

@@ -1,6 +1,6 @@
 # noskill
 
-Koleksi Claude Skills & Agent untuk kerja development sehari-hari Wahid (Rasa Group + freelance) — dipaketkan sebagai plugin `noskill`, termasuk alur tiket lengkap (develop → review → QA) dengan agent.
+Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk alur tiket lengkap (develop → review → QA) dengan agent.
 
 ## Skills
 

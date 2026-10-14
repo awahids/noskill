@@ -45,7 +45,7 @@ Untuk update mingguan atau laporan project (relevan dengan workspace Notion "mel
 
 1. Kalau user kasih raw input (commit log, list task, atau cerita bebas tentang apa yang dikerjakan), ekstrak jadi poin-poin hasil kerja — bukan sekadar copy-paste commit message mentah
 2. Ubah bahasa proses jadi bahasa hasil: commit message teknis seperti `fix: null pointer in order service` → di update jadi "Perbaiki bug null pointer di order service yang menyebabkan [dampak, kalau diketahui]"
-3. Kelompokkan berdasarkan project/area kalau user kerja di beberapa hal sekaligus (misal: Rasa Group WMS API + freelance Proyatim dalam hari yang sama) — pisahkan biar jelas
+3. Kelompokkan berdasarkan project/area kalau user kerja di beberapa hal sekaligus (misal: project kantor dan project freelance di hari yang sama) — pisahkan biar jelas
 4. Kalau ada blocker yang disebutkan secara implisit (user cerita "masih nunggu API key dari client"), angkat eksplisit ke bagian Blockers, jangan terkubur di narasi Today
 
 ## Nada
