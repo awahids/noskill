@@ -68,7 +68,7 @@ Reverse-PRD berguna untuk: onboarding developer baru ke project lama, dasar sebe
 **Tanggal:** [tanggal penulisan]
 **Status:** Draft / Review / Approved
 **Sistem:** [standalone / bagian dari sistem X, terintegrasi ke Y via Z]
-**Acuan kode:** `wahid-toolkit:coding-standards` (sebutkan kalau relevan)
+**Acuan kode:** `noskill:coding-standards` (sebutkan kalau relevan)
 ```
 
 ### 2. Overview

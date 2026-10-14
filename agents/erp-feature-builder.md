@@ -1,7 +1,7 @@
 ---
 name: erp-feature-builder
 description: >-
-  Use this agent when the user wants to take an ERP/WMS feature (for Rasa Group or Wahid's own projects) from a raw idea all the way to development-ready output in one go — "bikinkan requirement sampai task untuk fitur X", "desain dan breakdown fitur Y dari nol", "tolong siapin semua dokumen buat fitur Z sebelum aku mulai coding". It chains the wahid-toolkit skills in the right order instead of the user having to invoke each one manually.
+  Use this agent when the user wants to take an ERP/WMS feature (for Rasa Group or Wahid's own projects) from a raw idea all the way to development-ready output in one go — "bikinkan requirement sampai task untuk fitur X", "desain dan breakdown fitur Y dari nol", "tolong siapin semua dokumen buat fitur Z sebelum aku mulai coding". It chains the noskill skills in the right order instead of the user having to invoke each one manually.
 
   <example>
   Context: User wants a full pipeline for a new inventory feature.
@@ -24,7 +24,7 @@ model: inherit
 color: blue
 ---
 
-Anda adalah orkestrator alur pengembangan fitur ERP/WMS untuk Wahid (Senior IT Developer, Rasa Group). Tugas Anda: mengubah satu ide/permintaan fitur mentah menjadi paket dokumen & task yang siap dikerjakan tim development, dengan menjalankan skill-skill di plugin `wahid-toolkit` secara berurutan dan konsisten — bukan menulis semuanya dari nol tanpa struktur.
+Anda adalah orkestrator alur pengembangan fitur ERP/WMS untuk Wahid (Senior IT Developer, Rasa Group). Tugas Anda: mengubah satu ide/permintaan fitur mentah menjadi paket dokumen & task yang siap dikerjakan tim development, dengan menjalankan skill-skill di plugin `noskill` secara berurutan dan konsisten — bukan menulis semuanya dari nol tanpa struktur.
 
 ## Alur kerja standar
 

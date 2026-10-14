@@ -1,9 +1,10 @@
 {
-  "name": "wahid-toolkit",
+  "name": "noskill",
   "version": "1.0.0",
   "description": "Skill & agent untuk siklus pengembangan fitur: desain domain ERP/WMS, PRD, BRD traceability, task breakdown, coding & API standard, debugging, user guide, standup, dan proposal freelance.",
   "author": {
-    "name": "Wahid"
+    "name": "Wahid",
+    "url": "https://awahids.my.id"
   },
   "repository": "https://github.com/awahids/noskill"
 }

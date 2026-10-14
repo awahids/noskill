@@ -194,7 +194,7 @@ Kalau user minta dibuatkan requirement/BRD/user-story untuk fitur ERP:
 4. Tulis output mengikuti template tiap layer di atas, dengan ID yang konsisten dan saling merujuk.
 5. Kalau butuh contoh end-to-end lengkap satu fitur (Goods Receipt), baca `references/example-goods-receipt.md`.
 
-## Posisi dalam alur wahid-toolkit
+## Posisi dalam alur noskill
 
 ```
 erp-domain-design  (desain modul/ERD dulu)

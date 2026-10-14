@@ -112,7 +112,7 @@ Event cocok untuk hal seperti notifikasi/integrasi setelah `Goods Receipt Confir
 3. Kalau user mau bikin dokumen requirement formal untuk fitur yang didesain di sini, lanjutkan ke skill `erp-brd-traceability`.
 4. Kalau user tanya soal konvensi penamaan/struktur folder code spesifik proyeknya, lanjutkan ke skill `coding-standards`.
 
-## Posisi dalam alur wahid-toolkit
+## Posisi dalam alur noskill
 
 Skill ini jadi langkah paling awal sebelum PRD/requirement ditulis:
 ```

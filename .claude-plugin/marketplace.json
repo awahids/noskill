@@ -1,12 +1,13 @@
 {
   "name": "noskill",
-  "description": "Marketplace untuk plugin wahid-toolkit",
+  "description": "Marketplace untuk plugin noskill",
   "owner": {
-    "name": "Wahid"
+    "name": "Wahid",
+    "url": "https://awahids.my.id"
   },
   "plugins": [
     {
-      "name": "wahid-toolkit",
+      "name": "noskill",
       "source": "./",
       "description": "Skill & agent untuk siklus pengembangan fitur ERP/WMS dan kerja development sehari-hari."
     }

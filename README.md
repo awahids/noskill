@@ -1,6 +1,6 @@
 # noskill
 
-Koleksi Claude Skills & Agent untuk kerja development sehari-hari Wahid (Rasa Group + freelance) — seluruh isi plugin `wahid-toolkit`, ditambah dua skill dan satu agent untuk kerja ERP/WMS.
+Koleksi Claude Skills & Agent untuk kerja development sehari-hari Wahid (Rasa Group + freelance) — dipaketkan sebagai plugin `noskill`, termasuk skill dan agent untuk kerja ERP/WMS.
 
 ## Skills
 
@@ -39,14 +39,14 @@ erp-domain-design → prd-writer → erp-brd-traceability → task-breakdown
 
 **Claude Code (sebagai plugin):**
 ```
-/plugin install wahid-toolkit --marketplace awahids/noskill
+/plugin install noskill --marketplace awahids/noskill
 ```
 Untuk Claude Code versi lama (sebelum 2.1.275), dua langkah:
 ```
 /plugin marketplace add awahids/noskill
-/plugin install wahid-toolkit@noskill
+/plugin install noskill@noskill
 ```
-Skill dipanggil dengan prefix plugin, misal `/wahid-toolkit:prd-writer`. Detail per-skill ada di README masing-masing folder di `skills/`.
+Skill dipanggil dengan prefix plugin, misal `/noskill:prd-writer`. Detail per-skill ada di README masing-masing folder di `skills/`.
 
 **Claude.ai:**
 Upload `SKILL.md` (dan folder `references/` jika ada) dari `skills/<nama-skill>/` lewat pengaturan Skills di akun kamu.
