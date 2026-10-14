@@ -131,7 +131,7 @@ TECH-008  Tambah permission inventory.goods_receipt.confirm
 TECH-009  Implementasi audit log
 ```
 
-Technical Task **bukan** requirement bisnis — dia hasil turunan dari functional requirement/AC. Untuk breakdown task lebih detail dengan struktur folder/konvensi kode proyek, lanjutkan ke skill `task-breakdown` / `coding-standards`.
+Technical Task **bukan** requirement bisnis — dia hasil turunan dari functional requirement/AC. Untuk breakdown task lebih detail dengan struktur folder/konvensi kode proyek, lanjutkan ke skill `task-breakdown` / `coding-standards` — `task-breakdown` memetakan tiap TECH-xxx ke Task-ID lewat kolom **Trace**, jadi rantai traceability tetap utuh sampai task tracker.
 
 ## Layer 5 — Testing & UAT
 

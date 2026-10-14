@@ -1,6 +1,6 @@
 ---
 name: task-breakdown
-description: Memecah PRD menjadi daftar task development yang actionable, dikelompokkan per fase/modul/layer, dengan acceptance criteria dan dependency. KHUSUS untuk project yang terintegrasi ke sistem existing atau menambah ke codebase yang sudah ada — task disesuaikan dengan struktur, konvensi, dan file/folder yang SUDAH ADA di project tersebut (bukan scaffolding generik dari nol), termasuk task integrasi yang presisi sesuai bagian Architecture/Integrasi di PRD. Gunakan skill ini setelah PRD selesai (dari `prd-writer` atau PRD yang di-upload user) dan user minta "buatkan task", "pecah jadi task", "breakdown PRD ini", "buat backlog dari PRD", atau "task list untuk development".
+description: Memecah PRD menjadi daftar task development yang actionable, dikelompokkan per fase/modul/layer, dengan acceptance criteria dan dependency. KHUSUS untuk project yang terintegrasi ke sistem existing atau menambah ke codebase yang sudah ada — task disesuaikan dengan struktur, konvensi, dan file/folder yang SUDAH ADA di project tersebut (bukan scaffolding generik dari nol), termasuk task integrasi yang presisi sesuai bagian Architecture/Integrasi di PRD. Gunakan skill ini setelah PRD selesai (dari `prd-writer` atau PRD yang di-upload user) — atau setelah dokumen `erp-brd-traceability` selesai, di mana tiap task wajib merujuk ID US/AC/TECH-nya — dan user minta "buatkan task", "pecah jadi task", "breakdown PRD ini", "buat backlog dari PRD", atau "task list untuk development".
 ---
 
 # PRD to Task Breakdown
@@ -14,7 +14,8 @@ Mengubah PRD menjadi task list yang siap masuk ke tracker (Notion/Jira/Trello/Gi
 1. **Project baru murni (greenfield)** atau **integrasi/penambahan ke project existing**? Cek bagian Architecture di PRD — kalau ada penyebutan sistem lain yang sudah berjalan (repo existing, stack yang harus disamakan, endpoint yang sudah ada), ini kasus integrasi.
 2. Kalau **integrasi ke existing project**, task **wajib mengikuti struktur folder, pola kode, dan konvensi yang sudah disebutkan PRD-nya sebagai existing** — bukan membuat task "setup project baru dari nol". Kutip path/file konkret yang disebut PRD (contoh dari PRD SmartCatering HR: `server/internal/delivery/handlers/catering_proxy.handler.go`, pola `stores/attendance.js`) sebagai referensi langsung di task, bukan folder generik seperti `src/handlers/`.
 3. Kalau PRD tidak menyebutkan detail struktur existing secara spesifik tapi menyebut "terintegrasi ke sistem X", **tanyakan ke user** apakah ada akses ke codebase existing tersebut (path lokal, repo) supaya task-nya presisi — jangan menebak struktur folder yang tidak disebutkan.
-4. Identifikasi **berapa banyak sistem/codebase yang terdampak** (di contoh SmartCatering: 2 — backend/frontend SmartCatering baru, plus penambahan tipis di backend/frontend Absensi existing). Setiap sistem yang terdampak dapat kelompok task terpisah.
+4. **Cek apakah sudah ada dokumen `erp-brd-traceability`** (US-xxx, AC-xxx, TECH-xxx) untuk fitur ini. Kalau ada, dokumen itu jadi sumber utama breakdown — lihat aturan traceability di Langkah 4. Kalau tidak ada, sumbernya PRD saja.
+5. Identifikasi **berapa banyak sistem/codebase yang terdampak** (di contoh SmartCatering: 2 — backend/frontend SmartCatering baru, plus penambahan tipis di backend/frontend Absensi existing). Setiap sistem yang terdampak dapat kelompok task terpisah.
 
 ## Langkah 2: Ekstrak Task dari Tiap Section PRD
 
@@ -48,6 +49,7 @@ Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), l
 - [ ] **[TASK-ID]** [Judul task singkat, actionable]
   - **Deskripsi:** [apa yang dikerjakan, 1-2 kalimat]
   - **Acuan PRD:** [section/bagian PRD terkait, misal "Database Schema — tabel orders"]
+  - **Trace:** [hanya kalau ada dokumen `erp-brd-traceability` — `US-INV-001 / TECH-003 / AC-002` yang dipenuhi task ini]
   - **File/lokasi:** [path konkret kalau project existing, atau struktur folder yang berlaku dari `coding-standards`]
   - **Acceptance Criteria:**
     - [ ] [kriteria terverifikasi 1]
@@ -61,6 +63,20 @@ Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), l
 ```
 
 **Aturan penomoran Task-ID:** prefix per sistem/modul supaya gampang dilacak, misal `SC-BE-001` (SmartCatering Backend), `SC-FE-001` (SmartCatering Frontend), `ABS-INT-001` (Absensi Integration) — konsisten dan pendek.
+
+**Traceability ke `erp-brd-traceability` (kalau dokumennya ada):**
+- Setiap TECH-xxx jadi **minimal satu** task. TECH yang terlalu besar boleh dipecah jadi beberapa task, tapi semuanya merujuk TECH yang sama di kolom **Trace** — jangan buat ulang task dari PRD untuk hal yang sudah tercakup TECH.
+- Acceptance Criteria task diambil dari AC-xxx yang dirujuk TECH tersebut (tulis ID-nya, misal `AC-002: qty > outstanding ditolak`), bukan ditulis ulang dengan kata-kata baru.
+- Task tambahan yang tidak berasal dari TECH mana pun (setup, CI/CD, integrasi existing) tetap boleh, tapi kolom Trace diisi `—` dan alasannya di Deskripsi.
+- Setelah task list jadi, sertakan tabel ringkas di akhir supaya rantai BR→…→TECH→Task tidak putus:
+
+```markdown
+| TECH | Task-ID | AC yang dipenuhi | Test Case |
+|---|---|---|---|
+| US-INV-001 / TECH-003 | WMS-BE-004 | AC-002 | TC-INV-002 |
+```
+
+Cek ulang sebelum selesai: setiap TECH punya ≥1 task, dan setiap AC muncul di minimal satu task. Kalau ada yang bolong, sebutkan ke user.
 
 ## Langkah 5: Urutan Fase yang Wajar
 
@@ -91,5 +107,6 @@ Tandai task mana yang **bisa dikerjakan paralel** vs yang **strictly sequential*
 
 ## Referensi Skill Terkait
 - `prd-writer` — sumber PRD yang jadi acuan breakdown
+- `erp-brd-traceability` — kalau ada, sumber US/AC/TECH yang wajib dirujuk di kolom Trace
 - `coding-standards` — dipakai untuk struktur folder/konvensi task backend/frontend kalau project baru (tidak ada existing pattern untuk diikuti)
 - `standup-update` — setelah task dikerjakan, progress-nya bisa dirangkum pakai skill ini

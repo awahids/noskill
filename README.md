@@ -6,17 +6,17 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari Wahid (Rasa Gr
 
 | Skill | Fungsi |
 |---|---|
-| [`prd-writer`](prd-writer/) | Menyusun Product Requirements Document lengkap dengan diagram Mermaid |
-| [`task-breakdown`](task-breakdown/) | Memecah PRD jadi task development actionable, termasuk task integrasi ke sistem existing |
-| [`coding-standards`](coding-standards/) | Naming convention, struktur folder, dan konvensi kode untuk NestJS/Laravel/Golang/Vue/Next.js |
-| [`api-doc-standard`](api-doc-standard/) | Standar dokumentasi Swagger/OpenAPI untuk NestJS/Laravel/Golang |
-| [`debug-assistant`](debug-assistant/) | Alur debugging terstruktur (reproduce → isolasi → diagnosa → fix & verifikasi) |
-| [`mockup-prototype`](mockup-prototype/) | Membuat mockup/prototype UI dari PRD |
-| [`user-guide`](user-guide/) | Menyusun dokumentasi end-user yang mudah dipahami orang non-teknis |
-| [`standup-update`](standup-update/) | Merangkum aktivitas kerja jadi update standup/status report |
-| [`freelance-proposal`](freelance-proposal/) | Template proposal/scoping project freelance dengan harga IDR |
-| [`erp-domain-design`](erp-domain-design/) | Checklist desain domain ERP/WMS sebelum bikin schema — stock ledger, RBAC, audit trail, roadmap MVP |
-| [`erp-brd-traceability`](erp-brd-traceability/) | Framework requirement ERP dengan traceability: Business Requirement → Process → User Story → Acceptance Criteria → Technical Task → Test Case → UAT |
+| [`prd-writer`](skills/prd-writer/) | Menyusun Product Requirements Document lengkap dengan diagram Mermaid |
+| [`task-breakdown`](skills/task-breakdown/) | Memecah PRD jadi task development actionable, termasuk task integrasi ke sistem existing |
+| [`coding-standards`](skills/coding-standards/) | Naming convention, struktur folder, dan konvensi kode untuk NestJS/Laravel/Golang/Vue/Next.js |
+| [`api-doc-standard`](skills/api-doc-standard/) | Standar dokumentasi Swagger/OpenAPI untuk NestJS/Laravel/Golang |
+| [`debug-assistant`](skills/debug-assistant/) | Alur debugging terstruktur (reproduce → isolasi → diagnosa → fix & verifikasi) |
+| [`mockup-prototype`](skills/mockup-prototype/) | Membuat mockup/prototype UI dari PRD |
+| [`user-guide`](skills/user-guide/) | Menyusun dokumentasi end-user yang mudah dipahami orang non-teknis |
+| [`standup-update`](skills/standup-update/) | Merangkum aktivitas kerja jadi update standup/status report |
+| [`freelance-proposal`](skills/freelance-proposal/) | Template proposal/scoping project freelance dengan harga IDR |
+| [`erp-domain-design`](skills/erp-domain-design/) | Checklist desain domain ERP/WMS sebelum bikin schema — stock ledger, RBAC, audit trail, roadmap MVP |
+| [`erp-brd-traceability`](skills/erp-brd-traceability/) | Framework requirement ERP dengan traceability: Business Requirement → Process → User Story → Acceptance Criteria → Technical Task → Test Case → UAT |
 
 ## Agent
 
@@ -37,11 +37,19 @@ erp-domain-design → prd-writer → erp-brd-traceability → task-breakdown
 
 ## Cara pakai
 
-**Claude Code / Claude Cowork (sebagai plugin):**
-Copy folder skill yang diinginkan ke `skills/<nama-skill>/` di root plugin kamu, dan file agent ke `agents/`. Detail per-skill ada di README masing-masing folder.
+**Claude Code (sebagai plugin):**
+```
+/plugin install wahid-toolkit --marketplace awahids/noskill
+```
+Untuk Claude Code versi lama (sebelum 2.1.275), dua langkah:
+```
+/plugin marketplace add awahids/noskill
+/plugin install wahid-toolkit@noskill
+```
+Skill dipanggil dengan prefix plugin, misal `/wahid-toolkit:prd-writer`. Detail per-skill ada di README masing-masing folder di `skills/`.
 
 **Claude.ai:**
-Upload `SKILL.md` (dan folder `references/` jika ada) lewat pengaturan Skills di akun kamu.
+Upload `SKILL.md` (dan folder `references/` jika ada) dari `skills/<nama-skill>/` lewat pengaturan Skills di akun kamu.
 
 ## Lisensi
 

@@ -99,7 +99,7 @@ Screenshot **sangat direkomendasikan** tapi opsional — sertakan kalau:
 - User secara eksplisit minta dibuatkan mockup pendamping dokumentasi
 
 **Cara menyertakan:**
-- Kalau user upload gambar aplikasi asli (`/mnt/user-data/uploads/`), gunakan gambar itu langsung — copy ke lokasi output dan reference dengan markdown image syntax
+- Kalau user upload gambar aplikasi asli (lokasi upload beda tiap environment — pakai path yang diberikan user/environment), gunakan gambar itu langsung — copy ke lokasi output dan reference dengan markdown image syntax
 - Kalau tidak ada screenshot tersedia dan user tidak minta dibuatkan, **jangan mengarang gambar** — tulis placeholder yang jelas supaya gampang diisi belakangan:
   ```
   > 📸 *[Screenshot: tampilan halaman pilih menu]*

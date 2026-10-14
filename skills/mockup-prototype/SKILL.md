@@ -42,7 +42,7 @@ Default ke **high-fidelity mockup** kalau user tidak spesifik, karena paling ber
 
 ### 4. Build Mockup
 
-**Selalu baca `frontend-design` sebelum membangun kalau skill itu tersedia di environment ini** (biasanya ada bawaan di `/mnt/skills/public/frontend-design/SKILL.md` pada Claude.ai/Claude Code) — ikuti prinsip desain di sana untuk tipografi, spacing, dan hierarki visual, jangan pakai default template generik. **Kalau skill itu tidak ada di environment yang sedang dipakai**, tetap terapkan prinsip dasarnya secara manual: hindari font/warna default yang terlalu umum (Inter polos, gradient ungu generik), pilih arah visual yang disengaja sesuai konteks project, dan perhatikan hierarki tipografi — jangan biarkan ketidaktersediaan skill itu jadi alasan menghasilkan mockup generik.
+**Selalu baca skill `frontend-design` sebelum membangun kalau skill itu tersedia di environment ini** (cek daftar skill yang tersedia — jangan asumsikan path tertentu) — ikuti prinsip desain di sana untuk tipografi, spacing, dan hierarki visual, jangan pakai default template generik. **Kalau skill itu tidak ada di environment yang sedang dipakai**, tetap terapkan prinsip dasarnya secara manual: hindari font/warna default yang terlalu umum (Inter polos, gradient ungu generik), pilih arah visual yang disengaja sesuai konteks project, dan perhatikan hierarki tipografi — jangan biarkan ketidaktersediaan skill itu jadi alasan menghasilkan mockup generik.
 
 **Format output:**
 - **Single screen / komponen** → React artifact (`.jsx`), pakai Tailwind + lucide-react sesuai batasan environment
