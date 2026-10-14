@@ -13,7 +13,7 @@ Standar penamaan (naming convention), struktur folder/proyek, dan konvensi kode 
 - Git & commit convention
 - Checklist code review
 
-SKILL.md berisi prinsip, naming, function/testing standard, git, dan checklist review. Bagian yang panjang dan spesifik stack ada di `references/` dan dibaca hanya saat dibutuhkan: `orm.md` (bagian 3), `folder-structure.md` (bagian 4), `api-design.md` (bagian 6), `frontend.md` (bagian 7).
+SKILL.md berisi prinsip, naming, function/testing standard, git, dan checklist review. Bagian yang panjang dan spesifik stack ada di `references/` dan dibaca hanya saat dibutuhkan: `orm.md` (bagian 3), `folder-structure.md` (bagian 4), `api-design.md` (bagian 6), `frontend.md` (bagian 7), `logging.md` (bagian 5.4).
 
 ## Kapan dipakai
 

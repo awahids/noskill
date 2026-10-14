@@ -49,7 +49,10 @@ Untuk Claude Code versi lama (sebelum 2.1.275), dua langkah:
 Skill dipanggil dengan prefix plugin, misal `/noskill:prd-writer`. Detail per-skill ada di README masing-masing folder di `skills/`.
 
 **Claude.ai:**
-Upload `SKILL.md` (dan folder `references/` jika ada) dari `skills/<nama-skill>/` lewat pengaturan Skills di akun kamu.
+ZIP satu folder skill utuh (nama folder harus sama dengan `name` di SKILL.md, `references/` ikut di dalamnya), lalu upload lewat **Customize → Skills → + → Upload a skill**. Contoh:
+```bash
+cd skills && zip -r prd-writer.zip prd-writer
+```
 
 ## Lisensi
 
