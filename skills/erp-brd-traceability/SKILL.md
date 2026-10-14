@@ -135,10 +135,11 @@ Technical Task **bukan** requirement bisnis — dia hasil turunan dari functiona
 
 ## Layer 5 — Testing & UAT
 
-Setiap AC harus punya minimal satu Test Case:
+Setiap AC harus punya minimal satu Test Case **positif** dan, kalau AC punya kondisi tolak/larangan, minimal satu Test Case **negatif**. Tandai jenisnya di field `Type`:
 ```
 TC-INV-001
 Requirement : US-INV-001 / AC-002
+Type        : Negatif
 Scenario    : GR quantity melebihi outstanding
 Input       : Outstanding = 30, Received = 40
 Expected    : Sistem menolak transaksi.

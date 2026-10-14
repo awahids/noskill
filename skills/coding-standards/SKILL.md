@@ -22,7 +22,10 @@ Jika stack yang dipakai user berbeda dari yang tercakup di sini, tetap terapkan 
 1. Konsistensi lebih penting daripada preferensi pribadi — ikuti standar ini meskipun ada cara lain yang valid.
 2. Readability first — kode dibaca jauh lebih sering daripada ditulis.
 3. Explicit lebih baik daripada implicit — hindari "magic" yang bikin orang lain menebak.
-4. DRY tapi jangan over-abstract — duplikasi 2x masih oke, baru pertimbangkan abstraksi di duplikasi ke-3.
+4. **Reuse dulu, DRY tapi jangan over-abstract.**
+   - Sebelum menulis logic baru, cari dulu di codebase (grep nama fungsi/konsep terkait). Kalau sudah ada helper/service yang melakukan hal yang sama, pakai itu — jangan menulis versi kedua.
+   - Logic bisnis ditaruh di layer yang bisa dipakai ulang dan dites (service/usecase/`lib`), bukan di dalam controller, handler, atau komponen UI. UI/controller cukup memanggil.
+   - Duplikasi 2x masih oke; baru ekstrak jadi fungsi bersama di duplikasi ke-3. Jangan bikin abstraksi "biar reusable nanti" untuk kode yang baru dipakai sekali.
 5. Fail fast, fail loud — validasi input di awal, jangan biarkan error menyebar diam-diam.
 6. **Refactor besar butuh rencana dulu, bukan langsung diubah.** Untuk refactor yang menyentuh banyak file/mengubah struktur (bukan sekadar rename kecil atau simplify pass di bagian 5.3), tulis dulu rencana step-by-step sebelum menyentuh kode: apa yang diubah, urutan langkahnya, bagaimana memverifikasi tiap langkah tidak merusak yang sudah jalan. Refactor tanpa rencana punya risiko besar memperbaiki satu hal sambil merusak hal lain yang tidak diperhatikan — terutama berbahaya di logic yang sudah dipakai production. Rencana ini bisa singkat (bullet list) untuk refactor kecil, atau lebih detail (mirip task breakdown di skill `task-breakdown`) untuk refactor besar lintas modul.
 7. **Surgical changes — sentuh cuma yang diminta.** Kalau task-nya "perbaiki bug X", jangan sekalian reformat file, ganti gaya penulisan, atau "membenahi" kode di sekitarnya yang tidak diminta — meskipun menurut penilaian sendiri itu lebih baik. Perubahan yang tidak diminta bikin diff susah direview (perubahan penting tenggelam di antara perubahan kosmetik) dan berisiko mengubah perilaku yang tidak dimaksud. Kalau ketemu kode di sekitarnya yang jelas bermasalah tapi di luar scope task, **sebutkan** ke user sebagai catatan terpisah — jangan langsung diubah tanpa diminta. Simplify pass (5.3) dan refactor terencana (poin 6) adalah pengecualian sah karena memang itu tujuannya, tapi tetap sebagai task tersendiri yang eksplisit, bukan menumpang di task lain.
@@ -308,6 +311,11 @@ function calculateExcessAmount({ mealPrice, subsidyAmount }: { mealPrice: number
 - Kalau menulis kode duluan lalu sadar butuh test, tulis test-nya lalu **pastikan test itu bisa gagal** kalau logic-nya salah (revert sementara implementasi, cek test merah, baru kembalikan) — test yang tidak pernah terbukti bisa gagal tidak bisa dipercaya
 - Test mengikuti struktur folder di bagian 4 (co-locate `*.spec.ts`/`*_test.go` di sebelah file yang diuji, atau folder `tests/` sesuai konvensi framework)
 - Satu test = satu perilaku yang diverifikasi — jangan gabung banyak assertion tidak terkait dalam satu test yang namanya generik
+- **Wajib test positif dan negatif** untuk setiap aturan bisnis:
+  - **Positif** — input valid menghasilkan hasil yang benar (happy path)
+  - **Negatif** — input tidak valid / kondisi terlarang ditolak dengan benar (error yang tepat, data tidak berubah)
+  - **Batas** — nilai tepat di batas aturan dan satu langkah di luarnya (misal `= 90%` dan `89,99%`), karena bug paling sering ada di sana
+  - Nama test menyebut jenisnya supaya mudah dicek, misal `rejects quantity above outstanding` (negatif) dan `accepts quantity equal to outstanding` (batas)
 
 ### 5.2 Quality Gates — Urutan Wajib, Jangan Lompat Tahap
 
