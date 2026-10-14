@@ -62,7 +62,7 @@ Kalau agent mengembalikan daftar pertanyaan terbuka, tanyakan ke user, lalu pang
 
 Panggil agent `task-planner` dengan: path PRD, folder BRD, prefix tiket, dan path codebase. Hasilnya file tiket `docs/tickets/<ID>.md` berstatus `TODO`.
 
-**Gate:** tampilkan board (lihat `ticket-workflow` bagian Board) dan minta persetujuan. Tanyakan juga mode jalan: **otomatis** (lanjut terus sampai semua DONE atau ada HOLD) atau **per tiket** (berhenti dan lapor setelah tiap tiket DONE). Default: otomatis.
+**Gate:** tampilkan board (lihat `ticket-workflow` bagian Board) dan minta persetujuan. Tanyakan juga mode jalan: **otomatis** (lanjut terus sampai semua DONE atau ada HOLD) atau **per tiket** (berhenti dan lapor setelah tiap tiket DONE), dan **berurutan** atau **paralel** (developer mulai tiket berikutnya selagi tiket sebelumnya di-review/QA — lihat Mode Paralel). Default: otomatis, berurutan.
 
 ## Tahap 5 — Loop Tiket
 
@@ -71,7 +71,7 @@ Ambil tiket sesuai urutan di `ticket-workflow` (BUG dulu, lalu TODO yang depende
 1. **Develop** — set `IN_PROGRESS`, panggil agent `developer` dengan path tiket (dan catatan review/bug report terakhir kalau ini revisi).
    - `READY_FOR_REVIEW` → set `REVIEW`
    - `BLOCKED` → set `HOLD`
-2. **Review** — panggil agent `ticket-reviewer` dengan path tiket.
+2. **Review** — panggil agent `ticket-reviewer` dengan path tiket dan laporan `READY_FOR_REVIEW` terakhir dari developer (sudah ringkas, termasuk bukti RED). Reviewer butuh laporan itu untuk menilai bukti test.
    - `APPROVED` → set `QA`
    - `CHANGES_REQUESTED` → set `IN_PROGRESS`, `rounds + 1`, tulis catatan review di Riwayat, kembali ke langkah 1
    - `BLOCKED` → set `HOLD`
@@ -82,7 +82,19 @@ Ambil tiket sesuai urutan di `ticket-workflow` (BUG dulu, lalu TODO yang depende
    - Kalau QA melaporkan bug di luar tiket ini, buat tiket `BUG-NNN` baru sesuai `ticket-workflow`
 4. **`rounds` = 3** → set `HOLD` dengan ringkasan kenapa terus gagal.
 
-Setiap perpindahan status: update `status` di frontmatter dan tambah satu baris di `## Riwayat`. Lapor ke user satu baris per perpindahan (`WMS-BE-004: REVIEW → QA`), bukan narasi panjang. Saat memanggil agent, kirim path tiket dan catatan terakhir saja, bukan isi file atau laporan agent sebelumnya secara utuh — agent bisa membaca file sendiri.
+Setiap perpindahan status: update `status` di frontmatter dan tambah satu baris di `## Riwayat`. Lapor ke user satu baris per perpindahan (`WMS-BE-004: REVIEW → QA`), bukan narasi panjang. Saat memanggil agent, kirim path tiket dan hanya input yang dibutuhkan tahap itu: catatan review/bug report terakhir untuk developer, laporan developer terakhir untuk reviewer. Jangan kirim isi file atau laporan-laporan lama — agent bisa membaca file sendiri.
+
+### Mode Paralel (pipeline)
+
+Seperti tim sungguhan: saat tiket A di-review atau di-QA, developer sudah mengerjakan tiket B. Hanya untuk repo git.
+
+1. **Tiket yang boleh jalan bersamaan:** semua `depends_on`-nya DONE, `File/Lokasi`-nya tidak beririsan dengan tiket lain yang sedang aktif, dan tiket itu tidak mengubah dependency/lockfile. Kalau tidak memenuhi, tiket menunggu. Maksimal 2 tiket aktif bersamaan, kecuali user minta lebih (maks 3).
+2. **Worktree per tiket:** sebelum developer mulai, buat `git worktree add .worktrees/<ID> -b ticket/<ID> <branch kerja>` dan tambahkan `.worktrees/` ke `.git/info/exclude`. Kalau project punya folder dependency yang tidak di-commit (`node_modules`, `vendor`), buat symlink ke folder itu di dalam worktree supaya test bisa jalan tanpa install ulang.
+3. **Kirim direktori kerja ke agent:** setiap pemanggilan developer, reviewer, dan QA menyertakan path worktree tiket itu. File tiket tetap di `docs/tickets/` pada checkout utama, dan tetap hanya kamu yang menulisnya.
+4. **Jalankan agent di background** dan proses verdict sesuai urutan selesainya. Begitu developer melapor `READY_FOR_REVIEW` untuk tiket A, panggil reviewer untuk A dan sekaligus developer untuk tiket berikutnya yang memenuhi syarat.
+5. **Saat PASS:** commit di worktree (`<ID>: <title>`), lalu di checkout utama `git merge --no-ff ticket/<ID>` ke branch kerja. Setelah itu hapus worktree dan branch tiketnya, lalu commit update file tiket.
+   - **Kalau merge konflik:** `git merge --abort`, set tiket ke `IN_PROGRESS` dengan catatan "gabungkan branch kerja terbaru ke ticket/<ID> dan selesaikan konflik", lalu tiket lewat review dan QA lagi.
+6. Total token kira-kira sama dengan mode berurutan karena pekerjaannya sama; yang berkurang waktu tunggunya.
 
 **HOLD:** jangan berhenti seluruh alur hanya karena satu tiket HOLD. Lanjutkan tiket lain yang tidak bergantung padanya. Setelah tidak ada tiket yang bisa jalan, tampilkan semua tiket HOLD sekaligus beserta pertanyaannya ke user. Setelah dijawab, catat jawaban di Riwayat, kembalikan ke status sebelum HOLD, reset `rounds` ke 0 kalau requirement berubah, dan lanjutkan loop.
 

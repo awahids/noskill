@@ -34,7 +34,7 @@ HOLD ──► status sebelum HOLD, setelah blocker selesai
 ## Aturan Transisi
 
 1. **Hanya orkestrator (`feature-flow`) yang mengubah field `status`, `rounds`, dan menulis `## Riwayat`.** Agent lain mengembalikan verdict; orkestrator yang memindahkan tiket. Satu penulis = tidak ada status yang saling timpa.
-2. **Satu tiket diproses dalam satu waktu** (TODO → DONE atau HOLD), supaya `git diff` saat review/QA hanya berisi perubahan tiket itu.
+2. **Satu tiket per direktori kerja**, supaya `git diff` saat review/QA hanya berisi perubahan tiket itu. Mode berurutan: semua tiket bergantian di branch kerja. Mode paralel: tiap tiket aktif punya git worktree sendiri (lihat `feature-flow`).
 3. **Urutan ambil tiket:** `BUG` dulu, lalu `TODO` yang semua `depends_on`-nya sudah DONE, urut ID. Tiket yang depend ke tiket HOLD tidak diambil.
 4. **`rounds` naik 1** setiap tiket kembali ke developer (REVIEW → IN_PROGRESS atau QA → BUG). Kalau `rounds` mencapai 3, tiket pindah ke **HOLD** — tiga putaran gagal berarti masalahnya di requirement/desain, bukan di kode, dan butuh keputusan user.
 5. **Tidak ada status yang dilompati.** Tidak ada tiket langsung dari IN_PROGRESS ke QA, atau dari REVIEW ke DONE.
