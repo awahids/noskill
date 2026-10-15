@@ -13,10 +13,10 @@ Mengubah PRD menjadi task list yang siap masuk ke tracker (Notion/Jira/Trello/Gi
 **Sebelum membuat task, tentukan dulu:**
 
 1. **Project baru murni (greenfield)** atau **integrasi/penambahan ke project existing**? Cek bagian Architecture di PRD — kalau ada penyebutan sistem lain yang sudah berjalan (repo existing, stack yang harus disamakan, endpoint yang sudah ada), ini kasus integrasi.
-2. Kalau **integrasi ke existing project**, task **wajib mengikuti struktur folder, pola kode, dan konvensi yang sudah disebutkan PRD-nya sebagai existing** — bukan membuat task "setup project baru dari nol". Kutip path/file konkret yang disebut PRD (contoh dari PRD SmartCatering HR: `server/internal/delivery/handlers/catering_proxy.handler.go`, pola `stores/attendance.js`) sebagai referensi langsung di task, bukan folder generik seperti `src/handlers/`.
+2. Kalau **integrasi ke existing project**, task **wajib mengikuti struktur folder, pola kode, dan konvensi yang sudah disebutkan PRD-nya sebagai existing** — bukan membuat task "setup project baru dari nol". Kutip path/file konkret yang disebut PRD (contoh: `server/internal/delivery/handlers/canteen_proxy.handler.go`, pola `stores/attendance.js`) sebagai referensi langsung di task, bukan folder generik seperti `src/handlers/`.
 3. Kalau PRD tidak menyebutkan detail struktur existing secara spesifik tapi menyebut "terintegrasi ke sistem X", **tanyakan ke user** apakah ada akses ke codebase existing tersebut (path lokal, repo) supaya task-nya presisi — jangan menebak struktur folder yang tidak disebutkan.
 4. **Cek apakah sudah ada dokumen `erp-brd-traceability`** (US-xxx, AC-xxx, TECH-xxx) untuk fitur ini. Kalau ada, dokumen itu jadi sumber utama breakdown — lihat aturan traceability di Langkah 4. Kalau tidak ada, sumbernya PRD saja.
-5. Identifikasi **berapa banyak sistem/codebase yang terdampak** (di contoh SmartCatering: 2 — backend/frontend SmartCatering baru, plus penambahan tipis di backend/frontend Absensi existing). Setiap sistem yang terdampak dapat kelompok task terpisah.
+5. Identifikasi **berapa banyak sistem/codebase yang terdampak** (contoh: 2 — backend/frontend sistem Kantin baru, plus penambahan tipis di backend/frontend HRIS existing). Setiap sistem yang terdampak dapat kelompok task terpisah; kalau sistem itu repo terpisah, tiketnya diberi field `repo:` (lihat `feature-flow` bagian Multi-Repo).
 
 ## Langkah 2: Ekstrak Task dari Tiap Section PRD
 
@@ -33,7 +33,7 @@ Mengubah PRD menjadi task list yang siap masuk ke tracker (Notion/Jira/Trello/Gi
 
 Ini bagian yang paling sering salah kalau dikerjakan asal: **task integrasi ke sistem existing harus dibatasi seketat yang ditulis di PRD**, tidak melebar jadi duplikasi business logic.
 
-Prinsip (selaras dengan pola "proxy tipis" di PRD SmartCatering — kalau PRD menyebut pola serupa):
+Prinsip (berlaku kalau PRD menyebut pola "proxy tipis" atau serupa):
 - Kalau PRD bilang sisi existing hanya menambah **proxy layer tipis** (auth + forward, tanpa business logic), task-nya juga cuma itu — jangan bikin task yang mengimplementasikan ulang logic yang sudah ada di sistem baru
 - Sebutkan **role/middleware yang sudah ada dan dipakai ulang** (contoh: "role `employee`/`hr`/`administrator` sudah ada di `models.UserRole`, tidak perlu role baru") sebagai catatan di task, supaya developer tidak menciptakan struktur baru yang tidak perlu
 - Kalau ada **mekanisme yang belum ada dan perlu dibuat baru** (contoh dari PRD: service-to-service auth belum ada di sistem existing), ini jadi task tersendiri yang ditandai jelas sebagai **penambahan baru ke sistem existing**, bukan bagian dari sistem baru
@@ -46,7 +46,7 @@ Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), l
 ```markdown
 ## Fase 1: [Nama Fase — misal "Database & Core Backend"]
 
-### Backend — [Nama Sistem, misal "SmartCatering (baru)"]
+### Backend — [Nama Sistem, misal "Kantin (baru)"]
 - [ ] **[TASK-ID]** [Judul task singkat, actionable]
   - **Deskripsi:** [apa yang dikerjakan, 1-2 kalimat]
   - **Acuan PRD:** [section/bagian PRD terkait, misal "Database Schema — tabel orders"]
@@ -59,11 +59,11 @@ Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), l
   - **Dependency:** [task lain yang harus selesai duluan, kalau ada — "Tidak ada" kalau tidak ada]
   - **Estimasi:** [S/M/L atau story point, opsional — hanya isi kalau user minta]
 
-### Backend — [Nama Sistem Existing, misal "Absensi (existing, penambahan)"]
+### Backend — [Nama Sistem Existing, misal "HRIS (existing, penambahan)"]
 - [ ] **[TASK-ID]** [...]
 ```
 
-**Aturan penomoran Task-ID:** prefix per sistem/modul supaya gampang dilacak, misal `SC-BE-001` (SmartCatering Backend), `SC-FE-001` (SmartCatering Frontend), `ABS-INT-001` (Absensi Integration) — konsisten dan pendek.
+**Aturan penomoran Task-ID:** prefix per sistem/modul supaya gampang dilacak, misal `KTN-BE-001` (Kantin Backend), `KTN-FE-001` (Kantin Frontend), `HR-INT-001` (integrasi di HRIS) — konsisten dan pendek.
 
 **Traceability ke `erp-brd-traceability` (kalau dokumennya ada):**
 - Setiap TECH-xxx jadi **minimal satu** task. TECH yang terlalu besar boleh dipecah jadi beberapa task, tapi semuanya merujuk TECH yang sama di kolom **Trace** — jangan buat ulang task dari PRD untuk hal yang sudah tercakup TECH.

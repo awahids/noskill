@@ -36,7 +36,7 @@ HOLD ──► status sebelum HOLD, setelah blocker selesai
 ## Aturan Transisi
 
 1. **Hanya orkestrator (`feature-flow`) yang mengubah field `status`, `rounds`, dan menulis `## Riwayat`.** Agent lain mengembalikan verdict; orkestrator yang memindahkan tiket. Satu penulis = tidak ada status yang saling timpa.
-2. **Satu tiket per direktori kerja**, supaya `git diff` saat review/QA hanya berisi perubahan tiket itu. Mode berurutan: semua tiket bergantian di branch kerja. Mode paralel: tiap tiket aktif punya git worktree sendiri (lihat `feature-flow`).
+2. **Satu tiket per direktori kerja**, supaya `git diff` saat review/QA hanya berisi perubahan tiket itu. Mode berurutan: semua tiket bergantian di branch kerja. Mode paralel: tiap tiket aktif punya git worktree sendiri. Multi-repo: tiket dikerjakan di repo yang ditulis di field `repo` (lihat `feature-flow`).
 3. **Urutan ambil tiket:** `BUG` dulu, lalu `TODO` yang semua `depends_on`-nya sudah DONE, urut ID. Tiket yang depend ke tiket HOLD tidak diambil.
 4. **`rounds` naik 1** setiap tiket kembali ke developer (REVIEW → IN_PROGRESS atau QA → BUG). Kalau `rounds` mencapai 3, tiket pindah ke **HOLD** — tiga putaran gagal berarti masalahnya di requirement/desain, bukan di kode, dan butuh keputusan user.
 5. **Tidak ada status yang dilompati.** Tidak ada tiket langsung dari IN_PROGRESS ke QA, atau dari REVIEW ke DONE.
@@ -61,13 +61,14 @@ Agent mengembalikan verdict di baris pertama jawabannya, lalu detail:
 
 ## Format File Tiket
 
-Satu file per tiket: `<docs>/tickets/<ID>.md`. ID mengikuti aturan penomoran `task-breakdown` (misal `WMS-BE-004`); bug baru dari QA pakai `BUG-NNN`.
+Satu file per tiket: `<docs>/tickets/<ID>.md`. ID mengikuti aturan penomoran `task-breakdown` (misal `WMS-BE-004`); bug baru dari QA pakai `BUG-NNN`. Satu tiket hanya mengubah satu repo.
 
 ```markdown
 ---
 id: WMS-BE-004
 title: Validasi outstanding quantity saat Goods Receipt
 type: task            # task | bug
+repo: api             # opsional, hanya untuk fitur multi-repo: nama repo dari bagian Repo di project-profile
 status: TODO
 trace: US-INV-001 / TECH-003   # dari erp-brd-traceability, "—" kalau tidak ada
 ac: [AC-002]
@@ -85,7 +86,7 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
 [section PRD / dokumen BRD terkait]
 
 ## File/Lokasi
-[path konkret di project]
+[path konkret di project — multi-repo: relatif terhadap root repo tiket]
 
 ## Acceptance Criteria
 - [ ] AC-002: Received qty > outstanding qty → transaksi ditolak
@@ -113,4 +114,4 @@ Kalau QA menemukan bug **di luar AC tiket ini** (regresi di fitur lain), jangan 
 
 ## Board
 
-Tampilkan board dari field `status` semua file tiket (`grep -H "^status:" <docs>/tickets/*.md`), dikelompokkan per kolom: TODO · IN_PROGRESS · REVIEW · QA · BUG · HOLD · DONE. Board tidak disimpan sebagai file terpisah — file tiket adalah satu-satunya sumber kebenaran.
+Tampilkan board dari field `status` semua file tiket (`grep -H "^status:" <docs>/tickets/*.md`), dikelompokkan per kolom: TODO · IN_PROGRESS · REVIEW · QA · BUG · HOLD · DONE. Multi-repo: tulis repo di samping ID (`WMS-FE-002 [web]`). Board tidak disimpan sebagai file terpisah — file tiket adalah satu-satunya sumber kebenaran.

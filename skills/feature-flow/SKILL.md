@@ -30,10 +30,11 @@ Kalau ragu, sebutkan mode yang kamu pilih beserta alasannya, lalu biarkan user m
 Sebelum mulai, pastikan tahu (tanya sekaligus kalau belum jelas). Untuk mode cepat cukup poin ke-2 dan ke-5:
 - Nama modul/domain → prefix ID (`INV`, `PUR`, …) dan prefix tiket (`WMS-BE`, …)
 - Project baru (greenfield) atau menambah ke codebase existing (path/repo-nya di mana)
-- Full chain BR→UAT atau ringkas US→AC→TECH
+- **Satu repo atau beberapa.** Kalau fitur menyentuh lebih dari satu repo (misal backend + web + mobile), lihat bagian Multi-Repo.
+- Level BRD: **lengkap** (BR→UAT, untuk fitur lintas divisi atau yang butuh sign-off/UAT formal), **ringkas** (US→AC→TECH + TC), atau **tanpa BRD** (PRD sudah cukup rinci; tiket dibuat langsung dari PRD)
 - Mulai dari tahap mana. Kalau `<docs>/prd.md`, dokumen BRD, atau `<docs>/tickets/` sudah ada, lanjutkan dari tahap berikutnya — jangan tulis ulang.
 - **Profil project.** Mode lengkap: kalau `<docs>/project-profile.md` belum ada, jalankan skill `project-profile` dulu (sekali per project). Mode cepat: pakai kalau ada; kalau belum ada, lanjut saja dan tawarkan membuatnya di akhir. Kalau sudah ada, pakai saja; refresh hanya kalau manifest/lockfile berubah sejak commit di header-nya atau command di profil gagal.
-- **Branch kerja.** Kalau project adalah repo git, buat branch baru dari branch saat ini sebelum kode pertama ditulis: `feat/<prefix-atau-slug>` untuk fitur, `fix/<slug>` untuk bug. Semua commit tiket masuk ke branch ini. Kalau working tree tidak bersih, tanya user dulu (commit, stash, atau lanjut di branch saat ini).
+- **Branch kerja.** Kalau project adalah repo git, buat branch baru dari branch saat ini sebelum kode pertama ditulis: `feat/<prefix-atau-slug>` untuk fitur, `fix/<slug>` untuk bug. Semua commit tiket masuk ke branch ini. Multi-repo: nama branch yang sama di setiap repo yang punya tiket. Kalau working tree tidak bersih, tanya user dulu (commit, stash, atau lanjut di branch saat ini).
 
 ## Mode Cepat — Satu Tiket Langsung
 
@@ -55,6 +56,8 @@ Jalankan skill `prd-writer` **di sesi ini** (bukan di agent), karena wajib tanya
 
 ## Tahap 3 — BRD Traceability
 
+**Lewati tahap ini kalau level = tanpa BRD**, langsung ke Tahap 4.
+
 Panggil agent `brd-tracer` dengan: path PRD, prefix domain, level (full/ringkas), dan jawaban konteks Tahap 0. Hasilnya di `<docs>/01-business/` … `<docs>/05-testing/`.
 
 Kalau agent mengembalikan daftar pertanyaan terbuka, tanyakan ke user, lalu panggil lagi dengan jawabannya.
@@ -63,7 +66,7 @@ Kalau agent mengembalikan daftar pertanyaan terbuka, tanyakan ke user, lalu pang
 
 ## Tahap 4 — Tiket
 
-Panggil agent `task-planner` dengan: path PRD, folder BRD, prefix tiket, dan path codebase. Hasilnya file tiket `<docs>/tickets/<ID>.md` berstatus `TODO`.
+Panggil agent `task-planner` dengan: path PRD, folder BRD (atau keterangan "tanpa BRD"), prefix tiket, dan path codebase (multi-repo: tabel `## Repo` dari profil). Hasilnya file tiket `<docs>/tickets/<ID>.md` berstatus `TODO`.
 
 **Gate:** tampilkan board (lihat `ticket-workflow` bagian Board) dan minta persetujuan. Tanyakan juga mode jalan: **otomatis** (lanjut terus sampai semua DONE atau ada HOLD) atau **per tiket** (berhenti dan lapor setelah tiap tiket DONE), dan **berurutan** atau **paralel** (developer mulai tiket berikutnya selagi tiket sebelumnya di-review/QA — lihat Mode Paralel). Default: otomatis, berurutan.
 
@@ -78,7 +81,7 @@ Ambil tiket sesuai urutan di `ticket-workflow` (BUG dulu, lalu TODO yang depende
    - `APPROVED` → set `QA`
    - `CHANGES_REQUESTED` → set `IN_PROGRESS`, `rounds + 1`, tulis catatan review di Riwayat, kembali ke langkah 1
    - `BLOCKED` → set `HOLD`
-3. **QA** — panggil agent `qa-tester` dengan path tiket dan folder `<docs>/05-testing/`.
+3. **QA** — panggil agent `qa-tester` dengan path tiket dan folder `<docs>/05-testing/` (tidak ada kalau tanpa BRD — QA menguji langsung terhadap AC tiket).
    - `PASS` → set `DONE`, centang AC di file tiket, lalu `git commit` perubahan di branch kerja dengan pesan `<ID>: <title>` (commit lokal, tidak push; lewati kalau bukan repo git atau user bilang jangan commit)
    - `FAIL` → set `BUG`, `rounds + 1`, tulis bug report di Riwayat, kembali ke langkah 1
    - `BLOCKED` → set `HOLD`
@@ -99,13 +102,26 @@ Seperti tim sungguhan: saat tiket A di-review atau di-QA, developer sudah menger
    - **Kalau merge konflik:** `git merge --abort`, set tiket ke `IN_PROGRESS` dengan catatan "gabungkan branch kerja terbaru ke ticket/<ID> dan selesaikan konflik", lalu tiket lewat review dan QA lagi.
 6. Total token kira-kira sama dengan mode berurutan karena pekerjaannya sama; yang berkurang waktu tunggunya.
 
+### Multi-Repo
+
+Untuk satu fitur yang menyentuh beberapa repo (misal `api` NestJS, `web` Vue, `mobile` Flutter).
+
+1. **Repo dokumen:** repo tempat sesi ini berjalan. PRD, BRD, dan semua tiket hanya ada di `<docs>/` repo ini — satu board untuk seluruh fitur. Repo lain tidak diberi folder noskill.
+2. **Daftar repo** ada di bagian `## Repo` pada `<docs>/project-profile.md`: nama pendek, path relatif dari repo dokumen, dan file profilnya. Profil repo lain disimpan di repo dokumen sebagai `<docs>/project-profile-<nama>.md` (jalankan `project-profile` untuk repo itu). Kalau path repo tidak ada di mesin ini, tanya user — jangan menebak.
+3. **Satu tiket = satu repo.** Tiket punya field `repo: <nama>` dan `File/Lokasi` relatif terhadap root repo itu. Perubahan yang butuh dua repo dipecah jadi dua tiket, yang sisi pemakai `depends_on` sisi penyedia (tiket `web` yang memanggil endpoint baru depend ke tiket `api`-nya).
+4. **Branch kerja** dengan nama yang sama dibuat di setiap repo yang punya tiket, sebelum tiket pertama di repo itu dikerjakan.
+5. **Saat memanggil agent**, kirim direktori kerja = path repo tiket itu (atau worktree-nya di mode paralel, dibuat dengan `git -C <path repo> worktree add …`) dan path profil repo itu. Path tiket tetap di repo dokumen.
+6. **Commit kode** di repo tiket (`<ID>: <title>`). Update file tiket di-commit di repo dokumen.
+7. **QA lintas repo:** kalau tiket butuh repo lain berjalan (web memanggil api), QA memakai branch kerja repo itu yang sudah berisi tiket dependency-nya. Kalau tidak bisa dijalankan di environment ini, verdict `BLOCKED` dengan keterangannya.
+8. Tiket di repo berbeda tidak pernah beririsan `File/Lokasi`, jadi di mode paralel bisa jalan bersamaan selama `depends_on` terpenuhi.
+
 **HOLD:** jangan berhenti seluruh alur hanya karena satu tiket HOLD. Lanjutkan tiket lain yang tidak bergantung padanya. Setelah tidak ada tiket yang bisa jalan, tampilkan semua tiket HOLD sekaligus beserta pertanyaannya ke user. Setelah dijawab, catat jawaban di Riwayat, kembalikan ke status sebelum HOLD, reset `rounds` ke 0 kalau requirement berubah, dan lanjutkan loop.
 
 ## Tahap 6 — Selesai
 
 Saat semua tiket DONE (atau sisanya HOLD menunggu user):
 - Tampilkan board akhir.
-- Jalankan sekali lagi test suite lengkap project di branch kerja, lalu tampilkan hasilnya.
+- Jalankan sekali lagi test suite lengkap project di branch kerja (multi-repo: di setiap repo yang punya tiket), lalu tampilkan hasilnya.
 - Tanyakan ke user apa yang dilakukan dengan branch kerja: **push + buat PR**, **merge ke branch asal secara lokal**, atau **biarkan dulu**. Jangan push atau merge tanpa jawaban user.
 - **Kalau user memilih push + PR:** push branch kerja, lalu buat PR lewat tool GitHub yang tersedia (konektor GitHub atau `gh`). Deskripsi PR disusun dari file tiket, tanpa menulis ulang dari nol:
   ```markdown
@@ -125,6 +141,7 @@ Saat semua tiket DONE (atau sisanya HOLD menunggu user):
   - <keputusan dari HOLD, temuan di luar scope, hal yang belum dicek>
   ```
   Kalau tidak ada tool GitHub, tampilkan deskripsi PR itu supaya user bisa menempelkannya sendiri.
+  **Multi-repo:** satu PR per repo, berisi tiket repo itu saja. Buat PR sesuai urutan dependency (penyedia dulu, misal `api` sebelum `web`), lalu tambahkan bagian `## PR terkait` berisi tautan PR repo lain di setiap PR dan sebutkan urutan merge-nya.
 - Tawarkan `user-guide` (dokumentasi end-user) dan `standup-update` (rangkuman progress dari Riwayat tiket).
 
 ## Sinkron Tracker (opsional)

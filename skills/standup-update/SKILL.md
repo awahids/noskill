@@ -25,7 +25,7 @@ Gunakan skill ini untuk mengubah catatan kerja mentah (commit message, daftar ta
 
 ## Format Alternatif: Weekly/Project Status (Notion-friendly)
 
-Untuk update mingguan atau laporan project (relevan dengan workspace Notion "melankoding"):
+Untuk update mingguan atau laporan project (format ini juga rapi kalau ditempel ke Notion):
 
 ```
 ## [Nama Project] — Update Minggu [tanggal]

@@ -8,7 +8,7 @@ description: >-
 
 Susun PRD dengan struktur baku di bawah ini. **Setiap PRD wajib punya diagram** — minimal satu flowchart/sequence diagram untuk alur utama (User Flow atau Architecture) dan satu ERD untuk Database Schema, keduanya dalam format Mermaid supaya bisa dirender langsung di Markdown/Notion/GitHub.
 
-Contoh acuan lengkap ada di bagian akhir skill ini (PRD SmartCatering HR) — pakai sebagai referensi pola penulisan, tingkat kedetailan, dan gaya bahasa.
+Contoh acuan lengkap ada di bagian akhir skill ini (PRD Kantin Karyawan) — pakai sebagai referensi pola penulisan, tingkat kedetailan, dan gaya bahasa.
 
 ## Langkah 0: Deskripsi Singkat → Pertanyaan Klarifikasi → Baru Generate PRD
 
@@ -184,7 +184,7 @@ Ini bagian paling teknis — wajib menjelaskan:
 
 1. **Spesifik, bukan generik.** Setiap requirement harus bisa diverifikasi — hindari kata seperti "user-friendly", "efisien", "modern" tanpa penjelasan konkret apa artinya secara teknis.
 2. **Eksplisit soal edge case.** Kalau ada aturan, sebutkan pengecualiannya. Kalau ada role, sebutkan batasannya. Ambiguitas di PRD jadi bug atau debat di tengah development.
-3. **Jelaskan alasan (rasional), bukan cuma keputusan.** "Pakai Golang" kurang berguna dibanding "Pakai Golang karena selaras dengan backend absensi yang sudah ada, tim yang sama, hindari maintain dua stack."
+3. **Jelaskan alasan (rasional), bukan cuma keputusan.** "Pakai Golang" kurang berguna dibanding "Pakai Golang karena selaras dengan backend HRIS yang sudah ada, tim yang sama, hindari maintain dua stack."
 4. **Rujuk standar existing, jangan duplikasi.** Kalau ada `coding-standards` atau konvensi project lain yang relevan, kutip section-nya (`bagian 6.2 coding-standards`) alih-alih menuliskan ulang seluruh aturannya di PRD.
 5. **Diagram bukan pelengkap, tapi bagian dari spesifikasi.** Flowchart (User Flow), sequence diagram (Architecture), dan ERD (Database Schema) harus akurat mencerminkan isi prosa di atasnya — bukan ilustrasi generik.
 
@@ -196,7 +196,7 @@ PRD selalu dibuat sebagai **file Markdown** (bukan jawaban inline di chat) karen
 
 ## Contoh Acuan Lengkap
 
-Contoh di bawah (PRD SmartCatering HR, v1.4) menunjukkan tingkat kedetailan dan gaya penulisan yang diharapkan — perhatikan bagaimana requirement ditulis eksplisit dengan pengecualian, bagaimana rasional keputusan arsitektur dijelaskan, dan bagaimana sequence diagram + ERD melengkapi (bukan mengulang) prosa:
+Contoh di bawah (PRD Kantin Karyawan) menunjukkan tingkat kedetailan dan gaya penulisan yang diharapkan — perhatikan bagaimana requirement ditulis eksplisit dengan pengecualian, bagaimana rasional keputusan arsitektur dijelaskan, dan bagaimana sequence diagram + ERD melengkapi (bukan mengulang) prosa:
 
 > Overview membuka dengan definisi sistem + kepemilikan + pola integrasi dalam satu paragraf, diikuti paragraf masalah yang konkret (bukan "pemesanan tidak efisien" tapi "tingginya potensi pemborosan anggaran katering akibat ketidaksesuaian jumlah porsi dengan kehadiran aktual").
 >
@@ -204,7 +204,7 @@ Contoh di bawah (PRD SmartCatering HR, v1.4) menunjukkan tingkat kedetailan dan 
 >
 > Logika Otomatisasi menulis aturan DAN pengecualiannya secara presisi: "kecuali tanggal tersebut hari libur nasional, karyawan berstatus cuti, atau akhir pekan ... Karyawan tetap boleh memesan manual di luar hari kerja tersebut kalau mereka mau — pengecualian ini hanya berlaku untuk auto-order, bukan pembatasan pemesanan manual."
 >
-> Architecture menjelaskan rasional stack ("Golang + Gin, selaras dengan stack backend absensi ... supaya tim yang sama tidak perlu belajar/maintain dua stack backend berbeda"), pola integrasi (proxy vs direct, dengan alasan JWT/CORS), dan diagram sequence lengkap dengan semua service yang terlibat (client → proxy → backend → database → sistem eksternal).
+> Architecture menjelaskan rasional stack ("Golang + Gin, selaras dengan stack backend HRIS ... supaya tim yang sama tidak perlu belajar/maintain dua stack backend berbeda"), pola integrasi (proxy vs direct, dengan alasan JWT/CORS), dan diagram sequence lengkap dengan semua service yang terlibat (client → proxy → backend → database → sistem eksternal).
 >
 > Database Schema menyertakan ERD Mermaid lengkap plus tabel rincian yang kolom "Keterangan"-nya menjelaskan aturan bisnis tersembunyi (mis. "`subsidy_amount` diatur manual oleh GA per karyawan dan tidak boleh ditimpa oleh job sync identitas — job sync hanya update `name`/`rfid_tag`").
 >

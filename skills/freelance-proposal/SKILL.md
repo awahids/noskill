@@ -14,7 +14,7 @@ Gunakan struktur ini setiap kali membantu menyusun proposal atau scoping untuk c
 Parafrase kebutuhan client dalam 2-3 kalimat untuk konfirmasi pemahaman sebelum masuk ke detail teknis.
 
 ### 2. Lingkup Pekerjaan (Scope)
-Pecah jadi **fase-fase** yang jelas, jangan satu blok besar. Pola yang sudah terbukti dipakai (contoh: Proyatim menggunakan Midtrans + Filament + WhatsApp automation):
+Pecah jadi **fase-fase** yang jelas, jangan satu blok besar. Pola yang sudah terbukti dipakai (contoh: web donasi dengan payment gateway + panel admin + notifikasi WhatsApp):
 
 ```
 Fase 1: [Nama fase — misal "Core Platform & Donation Flow"]

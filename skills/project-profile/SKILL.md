@@ -47,6 +47,12 @@ _Dibuat: <tanggal> · sumber: <commit hash pendek>_
 ## Aturan project
 - (dikutip singkat dari CLAUDE.md/README/CI, misal: setiap perubahan yang terlihat user menambah item di `lib/changelog.ts`)
 
+## Repo (hanya kalau fitur menyentuh beberapa repo)
+| Nama | Path | Profil |
+|---|---|---|
+| api | . | project-profile.md |
+| web | ../web-client | project-profile-web.md |
+
 ## Integrasi
 - tracker: none            # none | github | notion — tujuan sinkron board tiket
 - notion_database: —       # URL/ID database Notion kalau tracker: notion
@@ -57,4 +63,5 @@ _Dibuat: <tanggal> · sumber: <commit hash pendek>_
 - Hanya fakta yang terverifikasi dari file atau hasil command. Yang tidak yakin ditulis `belum dicek`, jangan ditebak.
 - **Refresh** kalau file manifest/lockfile berubah sejak commit di header, kalau command di profil gagal dijalankan, atau user minta. Ganti bagian yang berubah saja.
 - Field `tracker` diisi sesuai jawaban user (default `none`). Jangan tanyakan lagi kalau sudah terisi.
+- **Repo lain (multi-repo):** scan repo itu dengan cara yang sama (path dari bagian Repo), tapi simpan hasilnya di repo dokumen sebagai `<docs>/project-profile-<nama>.md` tanpa bagian Repo dan Integrasi. Repo lain tidak diberi folder noskill.
 - Kalau repo itu git, sarankan user meng-commit file ini supaya sesi berikutnya langsung memakainya.

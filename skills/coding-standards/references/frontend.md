@@ -146,4 +146,4 @@ Komponen dengan banyak boolean prop yang saling terkait (`isCompact`, `showHeade
 </Select>
 ```
 
-**Kapan dipakai:** komponen reusable/shared (dipakai di banyak tempat, terutama kalau lagi bangun design system atau komponen di project seperti Proyatim yang bakal dipakai berulang) baru worth pola ini. Untuk komponen sekali pakai/spesifik satu halaman, boolean prop sederhana masih oke — jangan over-engineer komponen kecil yang tidak akan berkembang variasinya.
+**Kapan dipakai:** komponen reusable/shared (dipakai di banyak tempat, terutama kalau lagi bangun design system atau komponen yang bakal dipakai berulang) baru worth pola ini. Untuk komponen sekali pakai/spesifik satu halaman, boolean prop sederhana masih oke — jangan over-engineer komponen kecil yang tidak akan berkembang variasinya.
