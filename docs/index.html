@@ -254,6 +254,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <div class="tbl"><table>
       <thead><tr><th>Perintah</th><th>Fungsi</th></tr></thead>
       <tbody>
+        <tr><td><code>/noskill:lazy &lt;permintaan&gt;</code></td><td>Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan, tanpa tiket, review, atau QA.</td></tr>
         <tr><td><code>/noskill:fix &lt;deskripsi&gt;</code></td><td>Bug fix atau perubahan kecil lewat mode cepat.</td></tr>
         <tr><td><code>/noskill:board</code></td><td>Status semua tiket, beserta pertanyaan dari tiket HOLD.</td></tr>
         <tr><td><code>/noskill:lanjut [jawaban]</code></td><td>Melanjutkan tiket yang tertunda dari sesi sebelumnya.</td></tr>
@@ -277,7 +278,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <p>Isi <code>tracker: github</code> atau <code>tracker: notion</code> di profil project supaya board tercermin di GitHub Issues atau database Notion. Sinkronnya satu arah dari file ke tracker, dan hanya terjadi saat tiket dibuat, DONE, BUG, atau HOLD.</p>
 
     <h2 id="eval">Eval</h2>
-    <p>Repo ini menyertakan 7 case uji perilaku:</p>
+    <p>Repo ini menyertakan 8 case uji perilaku:</p>
     <ul>
       <li>developer memakai helper yang ada dan menulis test negatif/batas</li>
       <li>reviewer menolak duplikasi</li>
@@ -286,6 +287,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <li>tiket dibuat langsung dari PRD (tanpa BRD)</li>
       <li>fitur lintas repo dipecah jadi tiket per repo</li>
       <li>developer bekerja di worktree tiket (mode paralel)</li>
+      <li><code>/noskill:lazy</code> memakai helper yang ada, tanpa tiket atau abstraksi baru</li>
     </ul>
     <p>Jalankan setelah mengubah skill atau agent:</p>
     <div class="cmd"><pre>claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash</pre><button type="button" data-copy>Salin</button></div>

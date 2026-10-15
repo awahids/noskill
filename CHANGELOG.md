@@ -2,6 +2,12 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.3.0 — 2026-10-15
+
+### Ditambahkan
+- Shortcut `/noskill:lazy` (lazy senior dev mode): langsung kerjakan solusi paling sederhana dan terpendek yang jalan — YAGNI, stdlib dulu, tanpa abstraksi yang tidak diminta — tanpa tiket, review, atau QA. Tetap wajib bukti test, dan berhenti lalu menyarankan `/noskill:fix` atau `/noskill:feature-flow` kalau ternyata menyentuh aturan bisnis baru, skema, lebih dari ±5 file, atau beberapa repo.
+- Halaman `docs/skills.html`: penjelasan detail setiap skill.
+
 ## 1.2.0 — 2026-10-15
 
 ### Diubah — tiket lebih cepat

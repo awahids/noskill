@@ -13,7 +13,7 @@ Penjelasan detail tiap skill (kapan dipakai, langkah kerja, hasil, aturan pentin
 | [`feature-flow`](skills/feature-flow/) | Orkestrator: tiket → developer → reviewer → QA → DONE (atau BUG/HOLD). Mode cepat dan lengkap, paralel, multi-repo, branch dan PR |
 | [`ticket-workflow`](skills/ticket-workflow/) | Format file tiket, arti tiap status, aturan transisi, verdict agent, dan board |
 | [`project-profile`](skills/project-profile/) | Scan repo sekali → `docs/noskill/project-profile.md` (stack, command, struktur, helper, aturan) yang dibaca semua agent |
-| [`fix`](skills/fix/) · [`board`](skills/board/) · [`lanjut`](skills/lanjut/) | Shortcut: bug fix lewat mode cepat, lihat board tiket, lanjutkan tiket dari sesi sebelumnya |
+| [`lazy`](skills/lazy/) · [`fix`](skills/fix/) · [`board`](skills/board/) · [`lanjut`](skills/lanjut/) | Shortcut: kerjakan langsung dengan solusi paling sederhana, bug fix lewat mode cepat, lihat board tiket, lanjutkan tiket dari sesi sebelumnya |
 | [`prd-writer`](skills/prd-writer/) | PRD baku dengan diagram Mermaid, didahului minimal 5 pertanyaan klarifikasi; juga Reverse-PRD dari kode |
 | [`erp-domain-design`](skills/erp-domain-design/) | Checklist desain domain ERP/WMS: master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP |
 | [`erp-brd-traceability`](skills/erp-brd-traceability/) | Rantai requirement BR → PROC → US → AC → TECH → TC → UAT dengan ID yang bisa ditelusuri |
@@ -56,6 +56,7 @@ Pengaturan ini berlaku untuk semua project di komputer itu.
 
 | Perintah | Fungsi |
 |---|---|
+| `/noskill:lazy <permintaan>` | Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan (YAGNI, stdlib dulu, tanpa abstraksi), tanpa tiket/review/QA |
 | `/noskill:fix <deskripsi>` | Bug fix atau perubahan kecil lewat mode cepat |
 | `/noskill:board` | Tampilkan board tiket + pertanyaan tiket HOLD |
 | `/noskill:lanjut [jawaban]` | Lanjutkan tiket yang tertunda dari sesi sebelumnya |
@@ -102,13 +103,13 @@ Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-
 
 ## Eval
 
-`evals/` berisi 7 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, aturan inti dari hook berlaku tanpa skill, task-planner membuat tiket langsung dari PRD (tanpa BRD), task-planner memecah fitur lintas repo jadi tiket per repo, dan developer bekerja di worktree tiket tanpa menyentuh checkout utama (mode paralel). Jalankan setelah mengubah skill atau agent:
+`evals/` berisi 8 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, aturan inti dari hook berlaku tanpa skill, task-planner membuat tiket langsung dari PRD (tanpa BRD), task-planner memecah fitur lintas repo jadi tiket per repo, developer bekerja di worktree tiket tanpa menyentuh checkout utama (mode paralel), dan `/noskill:lazy` memakai helper yang ada tanpa membuat tiket atau abstraksi baru. Jalankan setelah mengubah skill atau agent:
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
 ```
 
-Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $1–2 (7 case).
+Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $1–2 (8 case).
 
 ## Cara install
 
