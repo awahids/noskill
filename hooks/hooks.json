@@ -1,0 +1,18 @@
+{
+  "description": "Muat aturan kerja inti noskill di awal sesi",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/core-rules.md"],
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
