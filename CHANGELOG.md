@@ -2,6 +2,14 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.2.0 — 2026-10-15
+
+### Diubah — tiket lebih cepat
+- Test dan quality gate tidak lagi dijalankan tiga kali per tiket. Developer menjalankannya sekali, terbatas pada file yang tersentuh (lint file yang diubah, test terkait). Reviewer tidak menjalankan ulang. QA menjalankan test tiket dan test terkait sekali. Suite penuh hanya sekali di akhir fitur.
+- `ticket-reviewer` dan `qa-tester` memakai Sonnet. `developer` tetap memakai model sesi.
+- Reviewer hanya membaca bagian dokumen requirement yang dirujuk `trace`.
+- Profil project mencatat command "test terkait file" dan "lint file tertentu".
+
 ## 1.1.0 — 2026-10-15
 
 ### Ditambahkan

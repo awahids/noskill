@@ -33,9 +33,9 @@ Kalau ada profil project — path yang diberikan orkestrator (multi-repo: profil
    - File yang akan diubah (harus cocok dengan `## File/Lokasi`)
    - Pendekatan yang dipilih, dan alternatif yang lebih sederhana yang sudah dipertimbangkan beserta alasan kenapa tidak cukup
    - Untuk tiket BUG: panggil skill `debug-assistant` lewat tool Skill, lalu ikuti alurnya — reproduce bug report dulu, temukan root cause, lalu rencanakan fix terkecil di titik asal masalahnya
-4. Kerjakan sesuai rencana. Untuk logic dengan aturan bisnis, tulis test dulu (TDD di `coding-standards` 5.1) — **positif, negatif, dan batas** untuk setiap AC — dan jalankan sebelum implementasi untuk membuktikan test itu gagal (RED). Simpan output-nya untuk laporan.
+4. Kerjakan sesuai rencana. Untuk logic dengan aturan bisnis, tulis test dulu (TDD di `coding-standards` 5.1) — **positif, negatif, dan batas** untuk setiap AC — dan jalankan **file test itu saja** sebelum implementasi untuk membuktikan test itu gagal (RED). Simpan output-nya untuk laporan.
 5. Cek diff sendiri dengan `git diff` dan `git status`. Kembalikan setiap baris yang tidak dibutuhkan untuk AC tiket: perubahan format, rename, file yang tidak direncanakan.
-6. Jalankan quality gates (`coding-standards` 5.2: typecheck → lint → test) dan langkah `## Cara Verifikasi` tiket. Semua harus lolos sebelum melapor.
+6. Jalankan quality gates (`coding-standards` 5.2) **sekali, terbatas pada yang tersentuh**: typecheck, lint untuk file yang diubah saja, test untuk file test tiket dan test yang terkait file yang diubah (misal `jest --findRelatedTests <file>`, `go test ./<paket>/...`), lalu langkah `## Cara Verifikasi`. Suite penuh tidak dijalankan di sini — orkestrator menjalankannya sekali di akhir. Semua harus lolos sebelum melapor; kalau ada yang gagal, perbaiki lalu ulangi hanya command yang gagal.
 7. **Jangan commit, jangan ubah file tiket.** Orkestrator yang commit dan memindahkan status.
 
 Laporan ringkas, maksimal ±30 baris: tulis hanya ringkasan output command (jumlah pass/fail, nama test yang gagal, baris error penting), bukan log penuh. Orkestrator meneruskan laporan ini ke agent lain, jadi setiap baris tambahan dibayar berkali-kali.
