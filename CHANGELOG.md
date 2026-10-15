@@ -11,6 +11,12 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - Profil project mencatat command "test terkait file" dan "lint file tertentu".
 - Typecheck, lint, dan suite penuh dijalankan sekali di Tahap 6. Kalau gagal, dibuat tiket BUG untuk tiket penyebabnya.
 
+### Diubah — alur tiket lebih efisien
+- Revisi (CHANGES_REQUESTED/BUG) dilanjutkan oleh agent developer yang sama lewat SendMessage, jadi tiket, profil, dan kode tidak dibaca ulang. Developer baru hanya kalau agent lama tidak tersedia.
+- Field tiket `complexity: simple | complex`. Tiket `simple` dikerjakan developer dengan Sonnet; `complex` dengan model sesi. Tiket `simple` yang sudah 2 kali kembali ke developer pindah ke model sesi.
+- Environment (DB + server BE) dinyalakan sekali per sesi sebelum QA pertama yang membutuhkannya, dipakai bersama oleh semua QA, dan dimatikan di akhir. Profil project mencatat command `Jalankan environment` dan `Health check`.
+- Mode paralel: maksimal 3 tiket aktif kalau tiketnya ada di repo berbeda (misal pasangan BE–FE), tetap 2 kalau satu repo.
+
 ### Diubah — aturan tiket lebih sederhana
 - Satu tiket per endpoint (BE), per fitur/halaman (FE), atau per bug. Migration, DTO, test, dan Swagger ikut ke tiket endpoint/fitur yang membutuhkannya, tidak ada tiket per layer.
 - Tiket BE yang menambah/mengubah endpoint memuat `## Kontrak API` (method + path, request + validasi, response sukses, response error + kode) sejak tiket dibuat.

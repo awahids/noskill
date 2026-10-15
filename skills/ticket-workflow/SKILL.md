@@ -69,6 +69,7 @@ Satu file per tiket: `<docs>/tickets/<ID>.md`. ID mengikuti aturan penomoran `ta
 id: WMS-BE-004
 title: Validasi outstanding quantity saat Goods Receipt
 type: task            # task | bug
+complexity: simple    # simple | complex — menentukan model developer (lihat di bawah)
 repo: api             # opsional, hanya untuk fitur multi-repo: nama repo dari bagian Repo di project-profile
 status: TODO
 trace: US-INV-001 / TECH-003   # dari erp-brd-traceability, "—" kalau tidak ada
@@ -107,6 +108,10 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
 ## Riwayat
 - 2026-10-14 TODO — dibuat oleh task-planner
 ```
+
+**complexity** diisi saat tiket dibuat:
+- `simple` — bug dengan penyebab jelas, endpoint CRUD tanpa aturan bisnis khusus, perubahan UI tanpa logic state yang rumit, kira-kira ≤ 4 file.
+- `complex` — aturan bisnis (stok, uang, approval/workflow status), transaksi atau konkurensi, banyak tabel, atau penyebab bug belum diketahui. Kalau ragu, isi `complex`.
 
 **Riwayat** ditulis append-only, satu baris per perpindahan status: `- <tanggal> <STATUS> — <ringkasan alasan>`. Untuk perpindahan ke BUG/HOLD/IN_PROGRESS (revisi), tambahkan detail di bawahnya (indent) — catatan review, bug report, atau pertanyaan untuk user.
 

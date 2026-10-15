@@ -196,7 +196,14 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <p> Selama loop, test hanya dijalankan untuk yang tersentuh tiket. Typecheck, lint, dan seluruh test dijalankan sekali di akhir.</p>
 
     <h3>Mode paralel</h3>
-    <p>Bisa dipilih saat tiket disetujui. Selagi reviewer mengecek tiket A, developer sudah mengerjakan tiket B. Setiap tiket aktif mendapat git worktree sendiri, jadi perubahannya tidak tercampur. Tiket boleh jalan bersamaan kalau dependensinya sudah DONE dan file yang disentuh tidak beririsan. Maksimal 2 tiket aktif, dan setiap tiket yang lolos QA di-merge ke branch kerja.</p>
+    <p>Bisa dipilih saat tiket disetujui. Selagi reviewer mengecek tiket A, developer sudah mengerjakan tiket B. Setiap tiket aktif mendapat git worktree sendiri, jadi perubahannya tidak tercampur. Tiket boleh jalan bersamaan kalau dependensinya sudah DONE dan file yang disentuh tidak beririsan. Maksimal 2 tiket aktif, atau 3 kalau tiketnya ada di repo berbeda. Setiap tiket yang lolos QA di-merge ke branch kerja.</p>
+
+    <h3>Hemat waktu per tiket</h3>
+    <ul>
+      <li>Revisi dilanjutkan oleh developer yang sama, jadi tiket dan kode tidak dibaca ulang dari nol.</li>
+      <li>Setiap tiket punya <code>complexity</code>. Tiket <code>simple</code> dikerjakan developer dengan Sonnet, tiket <code>complex</code> dengan model sesi.</li>
+      <li>Database dan server dinyalakan sekali per sesi lalu dipakai bersama oleh semua QA.</li>
+    </ul>
 
     <h3>Multi-repo</h3>
     <p>Satu fitur bisa menyentuh beberapa repo, misalnya api NestJS, web Vue, dan mobile Flutter. Daftarkan repo-repo itu di bagian <code>## Repo</code> pada <code>project-profile.md</code>. PRD, BRD, dan semua tiket tetap di satu repo, yaitu repo tempat sesi berjalan, jadi board-nya cuma satu. Setiap tiket punya field <code>repo:</code> dan hanya mengubah repo itu. Tiket di repo pemakai (web) bergantung pada tiket di repo penyedia (api). Branch kerja bernama sama dibuat di setiap repo, commit dilakukan di repo masing-masing, dan di akhir dibuat satu PR per repo yang saling menautkan.</p>

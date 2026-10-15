@@ -40,7 +40,7 @@ Sebelum mulai, pastikan tahu (tanya sekaligus kalau belum jelas). Untuk mode cep
 
 Pengganti Tahap 1–4 untuk perubahan kecil:
 1. Baca kode yang terkait permintaan (grep, buka file-nya) supaya `File/Lokasi` berisi path nyata.
-2. Tulis tiket mengikuti Aturan Tiket di `task-breakdown` — satu per bug, per endpoint, atau per fitur; kalau BE dan FE sama-sama berubah, satu tiket BE dengan `## Kontrak API` plus satu tiket FE dengan `integrates_with` — di `<docs>/tickets/<ID>.md` sesuai format `ticket-workflow`: ID `FIX-NNN` untuk bug atau `TASK-NNN` untuk fitur kecil (lanjutkan nomor yang sudah ada), `trace: —`, AC berisi sisi positif **dan** negatif, `File/Lokasi`, dan `Cara Verifikasi` berupa command nyata.
+2. Tulis tiket mengikuti Aturan Tiket di `task-breakdown` — satu per bug, per endpoint, atau per fitur; kalau BE dan FE sama-sama berubah, satu tiket BE dengan `## Kontrak API` plus satu tiket FE dengan `integrates_with` — di `<docs>/tickets/<ID>.md` sesuai format `ticket-workflow`: ID `FIX-NNN` untuk bug atau `TASK-NNN` untuk fitur kecil (lanjutkan nomor yang sudah ada), `trace: —`, `complexity` (lihat `ticket-workflow`), AC berisi sisi positif **dan** negatif, `File/Lokasi`, dan `Cara Verifikasi` berupa command nyata.
 3. Kalau requirement-nya ambigu, tanyakan dulu — jangan menebak AC.
 4. **Gate:** tampilkan tiket (AC + File/Lokasi) dan minta persetujuan singkat. Setelah disetujui, lanjut ke Tahap 5.
 
@@ -72,9 +72,15 @@ Panggil agent `task-planner` dengan: path PRD, folder BRD (atau keterangan "tanp
 
 ## Tahap 5 — Loop Tiket
 
-Ambil tiket sesuai urutan di `ticket-workflow` (BUG dulu, lalu TODO yang dependency-nya DONE). Untuk satu tiket:
+Ambil tiket sesuai urutan di `ticket-workflow` (BUG dulu, lalu TODO yang dependency-nya DONE).
 
-1. **Develop** — set `IN_PROGRESS`, panggil agent `developer` dengan path tiket (dan catatan review/bug report terakhir kalau ini revisi).
+**Environment sekali per sesi.** Kalau ada tiket yang butuh server/database berjalan untuk QA (terutama tiket FE dengan `integrates_with`), sebelum QA pertama nyalakan environment sekali dengan command `Jalankan environment` dari profil (multi-repo: dari branch kerja repo BE), sebagai proses background, lalu tunggu sampai command `Health check` berhasil. Berikan URL-nya ke setiap QA; QA tidak menyalakan atau mematikan server sendiri. Kalau server tidak memakai mode watch, restart setelah tiket BE di-merge ke branch kerja. Matikan di akhir Tahap 6. Kalau profil belum mencatat command itu, biarkan QA menyalakan sendiri dan tambahkan command-nya ke profil setelahnya.
+
+Untuk satu tiket:
+
+1. **Develop** — set `IN_PROGRESS`, panggil agent `developer` dengan path tiket.
+   - **Model:** tiket `complexity: simple` → panggil developer dengan model `sonnet`; `complex` atau tidak diisi → model sesi. Tiket `simple` yang sudah 2 kali kembali ke developer (`rounds` = 2) dikerjakan ulang dengan model sesi.
+   - **Revisi (CHANGES_REQUESTED/BUG): lanjutkan developer yang sama.** Kirim catatan review/bug report terbaru ke agent developer yang mengerjakan tiket itu sebelumnya (SendMessage ke ID agent-nya — simpan ID itu selama sesi), bukan agent baru, karena konteks tiket dan kodenya sudah ada. Panggil developer baru hanya kalau agent lama tidak tersedia (sesi baru, setelah HOLD, atau ganti model).
    - `READY_FOR_REVIEW` → set `REVIEW`
    - `BLOCKED` → set `HOLD`
 2. **Review** — panggil agent `ticket-reviewer` dengan path tiket dan laporan `READY_FOR_REVIEW` terakhir dari developer (sudah ringkas, termasuk bukti RED). Reviewer butuh laporan itu untuk menilai bukti test.
@@ -94,7 +100,7 @@ Setiap perpindahan status: update `status` di frontmatter dan tambah satu baris 
 
 Seperti tim sungguhan: saat tiket A di-review atau di-QA, developer sudah mengerjakan tiket B. Hanya untuk repo git.
 
-1. **Tiket yang boleh jalan bersamaan:** semua `depends_on`-nya DONE (`integrates_with` tidak menahan — tiket FE boleh dikerjakan bersamaan dengan tiket BE-nya berdasarkan Kontrak API), `File/Lokasi`-nya tidak beririsan dengan tiket lain yang sedang aktif, dan tiket itu tidak mengubah dependency/lockfile. Kalau tidak memenuhi, tiket menunggu. Maksimal 2 tiket aktif bersamaan, kecuali user minta lebih (maks 3).
+1. **Tiket yang boleh jalan bersamaan:** semua `depends_on`-nya DONE (`integrates_with` tidak menahan — tiket FE boleh dikerjakan bersamaan dengan tiket BE-nya berdasarkan Kontrak API), `File/Lokasi`-nya tidak beririsan dengan tiket lain yang sedang aktif, dan tiket itu tidak mengubah dependency/lockfile. Kalau tidak memenuhi, tiket menunggu. Maksimal 2 tiket aktif bersamaan; **3 kalau tiket-tiket aktif ada di repo berbeda** (misal pasangan BE–FE di `api` dan `web`, yang tidak mungkin bentrok file). User boleh minta lebih (maks 4).
 2. **Worktree per tiket:** sebelum developer mulai, buat `git worktree add .worktrees/<ID> -b ticket/<ID> <branch kerja>` dan tambahkan `.worktrees/` ke `.git/info/exclude`. Kalau project punya folder dependency yang tidak di-commit (`node_modules`, `vendor`), buat symlink ke folder itu di dalam worktree supaya test bisa jalan tanpa install ulang.
 3. **Kirim direktori kerja ke agent:** setiap pemanggilan developer, reviewer, dan QA menyertakan path worktree tiket itu. File tiket tetap di `<docs>/tickets/` pada checkout utama, dan tetap hanya kamu yang menulisnya.
 4. **Jalankan agent di background** dan proses verdict sesuai urutan selesainya. Begitu developer melapor `READY_FOR_REVIEW` untuk tiket A, panggil reviewer untuk A dan sekaligus developer untuk tiket berikutnya yang memenuhi syarat.
@@ -121,6 +127,7 @@ Untuk satu fitur yang menyentuh beberapa repo (misal `api` NestJS, `web` Vue, `m
 
 Saat semua tiket DONE (atau sisanya HOLD menunggu user):
 - Tampilkan board akhir.
+- Matikan environment yang dinyalakan di Tahap 5 setelah cek di bawah selesai.
 - **Cek semuanya sekali di sini.** Selama loop tiket, test dan gate hanya dijalankan untuk yang tersentuh tiket. Di tahap ini jalankan typecheck, lint, dan test suite lengkap di branch kerja (multi-repo: di setiap repo yang punya tiket), lalu tampilkan ringkasannya. Kalau ada yang gagal, cari tiket penyebabnya (`git log` per file), buat tiket `BUG-NNN` dengan `related` ke tiket itu, dan jalankan lewat loop Tahap 5 sebelum lanjut.
 - Tanyakan ke user apa yang dilakukan dengan branch kerja: **push + buat PR**, **merge ke branch asal secara lokal**, atau **biarkan dulu**. Jangan push atau merge tanpa jawaban user.
 - **Kalau user memilih push + PR:** push branch kerja, lalu buat PR lewat tool GitHub yang tersedia (konektor GitHub atau `gh`). Deskripsi PR disusun dari file tiket, tanpa menulis ulang dari nol:

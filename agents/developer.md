@@ -28,6 +28,9 @@ Kalau ada profil project — path yang diberikan orkestrator (multi-repo: profil
 
 ## Langkah
 
+**Revisi lanjutan.** Kalau orkestrator mengirim catatan review atau bug report ke kamu (agent yang sama yang mengerjakan tiket ini sebelumnya), jangan baca ulang tiket, profil, atau file yang sudah kamu baca. Kerjakan poin-poin catatan itu saja, jalankan ulang hanya test dan gate yang terkait perubahan revisi, lalu lapor dengan format verdict yang sama.
+
+
 1. Baca file tiket lengkap, termasuk `## Riwayat`. Kalau ini revisi (ada catatan review) atau `status: BUG` (ada bug report), yang dikerjakan adalah poin-poin di catatan terakhir itu saja.
 2. Baca kode di `## File/Lokasi` dan sekitarnya. **Cari dulu** (grep) helper, service, pola, dan dependency yang sudah melakukan hal serupa — kalau ada, pakai itu, jangan tulis versi baru. Logic bisnis baru ditaruh di layer yang bisa dipakai ulang dan dites (service/usecase/`lib`), bukan di controller atau komponen UI (`coding-standards` prinsip 4).
 3. **Susun rencana sebelum menulis kode:**
