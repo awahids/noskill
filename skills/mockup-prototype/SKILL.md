@@ -38,7 +38,7 @@ Default ke **high-fidelity mockup** kalau user tidak spesifik, karena paling ber
 ### 3. Cek Design System yang Sudah Ada
 
 **Sebelum membuat palet/tipografi baru, cek dulu apakah project ini punya design system existing** (relevan karena beberapa project user sudah punya identitas visual):
-- Kalau project ini kelanjutan dari sistem yang sudah ada (misal terintegrasi ke aplikasi existing seperti kasus SmartCatering ke Absensi) → **ikuti visual language aplikasi existing**, jangan bikin baru
+- Kalau project ini kelanjutan dari sistem yang sudah ada (misal modul baru yang menempel ke aplikasi HR yang sudah dipakai) → **ikuti visual language aplikasi existing**, jangan bikin baru
 - Kalau project baru berdiri sendiri tanpa arahan visual → baca skill `frontend-design` untuk prinsip desain, dan tanyakan preferensi arah visual ke user kalau belum ada petunjuk dari PRD (industri/audience biasanya memberi sinyal: sistem internal HR/GA cenderung clean & functional, produk konsumen bisa lebih ekspresif)
 
 ### 4. Build Mockup

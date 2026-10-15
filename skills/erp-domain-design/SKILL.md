@@ -48,7 +48,7 @@ Hindari `if (user.role === 'ADMIN') ...` tersebar di code. Definisikan permissio
 
 Simpan minimal: Who, What, When, Before, After, Reason. Contoh:
 ```
-User: Wahid | Action: UPDATE | Module: Purchase Order | Document: PO/260920/0012
+User: budi.santoso | Action: UPDATE | Module: Purchase Order | Document: PO/260920/0012
 Before: quantity=100 → After: quantity=120 | Reason: Vendor confirmation
 ```
 

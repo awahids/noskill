@@ -49,7 +49,7 @@ logger.Error().
 
 #### Audit Log
 
-Dibutuhkan untuk aksi yang **mengubah data penting** dan perlu bisa ditelusuri siapa yang bertanggung jawab — terutama untuk aksi admin/privileged yang mengubah data milik orang lain (contoh dari pola PRD SmartCatering: GA mengubah `subsidy_amount` karyawan, Super Admin toggle fitur RFID).
+Dibutuhkan untuk aksi yang **mengubah data penting** dan perlu bisa ditelusuri siapa yang bertanggung jawab — terutama untuk aksi admin/privileged yang mengubah data milik orang lain (contoh: admin mengubah `subsidy_amount` karyawan, Super Admin menyalakan/mematikan fitur).
 
 **Kapan wajib ada audit log** (bukan semua aksi butuh, jangan berlebihan):
 - Perubahan data finansial/subsidi/pricing oleh admin

@@ -193,6 +193,9 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <h3>Mode paralel</h3>
     <p>Bisa dipilih saat tiket disetujui. Selagi reviewer mengecek tiket A, developer sudah mengerjakan tiket B. Setiap tiket aktif mendapat git worktree sendiri, jadi perubahannya tidak tercampur. Tiket boleh jalan bersamaan kalau dependensinya sudah DONE dan file yang disentuh tidak beririsan. Maksimal 2 tiket aktif, dan setiap tiket yang lolos QA di-merge ke branch kerja.</p>
 
+    <h3>Multi-repo</h3>
+    <p>Satu fitur bisa menyentuh beberapa repo, misalnya api NestJS, web Vue, dan mobile Flutter. Daftarkan repo-repo itu di bagian <code>## Repo</code> pada <code>project-profile.md</code>. PRD, BRD, dan semua tiket tetap di satu repo, yaitu repo tempat sesi berjalan, jadi board-nya cuma satu. Setiap tiket punya field <code>repo:</code> dan hanya mengubah repo itu. Tiket di repo pemakai (web) bergantung pada tiket di repo penyedia (api). Branch kerja bernama sama dibuat di setiap repo, commit dilakukan di repo masing-masing, dan di akhir dibuat satu PR per repo yang saling menautkan.</p>
+
     <h2 id="agent">Agent</h2>
     <div class="tbl"><table>
       <thead><tr><th>Agent</th><th>Peran</th><th>Ubah kode</th><th>Model</th></tr></thead>
@@ -260,12 +263,15 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <p>Isi <code>tracker: github</code> atau <code>tracker: notion</code> di profil project supaya board tercermin di GitHub Issues atau database Notion. Sinkronnya satu arah dari file ke tracker, dan hanya terjadi saat tiket dibuat, DONE, BUG, atau HOLD.</p>
 
     <h2 id="eval">Eval</h2>
-    <p>Repo ini menyertakan 4 case uji perilaku:</p>
+    <p>Repo ini menyertakan 7 case uji perilaku:</p>
     <ul>
       <li>developer memakai helper yang ada dan menulis test negatif/batas</li>
       <li>reviewer menolak duplikasi</li>
       <li>mode cepat berhenti di gate</li>
       <li>aturan inti berlaku tanpa skill</li>
+      <li>tiket dibuat langsung dari PRD (tanpa BRD)</li>
+      <li>fitur lintas repo dipecah jadi tiket per repo</li>
+      <li>developer bekerja di worktree tiket (mode paralel)</li>
     </ul>
     <p>Jalankan setelah mengubah skill atau agent:</p>
     <div class="cmd"><pre>claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash</pre><button type="button" data-copy>Salin</button></div>

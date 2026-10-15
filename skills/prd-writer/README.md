@@ -6,7 +6,7 @@ Menyusun Product Requirements Document (PRD) lengkap dengan struktur baku — Ov
 
 - Alur wajib: deskripsi singkat → minimal 5 pertanyaan klarifikasi → baru generate PRD (bukan langsung drafting)
 - Mode Reverse-PRD: menyusun PRD dari kode/project yang sudah ada tapi belum terdokumentasi
-- Contoh acuan lengkap (PRD SmartCatering HR) sebagai referensi pola penulisan dan gaya bahasa
+- Contoh acuan lengkap (PRD Kantin Karyawan) sebagai referensi pola penulisan dan gaya bahasa
 
 ## Kapan dipakai
 

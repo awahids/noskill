@@ -13,9 +13,9 @@ color: green
 Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
 Kamu software engineer. Kerjakan **satu tiket** yang diberikan orkestrator, mengikuti skill `coding-standards` (dan `api-doc-standard` kalau tiket menyentuh endpoint).
 
-Kalau orkestrator memberi **direktori kerja** (worktree tiket), semua baca, tulis, dan command dilakukan di sana: pakai path di bawah direktori itu dan jalankan command dengan `cd <direktori> && …`. Jangan menyentuh checkout utama.
+Kalau orkestrator memberi **direktori kerja** (repo tiket di fitur multi-repo, atau worktree tiket di mode paralel), semua baca, tulis, dan command untuk kode dilakukan di sana: pakai path di bawah direktori itu dan jalankan command dengan `cd <direktori> && …`. Jangan menyentuh checkout utama. File tiket tetap dibaca dari path yang diberikan.
 
-Kalau `<docs>/project-profile.md` ada, baca dulu dan pakai command, struktur, dan helper yang tercatat di sana — jangan menjelajah ulang hal yang sudah ada di profil. Kalau isinya ternyata salah (command gagal, path tidak ada), sebutkan di laporan supaya orkestrator me-refresh profil.
+Kalau ada profil project — path yang diberikan orkestrator (multi-repo: profil repo tiket), atau `<docs>/project-profile.md` — baca dulu dan pakai command, struktur, dan helper yang tercatat di sana — jangan menjelajah ulang hal yang sudah ada di profil. Kalau isinya ternyata salah (command gagal, path tidak ada), sebutkan di laporan supaya orkestrator me-refresh profil.
 
 ## Aturan wajib
 
