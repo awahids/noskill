@@ -18,15 +18,38 @@ Mengubah PRD menjadi task list yang siap masuk ke tracker (Notion/Jira/Trello/Gi
 4. **Cek apakah sudah ada dokumen `erp-brd-traceability`** (US-xxx, AC-xxx, TECH-xxx) untuk fitur ini. Kalau ada, dokumen itu jadi sumber utama breakdown — lihat aturan traceability di Langkah 4. Kalau tidak ada, sumbernya PRD saja.
 5. Identifikasi **berapa banyak sistem/codebase yang terdampak** (contoh: 2 — backend/frontend sistem Kantin baru, plus penambahan tipis di backend/frontend HRIS existing). Setiap sistem yang terdampak dapat kelompok task terpisah; kalau sistem itu repo terpisah, tiketnya diberi field `repo:` (lihat `feature-flow` bagian Multi-Repo).
 
+## Aturan Tiket — Satu Tiket per Endpoint, per Fitur, atau per Bug
+
+Aturannya sengaja sederhana supaya jumlah tiket bisa ditebak:
+
+| Jenis perubahan | Satu tiket untuk | Isi tiket |
+|---|---|---|
+| **Backend (BE)** | satu endpoint baru atau endpoint yang berubah | migration/entity yang dibutuhkan endpoint itu, DTO, service, controller, validasi, test, Swagger, dan **Kontrak API** |
+| **Frontend (FE)** | satu fitur/halaman | komponen, state, pemanggilan API, test |
+| **Bug fix** | satu bug | perbaikan dan test yang membuktikan bug itu tidak muncul lagi. Kalau bug ada di BE dan FE, jadi dua tiket dengan aturan BE–FE di bawah |
+| **Fitur tanpa endpoint** (job, scheduler, perubahan logic internal) | satu fitur | logic dan test-nya |
+
+- Tidak ada tiket per layer atau per file: migration, DTO, test, Swagger, atau seeder ikut ke tiket endpoint/fitur yang membutuhkannya. Migration yang dipakai beberapa endpoint ikut ke tiket endpoint pertama yang membutuhkannya; tiket lain `depends_on` ke sana.
+- Beberapa endpoint yang sangat kecil untuk resource yang sama (misal list + detail tanpa logic khusus) boleh jadi satu tiket fitur.
+- Jumlah tiket mengikuti jumlah endpoint, halaman, dan bug — tidak lebih. Kalau hasilnya lebih dari 8 untuk satu fitur, cek ulang apakah ada tiket per layer yang harus digabung.
+
+### BE dan FE: kontrak dulu, kerja bareng, QA bareng
+
+1. **Kontrak API ditulis saat tiket dibuat**, di bagian `## Kontrak API` tiket BE: method + path, request (body/query + aturan validasi), response sukses (status + bentuk JSON), dan response error (status + kode error). Kontrak ini satu-satunya acuan untuk kedua sisi.
+2. Tiket FE yang memakai endpoint itu mengisi `integrates_with: [<ID tiket BE>]` (bukan `depends_on`) dan merujuk kontraknya. Dengan begitu developer FE bisa mulai bersamaan dengan BE, memakai kontrak sebagai acuan (tipe/mock dari kontrak), tanpa menunggu BE selesai.
+3. Tiket BE tetap diambil lebih dulu. Tiket FE boleh jalan bersamaan (mode paralel) atau setelahnya (mode berurutan).
+4. **QA tiket FE menunggu semua tiket di `integrates_with` DONE**, lalu menguji FE dan BE bersama: FE memanggil BE sungguhan di branch kerja, termasuk skenario negatif dari kontrak (validasi gagal, data tidak ditemukan, tidak berhak).
+5. Kontrak tidak diubah diam-diam. Kalau saat mengerjakan ternyata kontrak harus berubah, developer melapor `BLOCKED` dan orkestrator mengubah kontrak di tiket BE serta mencatatnya di Riwayat kedua tiket.
+
 ## Langkah 2: Ekstrak Task dari Tiap Section PRD
 
 | Section PRD | Jadi task tipe |
 |---|---|
-| Database Schema | Migration per tabel (atau per grup tabel terkait), seeder kalau perlu data awal |
-| Core Features | Task backend (business logic + endpoint) dan frontend (UI + integrasi state) per fitur, biasanya bisa dipecah lagi per sub-bullet fitur |
+| Database Schema | Migration ikut tiket endpoint/fitur pertama yang memakai tabel itu, bukan tiket tersendiri |
+| Core Features | BE: satu tiket per endpoint (dengan Kontrak API). FE: satu tiket per fitur/halaman dengan `integrates_with` ke tiket BE-nya |
 | Architecture — proxy/integrasi | Task terpisah khusus integrasi (lihat Langkah 3) |
-| API Design | Kalau endpoint sudah dirinci di PRD, jadikan checklist implementasi endpoint per grup, bukan diulang task per endpoint tunggal kecuali endpoint-nya kompleks |
-| User Flow (percabangan kondisional) | Task tersendiri untuk logic percabangan/otomatisasi (misal job scheduler, cut-off logic) — sering luput kalau cuma dipecah dari Core Features saja |
+| API Design | Sumber Kontrak API di tiket BE. Satu tiket per endpoint |
+| User Flow (percabangan kondisional) | Masuk sebagai AC di tiket fitur terkait. Tiket tersendiri hanya untuk proses yang berjalan terpisah (job scheduler, cut-off otomatis) — sering luput kalau cuma dipecah dari Core Features saja |
 | Design & Technical Constraints | Task setup awal (project scaffolding, CI/CD, environment config) — hanya untuk project baru, skip untuk project existing |
 
 ## Langkah 3: Task Integrasi — Presisi, Jangan Generik
@@ -66,7 +89,7 @@ Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), l
 **Aturan penomoran Task-ID:** prefix per sistem/modul supaya gampang dilacak, misal `KTN-BE-001` (Kantin Backend), `KTN-FE-001` (Kantin Frontend), `HR-INT-001` (integrasi di HRIS) — konsisten dan pendek.
 
 **Traceability ke `erp-brd-traceability` (kalau dokumennya ada):**
-- Setiap TECH-xxx jadi **minimal satu** task. TECH yang terlalu besar boleh dipecah jadi beberapa task, tapi semuanya merujuk TECH yang sama di kolom **Trace** — jangan buat ulang task dari PRD untuk hal yang sudah tercakup TECH.
+- Setiap TECH-xxx tercakup **minimal satu** task; beberapa TECH kecil untuk perilaku yang sama boleh digabung dalam satu task (kolom Trace berisi semuanya). TECH yang terlalu besar boleh dipecah jadi beberapa task, tapi semuanya merujuk TECH yang sama di kolom **Trace** — jangan buat ulang task dari PRD untuk hal yang sudah tercakup TECH.
 - Acceptance Criteria task diambil dari AC-xxx yang dirujuk TECH tersebut (tulis ID-nya, misal `AC-002: qty > outstanding ditolak`), bukan ditulis ulang dengan kata-kata baru.
 - Task tambahan yang tidak berasal dari TECH mana pun (setup, CI/CD, integrasi existing) tetap boleh, tapi kolom Trace diisi `—` dan alasannya di Deskripsi.
 - Setelah task list jadi, sertakan tabel ringkas di akhir supaya rantai BR→…→TECH→Task tidak putus:
@@ -99,7 +122,7 @@ Tandai task mana yang **bisa dikerjakan paralel** vs yang **strictly sequential*
 
 ## Prinsip
 
-1. **Task harus actionable dalam satu duduk kerja.** Kalau task terlalu besar untuk dikerjakan dan diverifikasi dalam sekali jalan, pecah lagi.
+1. **Satu tiket per endpoint, per fitur, atau per bug** — lihat bagian Aturan Tiket di atas.
 2. **Setiap task bisa ditelusuri balik ke PRD.** Kolom "Acuan PRD" bukan formalitas — kalau ada task yang tidak bisa dikaitkan ke bagian PRD manapun, pertanyakan apakah task itu memang perlu atau scope creep.
 3. **Jangan buat task duplikat logic antar sistem.** Kalau sistem A (baru) dan sistem B (existing) sama-sama tersentuh oleh satu fitur, business logic hanya ada di satu tempat (sesuai keputusan Architecture di PRD) — sistem satunya cuma task integrasi/proxy.
 4. **Realistis dengan apa yang sudah ada.** Jangan sarankan "buat ulang struktur folder" atau "refactor besar" kalau PRD tidak memintanya — task integrasi menyesuaikan diri ke existing project, bukan sebaliknya, kecuali user secara eksplisit minta refactor.

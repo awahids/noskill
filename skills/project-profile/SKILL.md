@@ -32,6 +32,10 @@ _Dibuat: <tanggal> · sumber: <commit hash pendek>_
 | Install | `npm ci` | — |
 | Test semua | `npm test` | lulus, 77 test, ±5 dtk |
 | Test satu file | `npx tsx --test lib/goals.test.ts` | — |
+| Test terkait file yang diubah | `npx jest --findRelatedTests <file>` | — |
+| Lint file tertentu | `npx eslint <file>` | — |
+| Jalankan environment (DB + server, untuk QA) | `docker compose up -d db && npm run start:dev` | — |
+| Health check | `curl -sf localhost:3000/health` | — |
 | Typecheck | `npx tsc --noEmit` | lulus |
 | Lint | `npm run lint` | lulus |
 | Folder dependency (tidak di-commit) | `node_modules/` | — |

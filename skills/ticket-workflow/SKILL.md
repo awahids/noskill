@@ -28,7 +28,7 @@ HOLD ──► status sebelum HOLD, setelah blocker selesai
 | `TODO` | Siap dikerjakan, semua `depends_on` sudah DONE | developer | IN_PROGRESS |
 | `IN_PROGRESS` | Sedang dikerjakan / direvisi | developer | REVIEW, HOLD |
 | `REVIEW` | Kode selesai, dicek kesesuaian dengan tiket | ticket-reviewer | QA, IN_PROGRESS, HOLD |
-| `QA` | Lolos review, dites terhadap AC & Test Case | qa-tester | DONE, BUG, HOLD |
+| `QA` | Lolos review, dites terhadap AC & Test Case. Tiket dengan `integrates_with` menunggu di sini sampai tiket pasangannya DONE | qa-tester | DONE, BUG, HOLD |
 | `BUG` | Gagal QA — ada bug report di Riwayat | developer (pakai `debug-assistant`) | IN_PROGRESS |
 | `HOLD` | Berhenti: requirement ambigu, butuh keputusan user, environment/akses tidak tersedia, atau sudah 3 putaran gagal | user | status sebelumnya |
 | `DONE` | Lolos QA, perubahan sudah di-commit | — | — |
@@ -37,10 +37,11 @@ HOLD ──► status sebelum HOLD, setelah blocker selesai
 
 1. **Hanya orkestrator (`feature-flow`) yang mengubah field `status`, `rounds`, dan menulis `## Riwayat`.** Agent lain mengembalikan verdict; orkestrator yang memindahkan tiket. Satu penulis = tidak ada status yang saling timpa.
 2. **Satu tiket per direktori kerja**, supaya `git diff` saat review/QA hanya berisi perubahan tiket itu. Mode berurutan: semua tiket bergantian di branch kerja. Mode paralel: tiap tiket aktif punya git worktree sendiri. Multi-repo: tiket dikerjakan di repo yang ditulis di field `repo` (lihat `feature-flow`).
-3. **Urutan ambil tiket:** `BUG` dulu, lalu `TODO` yang semua `depends_on`-nya sudah DONE, urut ID. Tiket yang depend ke tiket HOLD tidak diambil.
+3. **Urutan ambil tiket:** `BUG` dulu, lalu `TODO` yang semua `depends_on`-nya sudah DONE, tiket BE sebelum tiket FE, urut ID. Tiket yang depend ke tiket HOLD tidak diambil. `integrates_with` tidak menahan pengerjaan — hanya menahan QA (aturan 7).
 4. **`rounds` naik 1** setiap tiket kembali ke developer (REVIEW → IN_PROGRESS atau QA → BUG). Kalau `rounds` mencapai 3, tiket pindah ke **HOLD** — tiga putaran gagal berarti masalahnya di requirement/desain, bukan di kode, dan butuh keputusan user.
 5. **Tidak ada status yang dilompati.** Tidak ada tiket langsung dari IN_PROGRESS ke QA, atau dari REVIEW ke DONE.
 6. **DONE butuh bukti.** QA hanya boleh PASS kalau setiap AC dan TC tiket benar-benar dijalankan dan hasilnya terlihat (output test/command), bukan "seharusnya benar".
+7. **QA bareng BE–FE.** Tiket yang punya `integrates_with` baru diuji QA setelah semua tiket di daftar itu DONE, lalu diuji bersama tiket tersebut (FE memanggil BE sungguhan). Kontrak API hanya diubah oleh orkestrator, dicatat di Riwayat kedua tiket.
 
 ## Verdict Agent
 
@@ -68,12 +69,14 @@ Satu file per tiket: `<docs>/tickets/<ID>.md`. ID mengikuti aturan penomoran `ta
 id: WMS-BE-004
 title: Validasi outstanding quantity saat Goods Receipt
 type: task            # task | bug
+complexity: simple    # simple | complex — menentukan model developer (lihat di bawah)
 repo: api             # opsional, hanya untuk fitur multi-repo: nama repo dari bagian Repo di project-profile
 status: TODO
 trace: US-INV-001 / TECH-003   # dari erp-brd-traceability, "—" kalau tidak ada
 ac: [AC-002]
 tc: [TC-INV-002]
-depends_on: [WMS-BE-001]
+depends_on: [WMS-BE-001]   # harus DONE sebelum tiket ini dikerjakan
+integrates_with: []       # tiket FE: ID tiket BE yang kontraknya dipakai; dikerjakan bareng, QA bareng setelah BE DONE
 related: []           # untuk tiket bug: tiket asal
 rounds: 0
 tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracker aktif
@@ -88,6 +91,14 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
 ## File/Lokasi
 [path konkret di project — multi-repo: relatif terhadap root repo tiket]
 
+## Kontrak API
+<!-- wajib untuk tiket BE yang menambah/mengubah endpoint; tiket FE cukup menulis "lihat <ID tiket BE>" -->
+`POST /api/v1/goods-receipts`
+- Request: `{ poId: number, items: [{ itemId: number, receivedQty: number > 0 }] }`
+- 201: `{ data: { id, number, status: "DRAFT" } }`
+- 422 `QTY_EXCEEDS_OUTSTANDING`: receivedQty > outstanding
+- 404 `PO_NOT_FOUND`
+
 ## Acceptance Criteria
 - [ ] AC-002: Received qty > outstanding qty → transaksi ditolak
 
@@ -97,6 +108,10 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
 ## Riwayat
 - 2026-10-14 TODO — dibuat oleh task-planner
 ```
+
+**complexity** diisi saat tiket dibuat:
+- `simple` — bug dengan penyebab jelas, endpoint CRUD tanpa aturan bisnis khusus, perubahan UI tanpa logic state yang rumit, kira-kira ≤ 4 file.
+- `complex` — aturan bisnis (stok, uang, approval/workflow status), transaksi atau konkurensi, banyak tabel, atau penyebab bug belum diketahui. Kalau ragu, isi `complex`.
 
 **Riwayat** ditulis append-only, satu baris per perpindahan status: `- <tanggal> <STATUS> — <ringkasan alasan>`. Untuk perpindahan ke BUG/HOLD/IN_PROGRESS (revisi), tambahkan detail di bawahnya (indent) — catatan review, bug report, atau pertanyaan untuk user.
 

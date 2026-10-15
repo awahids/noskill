@@ -4,8 +4,8 @@ cat > docs/noskill/prd.md <<'P'
 # PRD — Batas Diskon
 
 ## Core Features
-1. **API:** `applyDiscount(price, pct)` di repo `api` (`lib/pricing.js`) membatasi pct ke 0–50. Di atas 50 → 50; negatif → 0.
-2. **Web:** form diskon di repo `web` (`src/discount-form.js`) menampilkan pesan "Diskon maksimal 50%" kalau input > 50, dan tidak mengirim request. Harga akhir yang ditampilkan diambil dari hasil API, bukan dihitung ulang di web.
+1. **API (repo `api`):** endpoint baru `POST /api/discount`, body `{ price: number, pct: number }`. Memakai `applyDiscount` di `lib/pricing.js`. Sukses → 200 `{ finalPrice }`. pct > 50 → 422 dengan kode `DISCOUNT_TOO_HIGH`. pct < 0 → 422 dengan kode `INVALID_DISCOUNT`.
+2. **Web (repo `web`):** form diskon di `src/discount-form.js` memanggil endpoint itu, menampilkan `finalPrice` dari respons, dan menampilkan "Diskon maksimal 50%" kalau respons 422 `DISCOUNT_TOO_HIGH`. Harga akhir tidak dihitung ulang di web.
 P
 cat > docs/noskill/project-profile.md <<'P'
 # Project Profile — api

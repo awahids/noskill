@@ -167,7 +167,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
 
     <h3>Dua mode kerja</h3>
     <div class="lanes">
-      <div class="lane"><h3>Mode cepat</h3><p>Untuk bug fix atau fitur kecil (kira-kira 3 file atau kurang). Permintaan langsung jadi satu tiket berisi AC positif dan negatif, file yang disentuh, dan cara verifikasi. Setelah kamu setujui, tiket masuk loop.</p></div>
+      <div class="lane"><h3>Mode cepat</h3><p>Untuk bug fix, fitur kecil, atau revisi fitur yang sudah ada. Permintaan langsung jadi satu tiket (maksimal tiga) berisi AC positif dan negatif, file yang disentuh, dan cara verifikasi. Setelah kamu setujui, tiket masuk loop.</p></div>
       <div class="lane"><h3>Mode lengkap</h3><p>Untuk fitur atau modul baru. Desain domain dilanjutkan PRD (dengan pertanyaan klarifikasi), lalu tiket. Di antaranya ada BRD dengan tiga pilihan level: <strong>lengkap</strong> (BR → UAT, untuk sign-off atau UAT formal), <strong>ringkas</strong> (US → AC → TECH + Test Case), atau <strong>tanpa BRD</strong> (tiket langsung dari PRD). Setiap tahap butuh persetujuanmu.</p></div>
     </div>
     <p>Pekerjaan dilakukan di branch baru (<code>feat/…</code> atau <code>fix/…</code>) dengan satu commit per tiket. Di akhir kamu memilih push + PR (deskripsinya disusun dari tiket), merge lokal, atau biarkan dulu.</p>
@@ -190,8 +190,20 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <p class="side">Tiket berstatus HOLD ditanyakan ke kamu. Tiket lain yang tidak bergantung padanya tetap jalan.</p>
     <p>Setiap tiket adalah satu file Markdown di <code>docs/noskill/tickets/</code>. Isinya acceptance criteria, file yang boleh diubah, cara verifikasi, dan bagian <code>Riwayat</code> yang mencatat setiap perpindahan status beserta alasannya. Agent tidak saling memanggil. Mereka mengembalikan verdict ke orkestrator (<code>feature-flow</code>), yang menjadi satu-satunya pihak yang memindahkan status. Dengan begitu setiap keputusan tercatat di file dan bisa di-commit.</p>
 
+    <h3>Aturan tiket</h3>
+    <p>Satu tiket per endpoint (BE), per fitur atau halaman (FE), atau per bug. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer.</p>
+    <p>Kalau BE dan FE sama-sama berubah, tiket BE memuat Kontrak API sejak dibuat: path, request, response sukses, dan kode error. Tiket FE merujuk kontrak itu lewat <code>integrates_with</code>, jadi developer FE bisa mulai bersamaan dengan BE. QA tiket FE menunggu tiket BE selesai, lalu menguji FE dan BE bersama dengan BE sungguhan.</p>
+    <p> Selama loop, test hanya dijalankan untuk yang tersentuh tiket. Typecheck, lint, dan seluruh test dijalankan sekali di akhir.</p>
+
     <h3>Mode paralel</h3>
-    <p>Bisa dipilih saat tiket disetujui. Selagi reviewer mengecek tiket A, developer sudah mengerjakan tiket B. Setiap tiket aktif mendapat git worktree sendiri, jadi perubahannya tidak tercampur. Tiket boleh jalan bersamaan kalau dependensinya sudah DONE dan file yang disentuh tidak beririsan. Maksimal 2 tiket aktif, dan setiap tiket yang lolos QA di-merge ke branch kerja.</p>
+    <p>Bisa dipilih saat tiket disetujui. Selagi reviewer mengecek tiket A, developer sudah mengerjakan tiket B. Setiap tiket aktif mendapat git worktree sendiri, jadi perubahannya tidak tercampur. Tiket boleh jalan bersamaan kalau dependensinya sudah DONE dan file yang disentuh tidak beririsan. Maksimal 2 tiket aktif, atau 3 kalau tiketnya ada di repo berbeda. Setiap tiket yang lolos QA di-merge ke branch kerja.</p>
+
+    <h3>Hemat waktu per tiket</h3>
+    <ul>
+      <li>Revisi dilanjutkan oleh developer yang sama, jadi tiket dan kode tidak dibaca ulang dari nol.</li>
+      <li>Setiap tiket punya <code>complexity</code>. Tiket <code>simple</code> dikerjakan developer dengan Sonnet, tiket <code>complex</code> dengan model sesi.</li>
+      <li>Database dan server dinyalakan sekali per sesi lalu dipakai bersama oleh semua QA.</li>
+    </ul>
 
     <h3>Multi-repo</h3>
     <p>Satu fitur bisa menyentuh beberapa repo, misalnya api NestJS, web Vue, dan mobile Flutter. Daftarkan repo-repo itu di bagian <code>## Repo</code> pada <code>project-profile.md</code>. PRD, BRD, dan semua tiket tetap di satu repo, yaitu repo tempat sesi berjalan, jadi board-nya cuma satu. Setiap tiket punya field <code>repo:</code> dan hanya mengubah repo itu. Tiket di repo pemakai (web) bergantung pada tiket di repo penyedia (api). Branch kerja bernama sama dibuat di setiap repo, commit dilakukan di repo masing-masing, dan di akhir dibuat satu PR per repo yang saling menautkan.</p>
@@ -201,8 +213,8 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <thead><tr><th>Agent</th><th>Peran</th><th>Ubah kode</th><th>Model</th></tr></thead>
       <tbody>
         <tr><td><code>developer</code></td><td>Mengerjakan satu tiket atau bug. Menyusun rencana dulu, memakai helper yang ada, menulis test (bukti RED), lalu menjalankan quality gate.</td><td>Ya</td><td>sesi</td></tr>
-        <tr><td><code>ticket-reviewer</code></td><td>Mengecek kesesuaian dengan AC, scope, reuse, kesederhanaan, efisiensi, dan test. Hasilnya <code>APPROVED</code>, <code>CHANGES_REQUESTED</code>, atau <code>BLOCKED</code>.</td><td>Tidak</td><td>sesi</td></tr>
-        <tr><td><code>qa-tester</code></td><td>Menjalankan test positif, negatif, dan batas terhadap AC dan TC. Hasilnya <code>PASS</code> atau <code>FAIL</code> dengan bug report.</td><td>Tidak</td><td>sesi</td></tr>
+        <tr><td><code>ticket-reviewer</code></td><td>Mengecek kesesuaian dengan AC, scope, reuse, kesederhanaan, efisiensi, dan test. Hasilnya <code>APPROVED</code>, <code>CHANGES_REQUESTED</code>, atau <code>BLOCKED</code>.</td><td>Tidak</td><td>Sonnet</td></tr>
+        <tr><td><code>qa-tester</code></td><td>Menjalankan test positif, negatif, dan batas terhadap AC dan TC. Hasilnya <code>PASS</code> atau <code>FAIL</code> dengan bug report.</td><td>Tidak</td><td>Sonnet</td></tr>
         <tr><td><code>brd-tracer</code></td><td>Menurunkan PRD menjadi BR, PROC, US, AC, TECH, dan TC.</td><td>Tidak</td><td>Sonnet</td></tr>
         <tr><td><code>task-planner</code></td><td>Mengubah PRD dan BRD menjadi file tiket berstatus TODO.</td><td>Tidak</td><td>Sonnet</td></tr>
       </tbody>

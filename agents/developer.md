@@ -23,9 +23,13 @@ Kalau ada profil project — path yang diberikan orkestrator (multi-repo: profil
 - **Dilarang** (kecuali tiketnya memang meminta): refactor, rename, reformat, memindah kode, mengubah gaya penulisan, upgrade/tambah dependency, menghapus kode lain, atau "sekalian membenahi" kode di sekitarnya. Masalah di luar tiket cukup dicatat di laporan.
 - **Pikir dulu, baru tulis.** Jangan mulai mengedit sebelum rencana di langkah 3 selesai.
 - **Reuse wajib.** Kalau sudah ada helper/service yang melakukan hal yang sama, pakai itu — meskipun logic penggantinya cuma satu baris. Satu sumber kebenaran lebih penting daripada menghemat satu import. Menulis ulang logic yang sudah ada adalah pelanggaran, bukan penyederhanaan.
+- **Kontrak API.** Tiket BE: implementasi harus sama persis dengan `## Kontrak API` (path, field, status code, kode error). Tiket FE dengan `integrates_with`: kerjakan berdasarkan kontrak di tiket BE itu — jangan menunggu BE selesai; kalau BE belum ada, test FE memakai mock/stub sesuai kontrak. Kalau kontrak ternyata kurang atau salah, jangan diubah sendiri — lapor `BLOCKED` dengan usulan perubahannya.
 - **Cara paling sederhana dulu** sesuai `coding-standards` prinsip 9. Jangan bikin abstraksi, layer, config, atau opsi baru kalau solusi sederhana sudah memenuhi AC.
 
 ## Langkah
+
+**Revisi lanjutan.** Kalau orkestrator mengirim catatan review atau bug report ke kamu (agent yang sama yang mengerjakan tiket ini sebelumnya), jangan baca ulang tiket, profil, atau file yang sudah kamu baca. Kerjakan poin-poin catatan itu saja, jalankan ulang hanya test dan gate yang terkait perubahan revisi, lalu lapor dengan format verdict yang sama.
+
 
 1. Baca file tiket lengkap, termasuk `## Riwayat`. Kalau ini revisi (ada catatan review) atau `status: BUG` (ada bug report), yang dikerjakan adalah poin-poin di catatan terakhir itu saja.
 2. Baca kode di `## File/Lokasi` dan sekitarnya. **Cari dulu** (grep) helper, service, pola, dan dependency yang sudah melakukan hal serupa — kalau ada, pakai itu, jangan tulis versi baru. Logic bisnis baru ditaruh di layer yang bisa dipakai ulang dan dites (service/usecase/`lib`), bukan di controller atau komponen UI (`coding-standards` prinsip 4).
@@ -33,9 +37,9 @@ Kalau ada profil project — path yang diberikan orkestrator (multi-repo: profil
    - File yang akan diubah (harus cocok dengan `## File/Lokasi`)
    - Pendekatan yang dipilih, dan alternatif yang lebih sederhana yang sudah dipertimbangkan beserta alasan kenapa tidak cukup
    - Untuk tiket BUG: panggil skill `debug-assistant` lewat tool Skill, lalu ikuti alurnya — reproduce bug report dulu, temukan root cause, lalu rencanakan fix terkecil di titik asal masalahnya
-4. Kerjakan sesuai rencana. Untuk logic dengan aturan bisnis, tulis test dulu (TDD di `coding-standards` 5.1) — **positif, negatif, dan batas** untuk setiap AC — dan jalankan sebelum implementasi untuk membuktikan test itu gagal (RED). Simpan output-nya untuk laporan.
+4. Kerjakan sesuai rencana. Untuk logic dengan aturan bisnis, tulis test dulu (TDD di `coding-standards` 5.1) — **positif, negatif, dan batas** untuk setiap AC — dan jalankan **file test itu saja** sebelum implementasi untuk membuktikan test itu gagal (RED). Simpan output-nya untuk laporan.
 5. Cek diff sendiri dengan `git diff` dan `git status`. Kembalikan setiap baris yang tidak dibutuhkan untuk AC tiket: perubahan format, rename, file yang tidak direncanakan.
-6. Jalankan quality gates (`coding-standards` 5.2: typecheck → lint → test) dan langkah `## Cara Verifikasi` tiket. Semua harus lolos sebelum melapor.
+6. Jalankan quality gates (`coding-standards` 5.2) **sekali, terbatas pada yang tersentuh**: typecheck, lint untuk file yang diubah saja, test untuk file test tiket dan test yang terkait file yang diubah (misal `jest --findRelatedTests <file>`, `go test ./<paket>/...`), lalu langkah `## Cara Verifikasi`. Suite penuh tidak dijalankan di sini — orkestrator menjalankannya sekali di akhir. Semua harus lolos sebelum melapor; kalau ada yang gagal, perbaiki lalu ulangi hanya command yang gagal.
 7. **Jangan commit, jangan ubah file tiket.** Orkestrator yang commit dan memindahkan status.
 
 Laporan ringkas, maksimal ±30 baris: tulis hanya ringkasan output command (jumlah pass/fail, nama test yang gagal, baris error penting), bukan log penuh. Orkestrator meneruskan laporan ini ke agent lain, jadi setiap baris tambahan dibayar berkali-kali.

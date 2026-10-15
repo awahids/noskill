@@ -66,13 +66,17 @@ Panggil `/noskill:feature-flow` lalu jelaskan pekerjaannya.
 - **Mode cepat** — bug fix atau fitur kecil. Orkestrator langsung menulis satu tiket (AC positif & negatif, File/Lokasi, Cara Verifikasi), kamu setujui, lalu masuk loop developer → reviewer → QA.
 - **Mode lengkap** — fitur atau modul baru, mulai dari PRD. Level BRD bisa dipilih: **lengkap** (BR→UAT, untuk sign-off/UAT formal), **ringkas** (US→AC→TECH + Test Case), atau **tanpa BRD** (tiket langsung dari PRD, AC ditulis di tiket).
 
+Aturan tiket: **satu tiket per endpoint (BE), per fitur/halaman (FE), atau per bug**. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer. Kalau BE dan FE sama-sama berubah, tiket BE memuat **Kontrak API** (path, request, response, kode error) sejak dibuat; tiket FE memakai `integrates_with` ke tiket BE itu sehingga keduanya bisa dikerjakan bersamaan, lalu QA menguji FE dan BE bersama setelah tiket BE DONE. Selama loop, test hanya dijalankan untuk yang tersentuh tiket; typecheck, lint, dan suite penuh sekali di akhir.
+
 Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket. Di akhir kamu memilih: push + PR (deskripsi PR disusun otomatis dari tiket), merge lokal, atau biarkan dulu.
 
-**Mode paralel** (opsional): selagi tiket A di-review/QA, developer sudah mengerjakan tiket B di git worktree terpisah. Maksimal 2 tiket aktif.
+**Mode paralel** (opsional): selagi tiket A di-review/QA, developer sudah mengerjakan tiket B di git worktree terpisah. Maksimal 2 tiket aktif, atau 3 kalau tiketnya di repo berbeda.
+
+**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (DB + server) dinyalakan sekali per sesi untuk semua QA.
 
 **Multi-repo:** satu fitur bisa menyentuh beberapa repo (misal api NestJS + web Vue + mobile Flutter). Daftarkan repo di bagian `## Repo` pada `project-profile.md`; PRD, BRD, dan tiket tetap di satu repo (repo tempat sesi berjalan). Setiap tiket punya field `repo:`, branch kerja bernama sama dibuat di tiap repo, commit di repo masing-masing, dan di akhir dibuat satu PR per repo yang saling menautkan.
 
-Opsional: isi `tracker: github` atau `tracker: notion` di `docs/noskill/project-profile.md` supaya board tiket tercermin di GitHub Issues atau database Notion. `standup-update` membaca Riwayat tiket langsung. Agent dokumen (`brd-tracer`, `task-planner`) memakai Sonnet; developer, reviewer, dan QA memakai model sesi.
+Opsional: isi `tracker: github` atau `tracker: notion` di `docs/noskill/project-profile.md` supaya board tiket tercermin di GitHub Issues atau database Notion. `standup-update` membaca Riwayat tiket langsung. Agent dokumen (`brd-tracer`, `task-planner`) memakai Sonnet, begitu juga `ticket-reviewer` dan `qa-tester`; `developer` memakai model sesi. Test dan quality gate hanya dijalankan untuk file yang tersentuh (developer sekali, QA sekali); suite penuh sekali di akhir.
 
 Mode lengkap:
 
