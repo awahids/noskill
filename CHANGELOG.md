@@ -9,6 +9,13 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - `ticket-reviewer` dan `qa-tester` memakai Sonnet. `developer` tetap memakai model sesi.
 - Reviewer hanya membaca bagian dokumen requirement yang dirujuk `trace`.
 - Profil project mencatat command "test terkait file" dan "lint file tertentu".
+- Typecheck, lint, dan suite penuh dijalankan sekali di Tahap 6. Kalau gagal, dibuat tiket BUG untuk tiket penyebabnya.
+
+### Diubah — tiket lebih sedikit
+- Satu tiket = satu perilaku yang bisa dites ujung ke ujung di satu repo. Migration, DTO, service, endpoint, test, dan Swagger untuk perilaku itu ada di tiket yang sama, tidak dipecah per layer.
+- Target jumlah: revisi fitur 1–3 tiket, fitur baru umumnya 2–6 per repo. Lebih dari 8 harus digabung atau diberi alasan.
+- Revisi fitur yang sudah ada masuk mode cepat (satu tiket, maksimal 3).
+- Eval planner mengecek jumlah tiket tidak berlebihan.
 
 ## 1.1.0 — 2026-10-15
 

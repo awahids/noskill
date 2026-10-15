@@ -20,7 +20,7 @@ erp-domain-design → prd-writer ──► brd-tracer ──► task-planner ─
 
 | Mode | Kapan | Tahap yang dijalankan |
 |---|---|---|
-| **Cepat** | Bug fix atau fitur kecil: aturan bisnis sudah jelas, tidak ada proses bisnis baru, kira-kira ≤ 3 file | Tahap 0 → Mode Cepat → Tahap 5 → Tahap 6 |
+| **Cepat** | Bug fix, fitur kecil, atau **revisi fitur yang sudah ada**: aturan bisnis sudah jelas dan tidak ada proses bisnis baru | Tahap 0 → Mode Cepat → Tahap 5 → Tahap 6 |
 | **Lengkap** | Fitur baru, modul baru, lintas divisi, atau butuh dokumen requirement | Tahap 0 → 6 semuanya |
 
 Kalau ragu, sebutkan mode yang kamu pilih beserta alasannya, lalu biarkan user mengoreksi. Perubahan yang sangat kecil (typo, satu baris config) tidak perlu `feature-flow` sama sekali — kerjakan langsung.
@@ -40,7 +40,7 @@ Sebelum mulai, pastikan tahu (tanya sekaligus kalau belum jelas). Untuk mode cep
 
 Pengganti Tahap 1–4 untuk perubahan kecil:
 1. Baca kode yang terkait permintaan (grep, buka file-nya) supaya `File/Lokasi` berisi path nyata.
-2. Tulis satu tiket `<docs>/tickets/<ID>.md` sesuai format `ticket-workflow`: ID `FIX-NNN` untuk bug atau `TASK-NNN` untuk fitur kecil (lanjutkan nomor yang sudah ada), `trace: —`, AC berisi sisi positif **dan** negatif, `File/Lokasi`, dan `Cara Verifikasi` berupa command nyata.
+2. Tulis **satu tiket** (maksimal 3 kalau perubahannya berisi perilaku yang benar-benar terpisah atau beda repo) di `<docs>/tickets/<ID>.md` sesuai format `ticket-workflow`: ID `FIX-NNN` untuk bug atau `TASK-NNN` untuk fitur kecil (lanjutkan nomor yang sudah ada), `trace: —`, AC berisi sisi positif **dan** negatif, `File/Lokasi`, dan `Cara Verifikasi` berupa command nyata.
 3. Kalau requirement-nya ambigu, tanyakan dulu — jangan menebak AC.
 4. **Gate:** tampilkan tiket (AC + File/Lokasi) dan minta persetujuan singkat. Setelah disetujui, lanjut ke Tahap 5.
 
@@ -68,7 +68,7 @@ Kalau agent mengembalikan daftar pertanyaan terbuka, tanyakan ke user, lalu pang
 
 Panggil agent `task-planner` dengan: path PRD, folder BRD (atau keterangan "tanpa BRD"), prefix tiket, dan path codebase (multi-repo: tabel `## Repo` dari profil). Hasilnya file tiket `<docs>/tickets/<ID>.md` berstatus `TODO`.
 
-**Gate:** tampilkan board (lihat `ticket-workflow` bagian Board) dan minta persetujuan. Tanyakan juga mode jalan: **otomatis** (lanjut terus sampai semua DONE atau ada HOLD) atau **per tiket** (berhenti dan lapor setelah tiap tiket DONE), dan **berurutan** atau **paralel** (developer mulai tiket berikutnya selagi tiket sebelumnya di-review/QA — lihat Mode Paralel). Default: otomatis, berurutan.
+**Gate:** tampilkan board (lihat `ticket-workflow` bagian Board) dan minta persetujuan. Kalau jumlah tiket terasa banyak untuk ukuran fiturnya, tawarkan menggabungkannya sebelum mulai. Tanyakan juga mode jalan: **otomatis** (lanjut terus sampai semua DONE atau ada HOLD) atau **per tiket** (berhenti dan lapor setelah tiap tiket DONE), dan **berurutan** atau **paralel** (developer mulai tiket berikutnya selagi tiket sebelumnya di-review/QA — lihat Mode Paralel). Default: otomatis, berurutan.
 
 ## Tahap 5 — Loop Tiket
 
@@ -121,7 +121,7 @@ Untuk satu fitur yang menyentuh beberapa repo (misal `api` NestJS, `web` Vue, `m
 
 Saat semua tiket DONE (atau sisanya HOLD menunggu user):
 - Tampilkan board akhir.
-- Jalankan sekali lagi test suite lengkap project di branch kerja (multi-repo: di setiap repo yang punya tiket), lalu tampilkan hasilnya.
+- **Cek semuanya sekali di sini.** Selama loop tiket, test dan gate hanya dijalankan untuk yang tersentuh tiket. Di tahap ini jalankan typecheck, lint, dan test suite lengkap di branch kerja (multi-repo: di setiap repo yang punya tiket), lalu tampilkan ringkasannya. Kalau ada yang gagal, cari tiket penyebabnya (`git log` per file), buat tiket `BUG-NNN` dengan `related` ke tiket itu, dan jalankan lewat loop Tahap 5 sebelum lanjut.
 - Tanyakan ke user apa yang dilakukan dengan branch kerja: **push + buat PR**, **merge ke branch asal secara lokal**, atau **biarkan dulu**. Jangan push atau merge tanpa jawaban user.
 - **Kalau user memilih push + PR:** push branch kerja, lalu buat PR lewat tool GitHub yang tersedia (konektor GitHub atau `gh`). Deskripsi PR disusun dari file tiket, tanpa menulis ulang dari nol:
   ```markdown

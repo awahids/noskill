@@ -167,7 +167,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
 
     <h3>Dua mode kerja</h3>
     <div class="lanes">
-      <div class="lane"><h3>Mode cepat</h3><p>Untuk bug fix atau fitur kecil (kira-kira 3 file atau kurang). Permintaan langsung jadi satu tiket berisi AC positif dan negatif, file yang disentuh, dan cara verifikasi. Setelah kamu setujui, tiket masuk loop.</p></div>
+      <div class="lane"><h3>Mode cepat</h3><p>Untuk bug fix, fitur kecil, atau revisi fitur yang sudah ada. Permintaan langsung jadi satu tiket (maksimal tiga) berisi AC positif dan negatif, file yang disentuh, dan cara verifikasi. Setelah kamu setujui, tiket masuk loop.</p></div>
       <div class="lane"><h3>Mode lengkap</h3><p>Untuk fitur atau modul baru. Desain domain dilanjutkan PRD (dengan pertanyaan klarifikasi), lalu tiket. Di antaranya ada BRD dengan tiga pilihan level: <strong>lengkap</strong> (BR → UAT, untuk sign-off atau UAT formal), <strong>ringkas</strong> (US → AC → TECH + Test Case), atau <strong>tanpa BRD</strong> (tiket langsung dari PRD). Setiap tahap butuh persetujuanmu.</p></div>
     </div>
     <p>Pekerjaan dilakukan di branch baru (<code>feat/…</code> atau <code>fix/…</code>) dengan satu commit per tiket. Di akhir kamu memilih push + PR (deskripsinya disusun dari tiket), merge lokal, atau biarkan dulu.</p>
@@ -189,6 +189,9 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     </div>
     <p class="side">Tiket berstatus HOLD ditanyakan ke kamu. Tiket lain yang tidak bergantung padanya tetap jalan.</p>
     <p>Setiap tiket adalah satu file Markdown di <code>docs/noskill/tickets/</code>. Isinya acceptance criteria, file yang boleh diubah, cara verifikasi, dan bagian <code>Riwayat</code> yang mencatat setiap perpindahan status beserta alasannya. Agent tidak saling memanggil. Mereka mengembalikan verdict ke orkestrator (<code>feature-flow</code>), yang menjadi satu-satunya pihak yang memindahkan status. Dengan begitu setiap keputusan tercatat di file dan bisa di-commit.</p>
+
+    <h3>Ukuran tiket</h3>
+    <p>Satu tiket berisi satu perilaku yang bisa dites dari ujung ke ujung: migration, service, endpoint, test, dan Swagger-nya ada di tiket yang sama, tidak dipecah per layer. Revisi fitur biasanya 1–3 tiket, fitur baru 2–6 tiket per repo. Selama loop, test hanya dijalankan untuk yang tersentuh tiket. Typecheck, lint, dan seluruh test dijalankan sekali di akhir.</p>
 
     <h3>Mode paralel</h3>
     <p>Bisa dipilih saat tiket disetujui. Selagi reviewer mengecek tiket A, developer sudah mengerjakan tiket B. Setiap tiket aktif mendapat git worktree sendiri, jadi perubahannya tidak tercampur. Tiket boleh jalan bersamaan kalau dependensinya sudah DONE dan file yang disentuh tidak beririsan. Maksimal 2 tiket aktif, dan setiap tiket yang lolos QA di-merge ke branch kerja.</p>

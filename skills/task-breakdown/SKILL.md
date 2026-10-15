@@ -18,15 +18,24 @@ Mengubah PRD menjadi task list yang siap masuk ke tracker (Notion/Jira/Trello/Gi
 4. **Cek apakah sudah ada dokumen `erp-brd-traceability`** (US-xxx, AC-xxx, TECH-xxx) untuk fitur ini. Kalau ada, dokumen itu jadi sumber utama breakdown — lihat aturan traceability di Langkah 4. Kalau tidak ada, sumbernya PRD saja.
 5. Identifikasi **berapa banyak sistem/codebase yang terdampak** (contoh: 2 — backend/frontend sistem Kantin baru, plus penambahan tipis di backend/frontend HRIS existing). Setiap sistem yang terdampak dapat kelompok task terpisah; kalau sistem itu repo terpisah, tiketnya diberi field `repo:` (lihat `feature-flow` bagian Multi-Repo).
 
+## Ukuran Tiket — Potongan Perilaku, Bukan Per Layer
+
+Satu tiket = **satu perilaku yang bisa dites sendiri dari ujung ke ujung di satu repo**. Migration, entity, DTO, service, endpoint, validasi, test, dan dokumentasi Swagger untuk perilaku itu masuk ke **tiket yang sama**. Setiap tiket punya biaya tetap (developer → review → QA), jadi tiket yang terlalu kecil memperlambat, bukan mempercepat.
+
+- **Jangan pecah per layer atau per file.** Tidak ada tiket terpisah untuk "buat migration", "buat DTO", "buat controller", "tulis test", "tambah Swagger", atau "seeder" — itu bagian dari tiket fitur yang membutuhkannya.
+- **Pecah hanya kalau:** (a) beda repo, (b) potongan itu berguna dan bisa diuji sendiri (misal "buat PO" dan "approve PO"), atau (c) satu tiket akan menyentuh lebih dari ±10 file atau ±400 baris.
+- **Target jumlah:** revisi atau perubahan pada fitur yang sudah ada: **1–3 tiket**. Fitur baru: umumnya **2–6 tiket per repo**. Kalau hasilnya lebih dari 8 tiket untuk satu fitur, gabungkan ulang dulu; kalau memang perlu lebih, tulis alasannya.
+- Fondasi yang dipakai beberapa tiket sekaligus (misal tabel master yang dipakai tiga fitur) boleh jadi satu tiket sendiri.
+
 ## Langkah 2: Ekstrak Task dari Tiap Section PRD
 
 | Section PRD | Jadi task tipe |
 |---|---|
-| Database Schema | Migration per tabel (atau per grup tabel terkait), seeder kalau perlu data awal |
-| Core Features | Task backend (business logic + endpoint) dan frontend (UI + integrasi state) per fitur, biasanya bisa dipecah lagi per sub-bullet fitur |
+| Database Schema | Migration ikut tiket fitur yang memakai tabel itu. Tiket tersendiri hanya kalau tabelnya fondasi untuk beberapa tiket |
+| Core Features | Satu tiket per fitur per repo (backend: logic + endpoint + test; frontend: UI + state + test). Sub-bullet fitur tidak dipecah jadi tiket sendiri kecuali bisa berdiri dan diuji sendiri |
 | Architecture — proxy/integrasi | Task terpisah khusus integrasi (lihat Langkah 3) |
 | API Design | Kalau endpoint sudah dirinci di PRD, jadikan checklist implementasi endpoint per grup, bukan diulang task per endpoint tunggal kecuali endpoint-nya kompleks |
-| User Flow (percabangan kondisional) | Task tersendiri untuk logic percabangan/otomatisasi (misal job scheduler, cut-off logic) — sering luput kalau cuma dipecah dari Core Features saja |
+| User Flow (percabangan kondisional) | Masuk sebagai AC di tiket fitur terkait. Tiket tersendiri hanya untuk proses yang berjalan terpisah (job scheduler, cut-off otomatis) — sering luput kalau cuma dipecah dari Core Features saja |
 | Design & Technical Constraints | Task setup awal (project scaffolding, CI/CD, environment config) — hanya untuk project baru, skip untuk project existing |
 
 ## Langkah 3: Task Integrasi — Presisi, Jangan Generik
@@ -66,7 +75,7 @@ Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), l
 **Aturan penomoran Task-ID:** prefix per sistem/modul supaya gampang dilacak, misal `KTN-BE-001` (Kantin Backend), `KTN-FE-001` (Kantin Frontend), `HR-INT-001` (integrasi di HRIS) — konsisten dan pendek.
 
 **Traceability ke `erp-brd-traceability` (kalau dokumennya ada):**
-- Setiap TECH-xxx jadi **minimal satu** task. TECH yang terlalu besar boleh dipecah jadi beberapa task, tapi semuanya merujuk TECH yang sama di kolom **Trace** — jangan buat ulang task dari PRD untuk hal yang sudah tercakup TECH.
+- Setiap TECH-xxx tercakup **minimal satu** task; beberapa TECH kecil untuk perilaku yang sama boleh digabung dalam satu task (kolom Trace berisi semuanya). TECH yang terlalu besar boleh dipecah jadi beberapa task, tapi semuanya merujuk TECH yang sama di kolom **Trace** — jangan buat ulang task dari PRD untuk hal yang sudah tercakup TECH.
 - Acceptance Criteria task diambil dari AC-xxx yang dirujuk TECH tersebut (tulis ID-nya, misal `AC-002: qty > outstanding ditolak`), bukan ditulis ulang dengan kata-kata baru.
 - Task tambahan yang tidak berasal dari TECH mana pun (setup, CI/CD, integrasi existing) tetap boleh, tapi kolom Trace diisi `—` dan alasannya di Deskripsi.
 - Setelah task list jadi, sertakan tabel ringkas di akhir supaya rantai BR→…→TECH→Task tidak putus:
@@ -99,7 +108,7 @@ Tandai task mana yang **bisa dikerjakan paralel** vs yang **strictly sequential*
 
 ## Prinsip
 
-1. **Task harus actionable dalam satu duduk kerja.** Kalau task terlalu besar untuk dikerjakan dan diverifikasi dalam sekali jalan, pecah lagi.
+1. **Task harus actionable dalam satu duduk kerja, tapi tidak lebih kecil dari satu perilaku yang bisa dites.** Ukurannya mengikuti bagian Ukuran Tiket di atas.
 2. **Setiap task bisa ditelusuri balik ke PRD.** Kolom "Acuan PRD" bukan formalitas — kalau ada task yang tidak bisa dikaitkan ke bagian PRD manapun, pertanyakan apakah task itu memang perlu atau scope creep.
 3. **Jangan buat task duplikat logic antar sistem.** Kalau sistem A (baru) dan sistem B (existing) sama-sama tersentuh oleh satu fitur, business logic hanya ada di satu tempat (sesuai keputusan Architecture di PRD) — sistem satunya cuma task integrasi/proxy.
 4. **Realistis dengan apa yang sudah ada.** Jangan sarankan "buat ulang struktur folder" atau "refactor besar" kalau PRD tidak memintanya — task integrasi menyesuaikan diri ke existing project, bukan sebaliknya, kecuali user secara eksplisit minta refactor.
