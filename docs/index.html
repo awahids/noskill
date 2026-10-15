@@ -168,7 +168,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <h3>Dua mode kerja</h3>
     <div class="lanes">
       <div class="lane"><h3>Mode cepat</h3><p>Untuk bug fix atau fitur kecil (kira-kira 3 file atau kurang). Permintaan langsung jadi satu tiket berisi AC positif dan negatif, file yang disentuh, dan cara verifikasi. Setelah kamu setujui, tiket masuk loop.</p></div>
-      <div class="lane"><h3>Mode lengkap</h3><p>Untuk fitur atau modul baru. Desain domain dilanjutkan PRD (dengan pertanyaan klarifikasi), lalu BRD dengan ID trace BR → US → AC → TECH → TC, lalu tiket. Setiap tahap butuh persetujuanmu.</p></div>
+      <div class="lane"><h3>Mode lengkap</h3><p>Untuk fitur atau modul baru. Desain domain dilanjutkan PRD (dengan pertanyaan klarifikasi), lalu tiket. Di antaranya ada BRD dengan tiga pilihan level: <strong>lengkap</strong> (BR → UAT, untuk sign-off atau UAT formal), <strong>ringkas</strong> (US → AC → TECH + Test Case), atau <strong>tanpa BRD</strong> (tiket langsung dari PRD). Setiap tahap butuh persetujuanmu.</p></div>
     </div>
     <p>Pekerjaan dilakukan di branch baru (<code>feat/…</code> atau <code>fix/…</code>) dengan satu commit per tiket. Di akhir kamu memilih push + PR (deskripsinya disusun dari tiket), merge lokal, atau biarkan dulu.</p>
 

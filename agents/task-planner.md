@@ -19,10 +19,11 @@ Kalau `<docs>/project-profile.md` ada, baca dulu dan pakai command, struktur, da
 
 Langkah:
 1. Baca PRD dan dokumen BRD. Setiap TECH-xxx jadi minimal satu tiket, dengan `trace`, `ac`, dan `tc` terisi.
+   - **Tanpa BRD:** turunkan tiket langsung dari PRD (Core Features, User Flow, Database, API). Tulis AC di tiket sendiri — positif dan negatif, diambil dari aturan dan pengecualian yang tertulis di PRD, jangan mengarang. Isi `trace: —`, `tc: []`, dan sebut section PRD di `## Acuan`.
 2. Kalau project existing, baca codebase (struktur folder, pola yang sudah ada, route, model, guard) supaya `## File/Lokasi` di tiket berisi path nyata, bukan folder generik. Untuk project baru, pakai struktur dari skill `coding-standards`.
 3. Isi `depends_on` dengan benar — urutan database → backend → API → integrasi → frontend.
 4. Tulis satu file per tiket ke `<docs>/tickets/<ID>.md`, `status: TODO`, `rounds: 0`, satu baris Riwayat "dibuat oleh task-planner". Jangan ubah tiket yang sudah ada.
-5. Cek ulang: setiap TECH punya tiket, setiap AC muncul di minimal satu tiket.
+5. Cek ulang: setiap TECH punya tiket, setiap AC muncul di minimal satu tiket. Tanpa BRD: setiap fitur dan aturan bisnis di PRD tercakup minimal satu tiket.
 
 Kembalikan ke orkestrator:
 - Tabel TECH → Tiket → AC → TC

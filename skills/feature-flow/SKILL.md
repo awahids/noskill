@@ -30,7 +30,7 @@ Kalau ragu, sebutkan mode yang kamu pilih beserta alasannya, lalu biarkan user m
 Sebelum mulai, pastikan tahu (tanya sekaligus kalau belum jelas). Untuk mode cepat cukup poin ke-2 dan ke-5:
 - Nama modul/domain → prefix ID (`INV`, `PUR`, …) dan prefix tiket (`WMS-BE`, …)
 - Project baru (greenfield) atau menambah ke codebase existing (path/repo-nya di mana)
-- Full chain BR→UAT atau ringkas US→AC→TECH
+- Level BRD: **lengkap** (BR→UAT, untuk fitur lintas divisi atau yang butuh sign-off/UAT formal), **ringkas** (US→AC→TECH + TC), atau **tanpa BRD** (PRD sudah cukup rinci; tiket dibuat langsung dari PRD)
 - Mulai dari tahap mana. Kalau `<docs>/prd.md`, dokumen BRD, atau `<docs>/tickets/` sudah ada, lanjutkan dari tahap berikutnya — jangan tulis ulang.
 - **Profil project.** Mode lengkap: kalau `<docs>/project-profile.md` belum ada, jalankan skill `project-profile` dulu (sekali per project). Mode cepat: pakai kalau ada; kalau belum ada, lanjut saja dan tawarkan membuatnya di akhir. Kalau sudah ada, pakai saja; refresh hanya kalau manifest/lockfile berubah sejak commit di header-nya atau command di profil gagal.
 - **Branch kerja.** Kalau project adalah repo git, buat branch baru dari branch saat ini sebelum kode pertama ditulis: `feat/<prefix-atau-slug>` untuk fitur, `fix/<slug>` untuk bug. Semua commit tiket masuk ke branch ini. Kalau working tree tidak bersih, tanya user dulu (commit, stash, atau lanjut di branch saat ini).
@@ -55,6 +55,8 @@ Jalankan skill `prd-writer` **di sesi ini** (bukan di agent), karena wajib tanya
 
 ## Tahap 3 — BRD Traceability
 
+**Lewati tahap ini kalau level = tanpa BRD**, langsung ke Tahap 4.
+
 Panggil agent `brd-tracer` dengan: path PRD, prefix domain, level (full/ringkas), dan jawaban konteks Tahap 0. Hasilnya di `<docs>/01-business/` … `<docs>/05-testing/`.
 
 Kalau agent mengembalikan daftar pertanyaan terbuka, tanyakan ke user, lalu panggil lagi dengan jawabannya.
@@ -63,7 +65,7 @@ Kalau agent mengembalikan daftar pertanyaan terbuka, tanyakan ke user, lalu pang
 
 ## Tahap 4 — Tiket
 
-Panggil agent `task-planner` dengan: path PRD, folder BRD, prefix tiket, dan path codebase. Hasilnya file tiket `<docs>/tickets/<ID>.md` berstatus `TODO`.
+Panggil agent `task-planner` dengan: path PRD, folder BRD (atau keterangan "tanpa BRD"), prefix tiket, dan path codebase. Hasilnya file tiket `<docs>/tickets/<ID>.md` berstatus `TODO`.
 
 **Gate:** tampilkan board (lihat `ticket-workflow` bagian Board) dan minta persetujuan. Tanyakan juga mode jalan: **otomatis** (lanjut terus sampai semua DONE atau ada HOLD) atau **per tiket** (berhenti dan lapor setelah tiap tiket DONE), dan **berurutan** atau **paralel** (developer mulai tiket berikutnya selagi tiket sebelumnya di-review/QA — lihat Mode Paralel). Default: otomatis, berurutan.
 
@@ -78,7 +80,7 @@ Ambil tiket sesuai urutan di `ticket-workflow` (BUG dulu, lalu TODO yang depende
    - `APPROVED` → set `QA`
    - `CHANGES_REQUESTED` → set `IN_PROGRESS`, `rounds + 1`, tulis catatan review di Riwayat, kembali ke langkah 1
    - `BLOCKED` → set `HOLD`
-3. **QA** — panggil agent `qa-tester` dengan path tiket dan folder `<docs>/05-testing/`.
+3. **QA** — panggil agent `qa-tester` dengan path tiket dan folder `<docs>/05-testing/` (tidak ada kalau tanpa BRD — QA menguji langsung terhadap AC tiket).
    - `PASS` → set `DONE`, centang AC di file tiket, lalu `git commit` perubahan di branch kerja dengan pesan `<ID>: <title>` (commit lokal, tidak push; lewati kalau bukan repo git atau user bilang jangan commit)
    - `FAIL` → set `BUG`, `rounds + 1`, tulis bug report di Riwayat, kembali ke langkah 1
    - `BLOCKED` → set `HOLD`
