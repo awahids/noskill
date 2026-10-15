@@ -190,8 +190,10 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <p class="side">Tiket berstatus HOLD ditanyakan ke kamu. Tiket lain yang tidak bergantung padanya tetap jalan.</p>
     <p>Setiap tiket adalah satu file Markdown di <code>docs/noskill/tickets/</code>. Isinya acceptance criteria, file yang boleh diubah, cara verifikasi, dan bagian <code>Riwayat</code> yang mencatat setiap perpindahan status beserta alasannya. Agent tidak saling memanggil. Mereka mengembalikan verdict ke orkestrator (<code>feature-flow</code>), yang menjadi satu-satunya pihak yang memindahkan status. Dengan begitu setiap keputusan tercatat di file dan bisa di-commit.</p>
 
-    <h3>Ukuran tiket</h3>
-    <p>Satu tiket berisi satu perilaku yang bisa dites dari ujung ke ujung: migration, service, endpoint, test, dan Swagger-nya ada di tiket yang sama, tidak dipecah per layer. Revisi fitur biasanya 1–3 tiket, fitur baru 2–6 tiket per repo. Selama loop, test hanya dijalankan untuk yang tersentuh tiket. Typecheck, lint, dan seluruh test dijalankan sekali di akhir.</p>
+    <h3>Aturan tiket</h3>
+    <p>Satu tiket per endpoint (BE), per fitur atau halaman (FE), atau per bug. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer.</p>
+    <p>Kalau BE dan FE sama-sama berubah, tiket BE memuat Kontrak API sejak dibuat: path, request, response sukses, dan kode error. Tiket FE merujuk kontrak itu lewat <code>integrates_with</code>, jadi developer FE bisa mulai bersamaan dengan BE. QA tiket FE menunggu tiket BE selesai, lalu menguji FE dan BE bersama dengan BE sungguhan.</p>
+    <p> Selama loop, test hanya dijalankan untuk yang tersentuh tiket. Typecheck, lint, dan seluruh test dijalankan sekali di akhir.</p>
 
     <h3>Mode paralel</h3>
     <p>Bisa dipilih saat tiket disetujui. Selagi reviewer mengecek tiket A, developer sudah mengerjakan tiket B. Setiap tiket aktif mendapat git worktree sendiri, jadi perubahannya tidak tercampur. Tiket boleh jalan bersamaan kalau dependensinya sudah DONE dan file yang disentuh tidak beririsan. Maksimal 2 tiket aktif, dan setiap tiket yang lolos QA di-merge ke branch kerja.</p>

@@ -20,9 +20,10 @@ Langkah:
 1. Baca file tiket (`ac`, `tc`, `## Cara Verifikasi`) dan detail tiap TC di `<docs>/05-testing/`. Kalau tiket tidak punya TC (dibuat tanpa BRD), susun sendiri skenario positif, negatif, dan batas dari setiap AC tiket.
 2. Untuk setiap TC dan AC, jalankan verifikasi nyata: test otomatis yang relevan, command di Cara Verifikasi, request API (curl), atau query data. Catat output-nya.
 3. **Uji positif dan negatif untuk setiap AC.** Positif: input valid menghasilkan hasil yang benar. Negatif: input tidak valid / kondisi terlarang ditolak dengan error yang tepat dan data tidak berubah. Uji juga nilai batas. Kalau TC dari dokumen hanya punya sisi positif, tambahkan sendiri skenario negatifnya saat testing (jalankan lewat command/request, jangan ubah kode). Hanya menguji happy path tidak cukup untuk PASS.
-4. Regresi: jalankan test yang terkait file yang diubah (`git diff --name-only`, lalu misal `jest --findRelatedTests <file>` atau test paket yang berubah), sekali saja. Suite penuh tidak dijalankan di sini — orkestrator menjalankannya sekali di akhir.
+4. **Tiket FE dengan `integrates_with`:** uji bersama BE — jalankan BE dari branch kerja (yang sudah berisi tiket BE-nya) dan pastikan FE bekerja terhadap BE sungguhan, bukan mock: alur sukses, lalu skenario error dari Kontrak API (validasi gagal, data tidak ditemukan, tidak berhak) tampil benar di FE. Kalau BE tidak bisa dijalankan di environment ini, verdict `BLOCKED` dengan keterangannya.
+5. Regresi: jalankan test yang terkait file yang diubah (`git diff --name-only`, lalu misal `jest --findRelatedTests <file>` atau test paket yang berubah), sekali saja. Suite penuh tidak dijalankan di sini — orkestrator menjalankannya sekali di akhir.
    Hemat waktu: test otomatis tiket cukup dijalankan sekali; tambahan usahamu untuk skenario negatif/batas yang belum dicakup test developer dan langkah Cara Verifikasi.
-5. AC/TC yang tidak bisa diverifikasi sama sekali (tidak ada test dan tidak bisa dijalankan manual) dihitung **FAIL** dengan bug report "tidak bisa diverifikasi — perlu test untuk AC-xxx", bukan PASS.
+6. AC/TC yang tidak bisa diverifikasi sama sekali (tidak ada test dan tidak bisa dijalankan manual) dihitung **FAIL** dengan bug report "tidak bisa diverifikasi — perlu test untuk AC-xxx", bukan PASS.
 
 Laporan ringkas, maksimal ±30 baris: tulis hanya ringkasan output command (jumlah pass/fail, nama test yang gagal, baris error penting), bukan log penuh.
 

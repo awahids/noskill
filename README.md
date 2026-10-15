@@ -66,7 +66,7 @@ Panggil `/noskill:feature-flow` lalu jelaskan pekerjaannya.
 - **Mode cepat** — bug fix atau fitur kecil. Orkestrator langsung menulis satu tiket (AC positif & negatif, File/Lokasi, Cara Verifikasi), kamu setujui, lalu masuk loop developer → reviewer → QA.
 - **Mode lengkap** — fitur atau modul baru, mulai dari PRD. Level BRD bisa dipilih: **lengkap** (BR→UAT, untuk sign-off/UAT formal), **ringkas** (US→AC→TECH + Test Case), atau **tanpa BRD** (tiket langsung dari PRD, AC ditulis di tiket).
 
-Ukuran tiket: satu perilaku yang bisa dites ujung ke ujung (migration, service, endpoint, test, dan Swagger-nya dalam satu tiket), bukan per layer. Revisi fitur biasanya 1–3 tiket. Selama loop, test hanya dijalankan untuk yang tersentuh tiket; typecheck, lint, dan suite penuh sekali di akhir.
+Aturan tiket: **satu tiket per endpoint (BE), per fitur/halaman (FE), atau per bug**. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer. Kalau BE dan FE sama-sama berubah, tiket BE memuat **Kontrak API** (path, request, response, kode error) sejak dibuat; tiket FE memakai `integrates_with` ke tiket BE itu sehingga keduanya bisa dikerjakan bersamaan, lalu QA menguji FE dan BE bersama setelah tiket BE DONE. Selama loop, test hanya dijalankan untuk yang tersentuh tiket; typecheck, lint, dan suite penuh sekali di akhir.
 
 Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket. Di akhir kamu memilih: push + PR (deskripsi PR disusun otomatis dari tiket), merge lokal, atau biarkan dulu.
 

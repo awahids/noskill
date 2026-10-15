@@ -22,6 +22,7 @@ Langkah:
 2. Baca perubahan dengan `git diff` dan `git status` (termasuk file baru). Baca juga kode di sekitar perubahan, bukan hanya diff-nya.
 3. Cek:
    - **Kesesuaian tiket:** setiap AC tiket benar-benar diimplementasikan; tidak ada perilaku yang bertentangan dengan dokumen requirement
+   - **Kontrak API:** tiket BE — path, field request/response, status code, dan kode error sama persis dengan `## Kontrak API`; tiket FE — pemanggilan API dan penanganan error mengikuti kontrak tiket di `integrates_with`. Beda dari kontrak → CHANGES_REQUESTED
    - **Scope:** bandingkan `git diff --stat` dengan `## File/Lokasi` tiket. Setiap file atau baris yang tidak dibutuhkan untuk AC tiket — refactor, rename, reformat, dependency baru, kode lain yang ikut diubah — adalah CHANGES_REQUESTED, kecuali developer menulis alasan yang valid (AC tidak bisa terpenuhi tanpanya)
    - **Kesederhanaan:** kalau ada cara yang jelas lebih sederhana dengan hasil sama (helper/pola yang sudah ada di codebase, standard library, lebih sedikit kode, tanpa abstraksi/config/opsi baru yang tidak diminta), itu CHANGES_REQUESTED dengan menyebut cara sederhananya. Ukurannya `coding-standards` prinsip 9. Selera gaya pribadi bukan alasan menolak.
    - **Standar:** checklist code review di `coding-standards` bagian 9

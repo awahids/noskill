@@ -11,11 +11,13 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - Profil project mencatat command "test terkait file" dan "lint file tertentu".
 - Typecheck, lint, dan suite penuh dijalankan sekali di Tahap 6. Kalau gagal, dibuat tiket BUG untuk tiket penyebabnya.
 
-### Diubah — tiket lebih sedikit
-- Satu tiket = satu perilaku yang bisa dites ujung ke ujung di satu repo. Migration, DTO, service, endpoint, test, dan Swagger untuk perilaku itu ada di tiket yang sama, tidak dipecah per layer.
-- Target jumlah: revisi fitur 1–3 tiket, fitur baru umumnya 2–6 per repo. Lebih dari 8 harus digabung atau diberi alasan.
-- Revisi fitur yang sudah ada masuk mode cepat (satu tiket, maksimal 3).
-- Eval planner mengecek jumlah tiket tidak berlebihan.
+### Diubah — aturan tiket lebih sederhana
+- Satu tiket per endpoint (BE), per fitur/halaman (FE), atau per bug. Migration, DTO, test, dan Swagger ikut ke tiket endpoint/fitur yang membutuhkannya, tidak ada tiket per layer.
+- Tiket BE yang menambah/mengubah endpoint memuat `## Kontrak API` (method + path, request + validasi, response sukses, response error + kode) sejak tiket dibuat.
+- Field baru `integrates_with`: tiket FE merujuk tiket BE yang kontraknya dipakai. FE boleh dikerjakan bersamaan dengan BE; QA tiket FE menunggu BE DONE lalu menguji FE dan BE bersama.
+- Kontrak tidak diubah diam-diam: perubahan kontrak lewat `BLOCKED` dan dicatat orkestrator di Riwayat kedua tiket. Reviewer mengecek implementasi sama persis dengan kontrak.
+- Revisi fitur yang sudah ada masuk mode cepat.
+- Eval planner mengecek jumlah tiket, Kontrak API di tiket BE, dan `integrates_with` di tiket FE.
 
 ## 1.1.0 — 2026-10-15
 

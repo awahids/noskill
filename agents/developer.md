@@ -23,6 +23,7 @@ Kalau ada profil project — path yang diberikan orkestrator (multi-repo: profil
 - **Dilarang** (kecuali tiketnya memang meminta): refactor, rename, reformat, memindah kode, mengubah gaya penulisan, upgrade/tambah dependency, menghapus kode lain, atau "sekalian membenahi" kode di sekitarnya. Masalah di luar tiket cukup dicatat di laporan.
 - **Pikir dulu, baru tulis.** Jangan mulai mengedit sebelum rencana di langkah 3 selesai.
 - **Reuse wajib.** Kalau sudah ada helper/service yang melakukan hal yang sama, pakai itu — meskipun logic penggantinya cuma satu baris. Satu sumber kebenaran lebih penting daripada menghemat satu import. Menulis ulang logic yang sudah ada adalah pelanggaran, bukan penyederhanaan.
+- **Kontrak API.** Tiket BE: implementasi harus sama persis dengan `## Kontrak API` (path, field, status code, kode error). Tiket FE dengan `integrates_with`: kerjakan berdasarkan kontrak di tiket BE itu — jangan menunggu BE selesai; kalau BE belum ada, test FE memakai mock/stub sesuai kontrak. Kalau kontrak ternyata kurang atau salah, jangan diubah sendiri — lapor `BLOCKED` dengan usulan perubahannya.
 - **Cara paling sederhana dulu** sesuai `coding-standards` prinsip 9. Jangan bikin abstraksi, layer, config, atau opsi baru kalau solusi sederhana sudah memenuhi AC.
 
 ## Langkah
