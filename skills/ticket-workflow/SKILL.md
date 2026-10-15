@@ -1,12 +1,14 @@
 ---
 name: ticket-workflow
 description: >-
-  Format file tiket di docs/tickets/ dan alur statusnya (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG dan HOLD), verdict agent, dan board. Gunakan saat membuat, memindahkan, atau melaporkan tiket, atau user tanya status/board tiket.
+  Format file tiket noskill dan alur statusnya (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG dan HOLD), verdict agent, dan board. Gunakan saat membuat, memindahkan, atau melaporkan tiket, atau user tanya status/board tiket.
 ---
 
 # Ticket Workflow
 
-Kontrak bersama untuk semua tiket di `docs/tickets/`. Semua skill dan agent yang menyentuh tiket mengikuti aturan di sini, supaya status tiket punya satu arti yang sama di semua tahap.
+Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
+
+Kontrak bersama untuk semua tiket di `<docs>/tickets/`. Semua skill dan agent yang menyentuh tiket mengikuti aturan di sini, supaya status tiket punya satu arti yang sama di semua tahap.
 
 ## Alur Status
 
@@ -59,7 +61,7 @@ Agent mengembalikan verdict di baris pertama jawabannya, lalu detail:
 
 ## Format File Tiket
 
-Satu file per tiket: `docs/tickets/<ID>.md`. ID mengikuti aturan penomoran `task-breakdown` (misal `WMS-BE-004`); bug baru dari QA pakai `BUG-NNN`.
+Satu file per tiket: `<docs>/tickets/<ID>.md`. ID mengikuti aturan penomoran `task-breakdown` (misal `WMS-BE-004`); bug baru dari QA pakai `BUG-NNN`.
 
 ```markdown
 ---
@@ -111,4 +113,4 @@ Kalau QA menemukan bug **di luar AC tiket ini** (regresi di fitur lain), jangan 
 
 ## Board
 
-Tampilkan board dari field `status` semua file tiket (`grep -H "^status:" docs/tickets/*.md`), dikelompokkan per kolom: TODO · IN_PROGRESS · REVIEW · QA · BUG · HOLD · DONE. Board tidak disimpan sebagai file terpisah — file tiket adalah satu-satunya sumber kebenaran.
+Tampilkan board dari field `status` semua file tiket (`grep -H "^status:" <docs>/tickets/*.md`), dikelompokkan per kolom: TODO · IN_PROGRESS · REVIEW · QA · BUG · HOLD · DONE. Board tidak disimpan sebagai file terpisah — file tiket adalah satu-satunya sumber kebenaran.

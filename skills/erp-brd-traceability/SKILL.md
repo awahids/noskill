@@ -6,6 +6,8 @@ description: >-
 
 # ERP BRD Traceability Framework
 
+Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
+
 Framework 5-layer untuk mendokumentasikan fitur ERP/enterprise dari masalah bisnis sampai rilis, dengan setiap artefak bisa ditelusuri (traceable) ke artefak sebelum dan sesudahnya. Dipakai supaya tidak ada fitur yang "requirement-nya nggak jelas dari mana" dan tidak ada bug yang "nggak ketahuan melanggar requirement yang mana".
 
 ## Kapan pakai full chain vs ringkas
@@ -167,7 +169,7 @@ Hindari tiap divisi bikin BRD sendiri-sendiri untuk proses cross-functional (pur
 ## Struktur folder dokumentasi (kalau disimpan di repo)
 
 ```
-docs/
+<docs>/
 ├── 01-business/        (BRD.md, business-objectives.md, scope.md, stakeholders.md, glossary.md)
 ├── 02-process/         (per modul: purchasing/, inventory/, sales/, finance/)
 ├── 03-functional/      (per modul, isi user story + FR + AC)

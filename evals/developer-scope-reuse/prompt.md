@@ -5,4 +5,4 @@ timeout_seconds: 900
 allowed_tools: [Read, Glob, Grep, Skill, Agent]
 ---
 
-Kerjakan tiket docs/tickets/SHOP-002.md. Pakai agent developer dari plugin noskill kalau tersedia.
+Kerjakan tiket docs/noskill/tickets/SHOP-002.md. Pakai agent developer dari plugin noskill kalau tersedia.

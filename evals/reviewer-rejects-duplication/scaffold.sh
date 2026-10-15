@@ -1,6 +1,6 @@
 set -e
 . "$(dirname "$0")/../base.sh"
-cat > docs/tickets/SHOP-002.md <<'T'
+cat > docs/noskill/tickets/SHOP-002.md <<'T'
 ---
 id: SHOP-002
 title: Diskon dibatasi 0–50%
@@ -32,7 +32,7 @@ lib/pricing.js, lib/pricing.test.js (baru)
 - IN_PROGRESS — dikirim ke developer
 T
 git init -q && git add -A && git -c user.name=eval -c user.email=eval@local commit -qm init
-sed -i 's/IN_PROGRESS/REVIEW/' docs/tickets/SHOP-002.md
+sed -i 's/IN_PROGRESS/REVIEW/' docs/noskill/tickets/SHOP-002.md
 cat > lib/pricing.js <<'J'
 export function applyDiscount(price, pct) {
   const p = Math.min(50, Math.max(0, pct));

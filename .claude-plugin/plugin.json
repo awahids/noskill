@@ -6,5 +6,13 @@
     "name": "Wahid",
     "url": "https://awahids.my.id"
   },
-  "repository": "https://github.com/awahids/noskill"
+  "repository": "https://github.com/awahids/noskill",
+  "userConfig": {
+    "docs_dir": {
+      "type": "string",
+      "title": "Folder dokumen noskill",
+      "description": "Folder (relatif dari root project) untuk PRD, BRD, tiket, dan profil project",
+      "default": "docs/noskill"
+    }
+  }
 }

@@ -1,6 +1,6 @@
 # Dipakai oleh scaffold.sh tiap case: repo kecil dengan helper clamp, kode lama berantakan, dan applyDiscount.
 set -e
-mkdir -p lib docs/tickets
+mkdir -p lib docs/noskill/tickets
 cat > package.json <<'J'
 { "name": "demo", "type": "module", "scripts": { "test": "node --test" } }
 J

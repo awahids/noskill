@@ -1,6 +1,6 @@
 set -e
 . "$(dirname "$0")/../base.sh"
-cat > docs/tickets/SHOP-002.md <<'T'
+cat > docs/noskill/tickets/SHOP-002.md <<'T'
 ---
 id: SHOP-002
 title: Diskon dibatasi 0–50%

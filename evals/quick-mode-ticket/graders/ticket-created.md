@@ -1,4 +1,4 @@
 ---
 type: file_exists
-path: "docs/tickets/*.md"
+path: "docs/noskill/tickets/*.md"
 ---

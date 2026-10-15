@@ -6,6 +6,8 @@ description: >-
 
 # Standup & Status Update Generator
 
+Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
+
 Gunakan skill ini untuk mengubah catatan kerja mentah (commit message, daftar task, progress notes) menjadi update yang rapi dan mudah dibaca tim, tanpa perlu user menulis ulang dari nol.
 
 ## Format Standard: Daily Standup
@@ -43,7 +45,7 @@ Untuk update mingguan atau laporan project (relevan dengan workspace Notion "mel
 
 ## Cara Kerja
 
-0. **Kalau project memakai alur tiket noskill** (`docs/tickets/` ada), jadikan itu sumber utama, tanpa minta user menulis ulang:
+0. **Kalau project memakai alur tiket noskill** (`<docs>/tickets/` ada), jadikan itu sumber utama, tanpa minta user menulis ulang:
    - Tiket yang pindah ke DONE sejak update terakhir (baris `## Riwayat` bertanggal kemarin/hari ini) → **Yesterday**
    - Tiket berstatus IN_PROGRESS, REVIEW, QA, atau BUG → **Today**
    - Tiket HOLD beserta pertanyaannya → **Blockers**

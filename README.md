@@ -19,7 +19,7 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 | [`erp-brd-traceability`](skills/erp-brd-traceability/) | Framework requirement ERP dengan traceability: Business Requirement → Process → User Story → Acceptance Criteria → Technical Task → Test Case → UAT |
 | [`feature-flow`](skills/feature-flow/) | Orkestrator siklus fitur penuh: PRD → BRD → tiket → develop → review → QA → DONE (atau BUG/HOLD) |
 | [`ticket-workflow`](skills/ticket-workflow/) | Format file tiket dan alur status (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG & HOLD) |
-| [`project-profile`](skills/project-profile/) | Scan repo sekali → `docs/project-profile.md` (stack, command test/lint, struktur, helper, aturan project) yang dibaca semua agent |
+| [`project-profile`](skills/project-profile/) | Scan repo sekali → `docs/noskill/project-profile.md` (stack, command test/lint, struktur, helper, aturan project) yang dibaca semua agent |
 
 ## Agent
 
@@ -27,8 +27,8 @@ Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field 
 
 | Agent | Peran | Skill yang dimuat | Bisa ubah kode? |
 |---|---|---|---|
-| [`brd-tracer`](agents/brd-tracer.md) | PRD → BR/PROC/US/AC/TECH/TC di `docs/01..05` | `erp-brd-traceability`, `erp-domain-design` | Tidak (hanya tulis dokumen) |
-| [`task-planner`](agents/task-planner.md) | BRD → file tiket `docs/tickets/*.md` status TODO | `task-breakdown`, `ticket-workflow` | Tidak (hanya tulis tiket) |
+| [`brd-tracer`](agents/brd-tracer.md) | PRD → BR/PROC/US/AC/TECH/TC di `docs/noskill/01..05` | `erp-brd-traceability`, `erp-domain-design` | Tidak (hanya tulis dokumen) |
+| [`task-planner`](agents/task-planner.md) | BRD → file tiket `docs/noskill/tickets/*.md` status TODO | `task-breakdown`, `ticket-workflow` | Tidak (hanya tulis tiket) |
 | [`developer`](agents/developer.md) | Kerjakan satu tiket / fix BUG sampai Cara Verifikasi lolos | `coding-standards`, `debug-assistant`, `ticket-workflow` | Ya |
 | [`ticket-reviewer`](agents/ticket-reviewer.md) | Cek perubahan sesuai AC tiket & standar → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
 | [`qa-tester`](agents/qa-tester.md) | Jalankan test terhadap AC & TC → PASS / FAIL (bug report) / BLOCKED | `ticket-workflow` | Tidak |
@@ -36,6 +36,16 @@ Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field 
 ## Aturan inti yang selalu aktif
 
 Plugin ini memasang hook `SessionStart` ([`hooks/core-rules.md`](hooks/core-rules.md)) yang memuat ±10 baris aturan kerja ke setiap sesi, juga saat tidak ada skill yang dipanggil: ubah hanya yang diminta, pikir dulu, solusi paling sederhana, reuse helper yang ada, test positif/negatif/batas dengan bukti RED, klaim selesai hanya dengan bukti. Detail lengkapnya tetap ada di `coding-standards`.
+
+## Folder hasil
+
+Semua dokumen yang dihasilkan (PRD, BRD `01..05`, tiket, profil project) ditulis ke `docs/noskill/` secara default. Untuk mengganti, buka `/config` dan ubah opsi **Folder dokumen noskill** milik plugin noskill, atau isi di `~/.claude/settings.json`:
+
+```json
+{ "pluginConfigs": { "noskill@noskill": { "options": { "docs_dir": "docs" } } } }
+```
+
+Pengaturan ini berlaku untuk semua project di komputer itu.
 
 ## Shortcut
 
@@ -56,14 +66,14 @@ Panggil `/noskill:feature-flow` lalu jelaskan pekerjaannya.
 
 Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket. Di akhir kamu memilih: push + PR (deskripsi PR disusun otomatis dari tiket), merge lokal, atau biarkan dulu.
 
-Opsional: isi `tracker: github` atau `tracker: notion` di `docs/project-profile.md` supaya board tiket tercermin di GitHub Issues atau database Notion. `standup-update` membaca Riwayat tiket langsung. Agent dokumen (`brd-tracer`, `task-planner`) memakai Sonnet; developer, reviewer, dan QA memakai model sesi.
+Opsional: isi `tracker: github` atau `tracker: notion` di `docs/noskill/project-profile.md` supaya board tiket tercermin di GitHub Issues atau database Notion. `standup-update` membaca Riwayat tiket langsung. Agent dokumen (`brd-tracer`, `task-planner`) memakai Sonnet; developer, reviewer, dan QA memakai model sesi.
 
 Mode lengkap:
 
 ```
 [sesi utama, interaktif]           [agent]
 erp-domain-design → prd-writer ──► brd-tracer ──► task-planner ──► tiket TODO
-   (tanya-jawab + persetujuan)      docs/01..05     docs/tickets/
+   (tanya-jawab + persetujuan)      docs/noskill/01..05     docs/noskill/tickets/
 
 Per tiket:
 TODO ─► IN_PROGRESS ─► REVIEW ─► QA ─► DONE (commit lokal)
@@ -73,7 +83,7 @@ TODO ─► IN_PROGRESS ─► REVIEW ─► QA ─► DONE (commit lokal)
 Blocker / 3x gagal ─► HOLD ─► ditanyakan ke user
 ```
 
-Agent tidak berbicara langsung satu sama lain. Mereka terhubung lewat file di `docs/`, dan hanya `feature-flow` yang memindahkan status tiket. Hasil setiap tahap jadi bisa direview, diedit, dan di-commit ke repo project.
+Agent tidak berbicara langsung satu sama lain. Mereka terhubung lewat file di `docs/noskill/`, dan hanya `feature-flow` yang memindahkan status tiket. Hasil setiap tahap jadi bisa direview, diedit, dan di-commit ke repo project.
 
 Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-prototype` dipakai di luar siklus inti. Setelah semua DONE, `user-guide` dan `standup-update` bisa dipakai untuk dokumentasi dan laporan.
 

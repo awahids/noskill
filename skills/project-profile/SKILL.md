@@ -1,10 +1,12 @@
 ---
 name: project-profile
 description: >-
-  Scan repo sekali lalu tulis docs/project-profile.md — stack, command test/lint/typecheck/build, struktur folder, helper yang sering dipakai ulang, dan aturan dari CLAUDE.md/README — supaya agent tidak menjelajah ulang codebase di setiap tiket. Gunakan saat mulai bekerja di project baru, saat feature-flow tidak menemukan profil, atau user minta "profil project", "scan project", "refresh profil".
+  Scan repo sekali lalu tulis project-profile.md di folder dokumen noskill — stack, command test/lint/typecheck/build, struktur folder, helper yang sering dipakai ulang, dan aturan dari CLAUDE.md/README — supaya agent tidak menjelajah ulang codebase di setiap tiket. Gunakan saat mulai bekerja di project baru, saat feature-flow tidak menemukan profil, atau user minta "profil project", "scan project", "refresh profil".
 ---
 
 # Project Profile
+
+Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
 
 Tujuan: satu file ringkas yang dibaca semua agent sebelum bekerja, jadi command test, pola folder, dan helper tidak dicari ulang di setiap tiket.
 
@@ -15,7 +17,7 @@ Tujuan: satu file ringkas yang dibaca semua agent sebelum bekerja, jadi command 
 3. Helper umum: grep nama fungsi yang di-export di folder utilitas (`lib/`, `utils/`, `helpers/`, `pkg/`, `internal/*/util*`, `app/Helpers`). Ambil nama dan satu baris kegunaannya, jangan baca isinya penuh.
 4. **Verifikasi command**: jalankan command test (dan typecheck/lint kalau ada) sekali dengan output dibatasi (`| tail -n 5`). Catat apakah lulus, berapa lama, dan cara menjalankan satu file test saja.
 
-## Format `docs/project-profile.md` (maksimal ±80 baris)
+## Format `<docs>/project-profile.md` (maksimal ±80 baris)
 
 ```markdown
 # Project Profile — <nama>
