@@ -2,6 +2,8 @@
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk alur tiket lengkap (develop → review → QA) dengan agent.
 
+📖 **Dokumentasi lengkap:** [noskill Docs](https://claude.ai/artifact/QZPKn7Z6QL3XpB2XdHLgTx) — cara install, cara kerja alur tiket, semua skill & agent, shortcut, dan konfigurasi.
+
 ## Skills
 
 | Skill | Fungsi |
