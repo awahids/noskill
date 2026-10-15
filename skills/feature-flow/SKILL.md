@@ -30,6 +30,7 @@ Sebelum mulai, pastikan tahu (tanya sekaligus kalau belum jelas). Untuk mode cep
 - Project baru (greenfield) atau menambah ke codebase existing (path/repo-nya di mana)
 - Full chain BR→UAT atau ringkas US→AC→TECH
 - Mulai dari tahap mana. Kalau `docs/prd.md`, dokumen BRD, atau `docs/tickets/` sudah ada, lanjutkan dari tahap berikutnya — jangan tulis ulang.
+- **Profil project.** Mode lengkap: kalau `docs/project-profile.md` belum ada, jalankan skill `project-profile` dulu (sekali per project). Mode cepat: pakai kalau ada; kalau belum ada, lanjut saja dan tawarkan membuatnya di akhir. Kalau sudah ada, pakai saja; refresh hanya kalau manifest/lockfile berubah sejak commit di header-nya atau command di profil gagal.
 - **Branch kerja.** Kalau project adalah repo git, buat branch baru dari branch saat ini sebelum kode pertama ditulis: `feat/<prefix-atau-slug>` untuk fitur, `fix/<slug>` untuk bug. Semua commit tiket masuk ke branch ini. Kalau working tree tidak bersih, tanya user dulu (commit, stash, atau lanjut di branch saat ini).
 
 ## Mode Cepat — Satu Tiket Langsung
@@ -104,7 +105,34 @@ Saat semua tiket DONE (atau sisanya HOLD menunggu user):
 - Tampilkan board akhir.
 - Jalankan sekali lagi test suite lengkap project di branch kerja, lalu tampilkan hasilnya.
 - Tanyakan ke user apa yang dilakukan dengan branch kerja: **push + buat PR**, **merge ke branch asal secara lokal**, atau **biarkan dulu**. Jangan push atau merge tanpa jawaban user.
+- **Kalau user memilih push + PR:** push branch kerja, lalu buat PR lewat tool GitHub yang tersedia (konektor GitHub atau `gh`). Deskripsi PR disusun dari file tiket, tanpa menulis ulang dari nol:
+  ```markdown
+  ## Ringkasan
+  <1–3 kalimat: apa yang berubah dan kenapa>
+
+  ## Tiket
+  | ID | Judul | AC | Rounds |
+  |---|---|---|---|
+  | FIX-001 | ... | 4/4 ✓ | 1 |
+
+  ## Verifikasi
+  - <command test suite penuh> → <jumlah pass/fail>
+  - <typecheck/lint kalau ada>
+
+  ## Catatan
+  - <keputusan dari HOLD, temuan di luar scope, hal yang belum dicek>
+  ```
+  Kalau tidak ada tool GitHub, tampilkan deskripsi PR itu supaya user bisa menempelkannya sendiri.
 - Tawarkan `user-guide` (dokumentasi end-user) dan `standup-update` (rangkuman progress dari Riwayat tiket).
+
+## Sinkron Tracker (opsional)
+
+Kalau `docs/project-profile.md` berisi `tracker: github` atau `tracker: notion`, board tiket disalin ke tracker itu. Arahnya satu arah: file tiket tetap sumber kebenaran, tracker hanya cermin.
+- **Kapan:** saat tiket dibuat (Tahap 4 atau Mode Cepat), dan saat tiket menjadi DONE, BUG, atau HOLD. Perpindahan status lain tidak disinkron, supaya hemat panggilan tool.
+- **GitHub Issues:** satu issue per tiket. Judul `<ID>: <title>`, body berisi AC, label `noskill:<status>`. Issue ditutup saat DONE.
+- **Notion:** satu baris per tiket di database `notion_database` (kolom ID, Judul, Status). Cari baris yang sudah ada berdasarkan ID sebelum membuat baru.
+- Simpan nomor issue atau URL halaman di frontmatter tiket (`tracker_ref:`) supaya update berikutnya tidak membuat duplikat.
+- Kalau tool tracker tidak tersedia atau gagal, lanjutkan alur dan sebutkan sekali ke user. Sinkron tidak boleh menghentikan pekerjaan.
 
 ## Aturan
 

@@ -43,6 +43,12 @@ Untuk update mingguan atau laporan project (relevan dengan workspace Notion "mel
 
 ## Cara Kerja
 
+0. **Kalau project memakai alur tiket noskill** (`docs/tickets/` ada), jadikan itu sumber utama, tanpa minta user menulis ulang:
+   - Tiket yang pindah ke DONE sejak update terakhir (baris `## Riwayat` bertanggal kemarin/hari ini) → **Yesterday**
+   - Tiket berstatus IN_PROGRESS, REVIEW, QA, atau BUG → **Today**
+   - Tiket HOLD beserta pertanyaannya → **Blockers**
+   - Lengkapi dengan `git log --since=<tanggal> --oneline` kalau perlu, tapi tulis dalam bahasa hasil, bukan daftar commit.
+
 1. Kalau user kasih raw input (commit log, list task, atau cerita bebas tentang apa yang dikerjakan), ekstrak jadi poin-poin hasil kerja — bukan sekadar copy-paste commit message mentah
 2. Ubah bahasa proses jadi bahasa hasil: commit message teknis seperti `fix: null pointer in order service` → di update jadi "Perbaiki bug null pointer di order service yang menyebabkan [dampak, kalau diketahui]"
 3. Kelompokkan berdasarkan project/area kalau user kerja di beberapa hal sekaligus (misal: project kantor dan project freelance di hari yang sama) — pisahkan biar jelas

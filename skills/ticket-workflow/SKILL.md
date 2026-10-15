@@ -73,6 +73,7 @@ tc: [TC-INV-002]
 depends_on: [WMS-BE-001]
 related: []           # untuk tiket bug: tiket asal
 rounds: 0
+tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracker aktif
 ---
 
 ## Deskripsi

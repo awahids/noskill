@@ -6,7 +6,7 @@ tools: Read, Write, Glob, Grep
 skills:
   - erp-brd-traceability
   - erp-domain-design
-model: inherit
+model: sonnet
 color: purple
 ---
 

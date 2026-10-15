@@ -19,6 +19,7 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 | [`erp-brd-traceability`](skills/erp-brd-traceability/) | Framework requirement ERP dengan traceability: Business Requirement → Process → User Story → Acceptance Criteria → Technical Task → Test Case → UAT |
 | [`feature-flow`](skills/feature-flow/) | Orkestrator siklus fitur penuh: PRD → BRD → tiket → develop → review → QA → DONE (atau BUG/HOLD) |
 | [`ticket-workflow`](skills/ticket-workflow/) | Format file tiket dan alur status (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG & HOLD) |
+| [`project-profile`](skills/project-profile/) | Scan repo sekali → `docs/project-profile.md` (stack, command test/lint, struktur, helper, aturan project) yang dibaca semua agent |
 
 ## Agent
 
@@ -36,6 +37,16 @@ Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field 
 
 Plugin ini memasang hook `SessionStart` ([`hooks/core-rules.md`](hooks/core-rules.md)) yang memuat ±10 baris aturan kerja ke setiap sesi, juga saat tidak ada skill yang dipanggil: ubah hanya yang diminta, pikir dulu, solusi paling sederhana, reuse helper yang ada, test positif/negatif/batas dengan bukti RED, klaim selesai hanya dengan bukti. Detail lengkapnya tetap ada di `coding-standards`.
 
+## Shortcut
+
+| Perintah | Fungsi |
+|---|---|
+| `/noskill:fix <deskripsi>` | Bug fix atau perubahan kecil lewat mode cepat |
+| `/noskill:board` | Tampilkan board tiket + pertanyaan tiket HOLD |
+| `/noskill:lanjut [jawaban]` | Lanjutkan tiket yang tertunda dari sesi sebelumnya |
+| `/noskill:feature-flow` | Alur lengkap (mode cepat atau dari PRD) |
+| `/noskill:project-profile` | Buat/refresh profil project |
+
 ## Alur pemakaian
 
 Panggil `/noskill:feature-flow` lalu jelaskan pekerjaannya.
@@ -43,7 +54,9 @@ Panggil `/noskill:feature-flow` lalu jelaskan pekerjaannya.
 - **Mode cepat** — bug fix atau fitur kecil. Orkestrator langsung menulis satu tiket (AC positif & negatif, File/Lokasi, Cara Verifikasi), kamu setujui, lalu masuk loop developer → reviewer → QA.
 - **Mode lengkap** — fitur atau modul baru, mulai dari PRD.
 
-Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket. Di akhir kamu memilih: push + PR, merge lokal, atau biarkan dulu.
+Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket. Di akhir kamu memilih: push + PR (deskripsi PR disusun otomatis dari tiket), merge lokal, atau biarkan dulu.
+
+Opsional: isi `tracker: github` atau `tracker: notion` di `docs/project-profile.md` supaya board tiket tercermin di GitHub Issues atau database Notion. `standup-update` membaca Riwayat tiket langsung. Agent dokumen (`brd-tracer`, `task-planner`) memakai Sonnet; developer, reviewer, dan QA memakai model sesi.
 
 Mode lengkap:
 
