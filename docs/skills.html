@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>noskill Skills</title>
+<meta name="description" content="Penjelasan detail setiap skill noskill: kapan dipakai, cara memanggil, langkah kerja, hasil, dan aturan penting.">
+<style>
+/* Layout: skill reference — same shell as index.html; each skill is a card with a label/value grid */
+:root {
+  --bg: #f6f7f6;
+  --surface: #ffffff;
+  --fg: #1b211e;
+  --muted: #5d6762;
+  --line: #dde2df;
+  --accent: #1d6b57;
+  --accent-soft: #e3f0eb;
+  --code-bg: #eef1ef;
+  --ok: #1f7a4a; --warn: #9a6400; --bad: #b3362b; --info: #2d5fa3; --hold: #6b4fa0;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121614; --surface: #181d1a; --fg: #e4ebe7; --muted: #9aa69f; --line: #2a322e;
+    --accent: #5cc3a5; --accent-soft: #1d2c27; --code-bg: #1f2622;
+    --ok: #5fcf8f; --warn: #e0b04f; --bad: #f08074; --info: #7aa7e8; --hold: #b39ae0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121614; --surface: #181d1a; --fg: #e4ebe7; --muted: #9aa69f; --line: #2a322e;
+  --accent: #5cc3a5; --accent-soft: #1d2c27; --code-bg: #1f2622;
+  --ok: #5fcf8f; --warn: #e0b04f; --bad: #f08074; --info: #7aa7e8; --hold: #b39ae0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 15px/1.65 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 48px; padding-block: 40px 80px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 13.5px; }
+nav.toc .brand { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--fg); text-decoration: none; display: block; margin-bottom: 14px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+nav.toc a { display: block; padding: 4px 10px; border-radius: 6px; color: var(--muted); text-decoration: none; }
+nav.toc a:hover { background: var(--accent-soft); color: var(--fg); }
+main { min-width: 0; max-width: 760px; }
+header.hero { padding-bottom: 28px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.eyebrow { font: 600 12px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+h1 { font-size: clamp(30px, 5vw, 42px); line-height: 1.15; letter-spacing: -0.02em; margin: 12px 0 12px; text-wrap: balance; }
+.lede { font-size: 17px; color: var(--muted); max-width: 62ch; margin: 0 0 22px; }
+h2 { font-size: 22px; letter-spacing: -0.01em; margin: 48px 0 10px; text-wrap: balance; scroll-margin-top: 24px; }
+h3 { font-size: 16px; margin: 26px 0 6px; }
+p, li { max-width: 68ch; }
+p { margin: 0 0 12px; }
+ul, ol.steps { padding-left: 20px; margin: 0 0 14px; }
+code { font: 13px/1.5 var(--font-mono); background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+.cmd { display: flex; align-items: stretch; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; margin: 8px 0 14px; overflow: hidden; }
+.cmd pre { margin: 0; padding: 11px 14px; font: 13px/1.55 var(--font-mono); overflow-x: auto; flex: 1; min-width: 0; }
+.cmd button { flex: none; border: 0; border-left: 1px solid var(--line); background: transparent; color: var(--muted); font: 600 12px var(--font-body); padding: 0 14px; cursor: pointer; }
+.cmd button:hover { color: var(--accent); }
+.tbl { overflow-x: auto; margin: 10px 0 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+td code { white-space: nowrap; }
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 14px 0 8px; font: 600 12px/1 var(--font-mono); }
+.pill { padding: 6px 9px; border-radius: 999px; border: 1px solid currentColor; background: var(--surface); }
+.arrow { color: var(--muted); }
+.s-todo { color: var(--muted); } .s-prog { color: var(--info); } .s-rev { color: var(--warn); }
+.s-qa { color: var(--accent); } .s-done { color: var(--ok); } .s-bug { color: var(--bad); } .s-hold { color: var(--hold); }
+.side { font-size: 13.5px; color: var(--muted); margin: 0 0 16px; }
+.lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 12px 0 18px; }
+.lane { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; min-width: 0; }
+.lane h3 { margin: 0 0 4px; }
+.lane p { margin: 0; font-size: 14px; color: var(--muted); }
+pre.tree { background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; font: 13px/1.6 var(--font-mono); overflow-x: auto; margin: 10px 0 16px; }
+.note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0 16px; font-size: 14px; }
+footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+@media (max-width: 900px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 24px 60px; }
+  nav.toc { position: static; margin-bottom: 24px; }
+  nav.toc ol { display: flex; flex-wrap: wrap; gap: 4px; }
+  nav.toc a { border: 1px solid var(--line); padding: 3px 9px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+
+.skill { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px 6px; margin: 16px 0 22px; scroll-margin-top: 24px; }
+.skill h3 { margin: 0 0 4px; font-size: 18px; }
+.skill h3 code { font-size: 16px; background: none; padding: 0; }
+.skill .sum { color: var(--muted); margin: 0 0 12px; }
+.skill dl { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px 16px; margin: 0 0 12px; }
+.skill dt { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding-top: 3px; }
+.skill dd { margin: 0; min-width: 0; }
+.skill dd ul, .skill dd ol { margin: 0; padding-left: 18px; }
+.skill dd li { margin-bottom: 2px; }
+.tag { display: inline-block; font: 600 11px/1 var(--font-mono); padding: 4px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); margin-left: 6px; vertical-align: middle; }
+@media (max-width: 600px) {
+  .skill { padding: 14px 14px 4px; }
+  .skill dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .skill dt { padding-top: 8px; }
+}
+
+.jump { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+.jump a { text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Daftar isi">
+    <a class="brand" href="index.html">noskill</a>
+    <ol>
+      <li><a href="index.html">← Dokumentasi utama</a></li>
+      <li><a href="#alur">Alur kerja</a></li><li><a href="#shortcut-skill">Shortcut</a></li><li><a href="#requirement">Requirement & desain</a></li><li><a href="#standar">Standar & kualitas</a></li><li><a href="#dokumen">Dokumen & laporan</a></li>
+    </ol>
+  </nav>
+
+  <main id="top">
+    <header class="hero">
+      <div class="eyebrow">Referensi skill</div>
+      <h1>Semua skill noskill</h1>
+      <p class="lede">Penjelasan setiap skill: kapan dipakai, cara memanggil, langkah kerjanya, hasil yang didapat, dan aturan penting. Sebagian besar skill dipanggil otomatis oleh Claude sesuai permintaanmu; lima shortcut dipanggil manual dengan <code>/noskill:…</code>.</p>
+      <div class="jump"><a href="#feature-flow"><code>feature-flow</code></a> <a href="#ticket-workflow"><code>ticket-workflow</code></a> <a href="#project-profile"><code>project-profile</code></a> <a href="#rapikan"><code>rapikan</code></a> <a href="#lazy"><code>lazy</code></a> <a href="#fix"><code>fix</code></a> <a href="#board"><code>board</code></a> <a href="#lanjut"><code>lanjut</code></a> <a href="#prd-writer"><code>prd-writer</code></a> <a href="#erp-requirements"><code>erp-requirements</code></a> <a href="#task-breakdown"><code>task-breakdown</code></a> <a href="#mockup-prototype"><code>mockup-prototype</code></a> <a href="#coding-standards"><code>coding-standards</code></a> <a href="#debug-assistant"><code>debug-assistant</code></a> <a href="#user-guide"><code>user-guide</code></a> <a href="#standup-update"><code>standup-update</code></a> <a href="#freelance-proposal"><code>freelance-proposal</code></a> </div>
+    </header>
+
+    <h2 id="alur">Alur kerja</h2>
+    <section class="skill" id="feature-flow">
+      <h3><code>feature-flow</code><span class="tag">orkestrator</span></h3>
+      <p class="sum">Menjalankan pekerjaan seperti tim engineering: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu DONE. Skill ini berjalan di sesi utama dan satu-satunya yang memindahkan status tiket.</p>
+      <dl><dt>Kapan</dt><dd>Saat kamu minta "kerjakan sampai selesai", "lewat review dan QA", "dari PRD sampai done", atau melanjutkan board tiket.</dd><dt>Cara pakai</dt><dd><code>/noskill:feature-flow</code> lalu jelaskan pekerjaannya, atau minta dengan kalimat biasa.</dd><dt>Dua mode</dt><dd><ul><li><strong>Cepat</strong> — bug fix, fitur kecil, atau revisi fitur yang sudah ada. Permintaan langsung jadi tiket, kamu setujui, lalu masuk loop.</li><li><strong>Lengkap</strong> — fitur atau modul baru: desain domain → PRD → BRD (lengkap, ringkas, atau tanpa BRD) → tiket → loop.</li></ul></dd><dt>Tahapan</dt><dd><ol><li><strong>Konteks</strong>: prefix ID, satu repo atau beberapa, level BRD, profil project, branch kerja <code>feat/…</code> atau <code>fix/…</code>.</li><li><strong>Desain domain</strong> (khusus ERP/WMS) dengan <code>erp-requirements</code> Bagian A.</li><li><strong>PRD</strong> dengan <code>prd-writer</code> di sesi utama, karena butuh tanya-jawab. Gate: kamu setujui.</li><li><strong>BRD</strong> oleh agent <code>brd-tracer</code>, dilewati kalau tanpa BRD. Gate: kamu setujui.</li><li><strong>Tiket</strong> oleh agent <code>task-planner</code>. Gate: board dan Kontrak API disetujui; pilih otomatis/per tiket dan berurutan/paralel.</li><li><strong>Loop tiket</strong>: developer → reviewer → QA, dengan jalur BUG, HOLD, dan revisi.</li><li><strong>Selesai</strong>: typecheck, lint, dan seluruh test sekali, lalu push + PR, merge lokal, atau dibiarkan.</li></ol></dd><dt>Fitur hemat waktu</dt><dd><ul><li>Revisi dikirim ke developer yang sama, jadi tiket dan kode tidak dibaca ulang.</li><li>Tiket <code>complexity: simple</code> dikerjakan developer dengan Sonnet.</li><li>Database dan server dinyalakan sekali per sesi untuk semua QA.</li><li>Mode paralel: tiket berikutnya dikerjakan di git worktree selagi tiket sebelumnya di-review/QA (maks 2, atau 3 kalau beda repo).</li></ul></dd><dt>Hasil</dt><dd>File tiket di <code>docs/noskill/tickets/</code>, satu commit per tiket di branch kerja, dan PR dengan deskripsi yang disusun dari tiket. Multi-repo: satu PR per repo yang saling menautkan.</dd><dt>Aturan penting</dt><dd><ul><li>Tidak ada tahap yang dilompati tanpa persetujuanmu.</li><li>Orkestrator tidak menulis dan tidak menilai kode sendiri; itu tugas agent.</li><li>Satu tiket HOLD tidak menghentikan tiket lain. Pertanyaan HOLD dikumpulkan lalu ditanyakan sekaligus.</li><li>Tanpa agent (misal di claude.ai), tahap dikerjakan di sesi yang sama, tetapi review dan QA tetap dipisah dengan verdict yang jelas.</li></ul></dd><dt>Terkait</dt><dd><code>ticket-workflow</code>, <code>task-breakdown</code>, <code>project-profile</code>, semua agent.</dd></dl>
+    </section>
+    <section class="skill" id="ticket-workflow">
+      <h3><code>ticket-workflow</code><span class="tag">kontrak</span></h3>
+      <p class="sum">Aturan bersama untuk semua tiket: format file, arti tiap status, siapa yang memindahkan, dan verdict agent. Dipakai otomatis oleh orkestrator dan agent.</p>
+      <dl><dt>Kapan</dt><dd>Saat tiket dibuat, dipindahkan, atau dilaporkan, dan saat kamu tanya status tiket.</dd><dt>Status</dt><dd><ul><li><code>TODO</code> → <code>IN_PROGRESS</code> (developer) → <code>REVIEW</code> (reviewer) → <code>QA</code> (QA) → <code>DONE</code>.</li><li><code>BUG</code>: gagal QA, kembali ke developer dengan bug report.</li><li><code>HOLD</code>: butuh keputusanmu, blocker dari luar, atau sudah 3 putaran gagal.</li></ul></dd><dt>Aturan transisi</dt><dd><ul><li>Hanya orkestrator yang mengubah <code>status</code>, <code>rounds</code>, dan <code>Riwayat</code>.</li><li>Satu tiket per direktori kerja, supaya diff review hanya berisi tiket itu.</li><li>Urutan ambil: BUG dulu, lalu TODO yang <code>depends_on</code>-nya DONE, tiket BE sebelum FE.</li><li><code>rounds</code> naik setiap tiket kembali ke developer; di angka 3 tiket masuk HOLD.</li><li>Tidak ada status yang dilompati. DONE hanya dengan bukti test yang dijalankan.</li><li>Tiket dengan <code>integrates_with</code> baru diuji QA setelah tiket BE-nya DONE, lalu diuji bersama.</li></ul></dd><dt>Isi file tiket</dt><dd><ul><li>Frontmatter: <code>id</code>, <code>title</code>, <code>type</code>, <code>complexity</code>, <code>repo</code> (multi-repo), <code>status</code>, <code>trace</code>, <code>ac</code>, <code>tc</code>, <code>depends_on</code>, <code>integrates_with</code>, <code>related</code>, <code>rounds</code>, <code>tracker_ref</code>.</li><li>Bagian: Deskripsi, Acuan, File/Lokasi, Kontrak API (tiket BE), Acceptance Criteria, Cara Verifikasi, Riwayat.</li></ul></dd><dt>Verdict agent</dt><dd><ul><li>developer: <code>READY_FOR_REVIEW</code> atau <code>BLOCKED</code>.</li><li>reviewer: <code>APPROVED</code>, <code>CHANGES_REQUESTED</code>, atau <code>BLOCKED</code>.</li><li>QA: <code>PASS</code>, <code>FAIL</code> (dengan bug report: langkah, expected, actual, bukti), atau <code>BLOCKED</code>.</li></ul></dd><dt>Catatan</dt><dd>Bug di luar AC tiket jadi tiket <code>BUG-NNN</code> baru. Kalau perilaku benarnya belum ditentukan, tiket itu masuk HOLD dulu. Board dibaca langsung dari file tiket, tidak disimpan terpisah.</dd></dl>
+    </section>
+    <section class="skill" id="project-profile">
+      <h3><code>project-profile</code><span class="tag">sekali per project</span></h3>
+      <p class="sum">Men-scan repo sekali lalu menulis <code>docs/noskill/project-profile.md</code> yang dibaca semua agent, supaya command, struktur, dan helper tidak dicari ulang di setiap tiket.</p>
+      <dl><dt>Kapan</dt><dd>Pertama kali memakai noskill di sebuah project, saat <code>feature-flow</code> tidak menemukan profil, atau saat kamu minta "refresh profil".</dd><dt>Cara pakai</dt><dd><code>/noskill:project-profile</code></dd><dt>Cara scan</dt><dd><ul><li>Hanya membaca manifest dan konfigurasi (<code>package.json</code>, <code>go.mod</code>, <code>composer.json</code>, CI, <code>CLAUDE.md</code>, awal README), bukan seluruh source.</li><li>Struktur folder dua level teratas.</li><li>Nama helper yang di-export di folder utilitas, beserta satu baris kegunaannya.</li><li>Command test/typecheck/lint dijalankan sekali untuk memastikan benar.</li></ul></dd><dt>Isi profil</dt><dd><ul><li>Stack dan versi.</li><li>Tabel command: install, test semua, test satu file, test terkait file yang diubah, lint file tertentu, typecheck, menyalakan environment, health check.</li><li>Struktur folder, helper yang dipakai ulang, aturan project.</li><li>Daftar repo (untuk fitur multi-repo) dan tracker (<code>none</code>, <code>github</code>, atau <code>notion</code>).</li></ul></dd><dt>Aturan</dt><dd>Hanya fakta yang terverifikasi; yang belum dicek ditulis "belum dicek". Refresh kalau manifest/lockfile berubah atau command gagal. Profil repo lain disimpan di repo dokumen sebagai <code>project-profile-&lt;nama&gt;.md</code>.</dd></dl>
+    </section>
+
+    <h2 id="shortcut-skill">Shortcut</h2>
+    <section class="skill" id="rapikan">
+      <h3><code>rapikan</code><span class="tag">/noskill:rapikan</span></h3>
+      <p class="sum">Merapikan tiket yang sudah dibuat supaya sesuai aturan tiket terbaru, atau mereview ulang kode tiket yang sudah DONE.</p>
+      <dl><dt>Cara pakai</dt><dd><ul><li><code>/noskill:rapikan</code> — semua tiket TODO dan HOLD.</li><li><code>/noskill:rapikan WMS-BE-004</code> — satu tiket saja.</li><li><code>/noskill:rapikan review WMS-BE-004</code> — review ulang kode tiket DONE.</li></ul></dd><dt>Yang dicek</dt><dd><ul><li>Tiket per layer (migration, DTO, test sendiri) → digabung ke tiket endpoint/fitur-nya.</li><li>Tiket terlalu besar atau mencakup beberapa repo → dipecah.</li><li>Tiket BE tanpa Kontrak API → dilengkapi dari PRD/BRD atau kode.</li><li>Tiket FE yang memakai <code>depends_on</code> ke tiket BE → diganti <code>integrates_with</code>.</li><li><code>complexity</code> kosong, File/Lokasi generik, AC tanpa sisi negatif → dilengkapi.</li><li>Duplikat atau sudah tercakup tiket DONE → diusulkan dihapus.</li></ul></dd><dt>Alur</dt><dd><ol><li>Usulan ditampilkan dulu: tabel ID lama → aksi → ID hasil, board sesudahnya, jumlah tiket sebelum → sesudah, dan pertanyaan terbuka.</li><li>File tiket baru diubah setelah kamu setujui. Riwayat mencatat asal tiket (misal "gabungan dari WMS-BE-002, WMS-BE-003"), dan rujukan <code>depends_on</code>/<code>integrates_with</code> di tiket lain ikut diperbarui.</li></ol></dd><dt>Review ulang</dt><dd>Reviewer menilai commit tiket DONE itu. Kalau ada temuan, tiket asal tetap DONE dan dibuat tiket <code>BUG-NNN</code> baru yang merujuk ke tiket asal.</dd><dt>Batasan</dt><dd>Tiket yang sedang jalan (IN_PROGRESS, REVIEW, QA, BUG) dan tiket DONE tidak diubah saat merapikan.</dd></dl>
+    </section>
+    <section class="skill" id="lazy">
+      <h3><code>lazy</code><span class="tag">/noskill:lazy</span></h3>
+      <p class="sum">Lazy senior dev mode: mengerjakan permintaan langsung dengan solusi paling sederhana dan terpendek yang benar-benar jalan, tanpa tiket, review, atau QA.</p>
+      <dl><dt>Cara pakai</dt><dd><code>/noskill:lazy tambahkan filter status di endpoint list order</code></dd><dt>Kapan</dt><dd>Perubahan kecil yang jelas dan tidak butuh alur tim. Untuk yang butuh review dan QA, pakai <code>/noskill:fix</code>.</dd><dt>Cara berpikir</dt><dd><ol><li>Perlu dibuat atau tidak.</li><li>Sudah ada di codebase? Pakai.</li><li>Standard library atau fitur framework? Pakai.</li><li>Dependency yang sudah terpasang? Pakai; tidak menambah dependency.</li><li>Kalau tetap harus ditulis: kode minimal.</li></ol></dd><dt>Aturan</dt><dd><ul><li>Diff sekecil mungkin, tanpa refactor atau reformat.</li><li>Tidak ada abstraksi, config, opsi, atau kode "buat nanti" yang tidak diminta.</li><li>Validasi input, error handling yang perlu, dan keamanan tidak dipangkas.</li><li>Tetap ada bukti: test atau command yang relevan dijalankan.</li></ul></dd><dt>Kapan berhenti</dt><dd>Kalau ternyata menyentuh aturan bisnis baru, skema database, lebih dari ±5 file, atau beberapa repo, Claude berhenti dan menyarankan <code>/noskill:fix</code> atau <code>/noskill:feature-flow</code>.</dd><dt>Laporan</dt><dd>Maksimal ±8 baris: file yang diubah, kenapa ini cara paling sederhana, hasil test, dan yang belum dicek.</dd></dl>
+    </section>
+    <section class="skill" id="fix">
+      <h3><code>fix</code><span class="tag">/noskill:fix</span></h3>
+      <p class="sum">Jalan pintas untuk bug fix atau perubahan kecil lewat mode cepat <code>feature-flow</code>.</p>
+      <dl><dt>Cara pakai</dt><dd><code>/noskill:fix diskon di atas 100% bikin harga minus</code></dd><dt>Yang terjadi</dt><dd><ol><li>Kode terkait dibaca supaya tiket berisi path nyata.</li><li>Tiket <code>FIX-NNN</code> ditulis: AC positif dan negatif, File/Lokasi, Cara Verifikasi.</li><li>Kamu menyetujui tiketnya.</li><li>Tiket masuk loop developer → reviewer → QA → DONE.</li></ol></dd><dt>Catatan</dt><dd>Kalau deskripsinya terlalu kabur untuk dijadikan AC, Claude bertanya sekali dulu.</dd></dl>
+    </section>
+    <section class="skill" id="board">
+      <h3><code>board</code><span class="tag">/noskill:board</span></h3>
+      <p class="sum">Menampilkan status semua tiket tanpa mengubah file apa pun.</p>
+      <dl><dt>Cara pakai</dt><dd><code>/noskill:board</code></dd><dt>Isi</dt><dd><ul><li>Satu tabel per status: TODO, IN_PROGRESS, REVIEW, QA, BUG, HOLD, DONE, dengan ID, judul, rounds, dan repo kalau ada.</li><li>Pertanyaan yang menunggu jawabanmu dari setiap tiket HOLD.</li><li>Jumlah per status dan tiket berikutnya yang akan diambil.</li></ul></dd><dt>Hemat token</dt><dd>Status dibaca sekaligus dengan satu <code>grep</code>; file tiket hanya dibuka penuh untuk tiket HOLD.</dd></dl>
+    </section>
+    <section class="skill" id="lanjut">
+      <h3><code>lanjut</code><span class="tag">/noskill:lanjut</span></h3>
+      <p class="sum">Melanjutkan alur tiket dari sesi sebelumnya berdasarkan status yang tersimpan di file.</p>
+      <dl><dt>Cara pakai</dt><dd><code>/noskill:lanjut</code>, atau <code>/noskill:lanjut pakai pembulatan ke bawah</code> untuk sekaligus menjawab tiket HOLD.</dd><dt>Yang terjadi</dt><dd><ol><li>Board dan profil dibaca, branch kerja dan worktree dicocokkan.</li><li>Tiket yang berhenti di tengah dilanjutkan dari tahapnya: IN_PROGRESS/BUG ke developer, REVIEW ke reviewer, QA ke QA.</li><li>Catatanmu dicatat di Riwayat tiket HOLD, lalu tiket dikembalikan ke status sebelumnya.</li><li>Loop berlanjut sampai semua DONE atau ada yang perlu keputusanmu.</li></ol></dd></dl>
+    </section>
+
+    <h2 id="requirement">Requirement & desain</h2>
+    <section class="skill" id="prd-writer">
+      <h3><code>prd-writer</code></h3>
+      <p class="sum">Menyusun Product Requirements Document dengan struktur baku dan diagram Mermaid, selalu didahului pertanyaan klarifikasi.</p>
+      <dl><dt>Kapan</dt><dd>Saat kamu minta PRD, dokumen requirement, atau scoping sistem baru. Juga untuk membuat PRD dari kode yang sudah ada (Reverse-PRD).</dd><dt>Alur</dt><dd><ol><li>Kamu memberi deskripsi singkat.</li><li>Claude menyusun <strong>minimal 5 pertanyaan</strong> yang sesuai konteks (role dan akses, integrasi, aturan bisnis, batasan teknis, notifikasi, skala), semuanya dalam satu pesan.</li><li>Setelah dijawab, PRD ditulis sebagai file Markdown.</li></ol></dd><dt>Struktur PRD</dt><dd><ul><li>Header, Overview, Requirements (RBAC: bisa dan tidak bisa per role), Core Features, User Flow, Architecture, Database Schema, API Design, Design & Technical Constraints.</li><li>Wajib ada diagram: flowchart atau sequence untuk alur utama, dan ERD untuk database.</li></ul></dd><dt>Reverse-PRD</dt><dd>Kode dibaca dulu (model, route, guard, komponen), lalu setiap bagian PRD disusun dari bukti di kode. Bagian yang tidak bisa dipastikan ditandai, tidak dikarang.</dd><dt>Prinsip</dt><dd>Spesifik dan bisa diverifikasi, eksplisit soal pengecualian, menjelaskan alasan keputusan, dan merujuk standar yang sudah ada.</dd><dt>Terkait</dt><dd><code>erp-requirements</code> (Bagian A sebelum PRD, Bagian B sesudahnya), <code>task-breakdown</code>, <code>mockup-prototype</code>.</dd></dl>
+    </section>
+    <section class="skill" id="erp-requirements">
+      <h3><code>erp-requirements</code><span class="tag">ERP/WMS · dipakai brd-tracer</span></h3>
+      <p class="sum">Requirement ERP/WMS dalam dua bagian yang dipakai berurutan: desain domain sebelum menulis schema, lalu dokumen requirement dengan rantai ID yang bisa ditelusuri.</p>
+      <dl><dt>Kapan</dt><dd>Saat merancang modul atau ERD untuk inventory, purchasing, sales, finance, atau WMS, dan saat kamu minta BRD, user story dan acceptance criteria, atau traceability matrix. Kalau hanya butuh salah satu bagian, hanya bagian itu yang dipakai.</dd><dt>Bagian A — desain domain</dt><dd><ol><li>Tentukan core business dulu.</li><li>Master data terpusat, dipakai semua modul.</li><li>Stock ledger (pergerakan stok), bukan field <code>stock</code> yang diubah langsung.</li><li>Setiap transaksi punya workflow status, bukan sekadar CRUD.</li><li>RBAC, bukan role yang di-hardcode.</li><li>Audit trail untuk data penting.</li><li>Penomoran dokumen tersentralisasi.</li><li>Satu source of truth per entity.</li><li>Business flow dulu, baru ERD.</li><li>Roadmap MVP bertahap.</li><li>Modular monolith dulu, microservices belakangan.</li><li>Inventory satu-satunya pemilik stok; event hanya untuk efek samping.</li></ol></dd><dt>Bagian B — BRD</dt><dd><ul><li>Rantai <code>BR</code> → <code>PROC</code> → <code>US</code> (+ <code>FR</code>) → <code>AC</code> → <code>TECH</code> → <code>TC</code> → <code>UAT</code>, misalnya <code>BR-INV-001 → US-INV-001 → AC-002 → TECH-003 → TC-INV-002</code>.</li><li>Level <strong>lengkap</strong> (layer 1–5) untuk fitur lintas divisi atau yang butuh sign-off/UAT; <strong>ringkas</strong> (US → AC → TECH + TC) untuk perubahan kecil. Di <code>feature-flow</code> ada juga pilihan <strong>tanpa BRD</strong>.</li><li>Hasilnya di folder <code>01-business</code> sampai <code>05-testing</code>. Setiap Test Case berjenis positif, negatif, atau batas.</li></ul></dd><dt>Di feature-flow</dt><dd>Bagian A dipakai di Tahap 1 di sesi utama; Bagian B dikerjakan agent <code>brd-tracer</code> di Tahap 3.</dd><dt>Terkait</dt><dd>Contoh lengkap Goods Receipt ada di folder <code>references/</code> skill ini. Sebelumnya skill ini terpisah menjadi <code>erp-domain-design</code> dan <code>erp-brd-traceability</code>.</dd></dl>
+    </section>
+    <section class="skill" id="task-breakdown">
+      <h3><code>task-breakdown</code><span class="tag">dipakai task-planner</span></h3>
+      <p class="sum">Memecah PRD atau BRD menjadi tiket yang bisa dikerjakan, dengan aturan ukuran yang sederhana.</p>
+      <dl><dt>Kapan</dt><dd>Saat kamu minta "pecah jadi task", "breakdown PRD", atau backlog. Di <code>feature-flow</code> dijalankan oleh agent <code>task-planner</code>.</dd><dt>Aturan tiket</dt><dd><ul><li><strong>BE</strong>: satu tiket per endpoint baru atau yang berubah, termasuk migration, DTO, service, test, Swagger, dan Kontrak API.</li><li><strong>FE</strong>: satu tiket per fitur atau halaman.</li><li><strong>Bug</strong>: satu tiket per bug.</li><li>Tidak ada tiket per layer atau per file.</li></ul></dd><dt>BE dan FE</dt><dd><ol><li>Tiket BE memuat Kontrak API sejak dibuat: method, path, request, response sukses, dan kode error.</li><li>Tiket FE memakai <code>integrates_with</code> ke tiket BE, sehingga bisa dikerjakan bersamaan berdasarkan kontrak.</li><li>QA tiket FE menunggu BE DONE, lalu menguji keduanya bersama.</li><li>Perubahan kontrak lewat <code>BLOCKED</code> dan dicatat di kedua tiket.</li></ol></dd><dt>Langkah</dt><dd><ol><li>Pahami konteks: project baru atau menambah ke yang sudah ada, berapa repo yang terdampak.</li><li>Turunkan tiket dari setiap bagian PRD/BRD.</li><li>Tiket integrasi dibuat presisi: proxy tipis tetap tipis, tidak menduplikasi logic.</li><li>Setiap tiket berisi deskripsi, acuan, Trace, File/Lokasi nyata, AC, Cara Verifikasi, dan dependency.</li><li>Urutkan fase yang wajar.</li></ol></dd><dt>Prinsip</dt><dd>Setiap tiket bisa ditelusuri ke PRD/BRD, menyesuaikan codebase yang ada, dan "selesai" dibuktikan lewat Cara Verifikasi.</dd></dl>
+    </section>
+    <section class="skill" id="mockup-prototype">
+      <h3><code>mockup-prototype</code></h3>
+      <p class="sum">Membuat mockup atau prototype UI (HTML atau React) dari PRD, per layar dan per role.</p>
+      <dl><dt>Kapan</dt><dd>Saat kamu minta mockup, prototype, wireframe, atau desain UI dari requirement.</dd><dt>Langkah</dt><dd><ol><li>Daftar layar diambil dari PRD, dikelompokkan per role.</li><li>Fidelity ditentukan: wireframe, mockup (default), atau prototype yang bisa diklik.</li><li>Design system yang sudah ada dicek dulu; modul tambahan mengikuti tampilan aplikasi induknya.</li><li>Mockup dibangun termasuk state loading, kosong, dan error.</li><li>Review akhir terhadap PRD, lalu anotasi singkat.</li></ol></dd><dt>Hasil</dt><dd>File HTML/React yang bisa dibuka dan didiskusikan dengan stakeholder.</dd></dl>
+    </section>
+
+    <h2 id="standar">Standar & kualitas</h2>
+    <section class="skill" id="coding-standards">
+      <h3><code>coding-standards</code><span class="tag">dipakai developer & reviewer</span></h3>
+      <p class="sum">Standar penulisan dan review kode untuk NestJS, Laravel, Golang/Gin, Vue, Next.js, serta PostgreSQL/MySQL.</p>
+      <dl><dt>Kapan</dt><dd>Saat membuat project, modul, endpoint, atau migration, saat review kode, atau saat kamu menyebut "sesuai standar".</dd><dt>Prinsip inti</dt><dd><ul><li>Reuse dulu: cari helper yang sudah ada sebelum menulis logic baru; logic bisnis di service/usecase, bukan di controller atau UI.</li><li>Perubahan surgical: hanya yang diminta, tanpa refactor atau reformat sampingan.</li><li>Solusi paling sederhana dulu: perlu atau tidak → sudah ada → standard library → dependency terpasang → kode minimal.</li><li>Nyatakan asumsi; refactor besar butuh rencana dulu.</li></ul></dd><dt>Isi</dt><dd><ul><li>Naming per bahasa dan database.</li><li>ORM dan akses database, termasuk menghindari N+1.</li><li>Struktur folder per stack.</li><li>TDD (RED dulu), quality gate berurutan (typecheck → lint → test → review), simplify pass.</li><li>Logging: error log vs audit log.</li><li>Desain API: versioning <code>/api/v{n}</code>, format response, paginasi.</li><li>Dokumentasi Swagger/OpenAPI per stack (NestJS <code>@nestjs/swagger</code>, Laravel <code>l5-swagger</code>/<code>scramble</code>, Golang <code>swaggo</code>), checklist breaking change, dan checklist sebelum merge — dulu skill <code>api-doc-standard</code>.</li><li>State management frontend, konvensi Git dan commit, checklist code review.</li></ul></dd><dt>Hemat token</dt><dd>Detail per stack ada di folder <code>references/</code> dan hanya dibaca saat dibutuhkan.</dd></dl>
+    </section>
+    <section class="skill" id="debug-assistant">
+      <h3><code>debug-assistant</code><span class="tag">dipakai untuk tiket BUG</span></h3>
+      <p class="sum">Alur debugging terstruktur supaya perbaikan menyasar penyebab, bukan gejala.</p>
+      <dl><dt>Kapan</dt><dd>Saat kamu melaporkan error, stack trace, atau "kok nggak jalan". Developer memakainya otomatis untuk tiket BUG.</dd><dt>Alur</dt><dd><ol><li>Reproduce: pastikan bug bisa diulang.</li><li>Isolasi: persempit lokasi masalah.</li><li>Diagnosa root cause: telusuri mundur sampai titik asal data atau state yang salah.</li><li>Fix terkecil di titik asal, lalu verifikasi dengan bukti.</li><li>Cegah berulang: test yang mengunci bug itu.</li></ol></dd><dt>Format jawaban</dt><dd>Kemungkinan penyebab (diurutkan), cara memverifikasi tiap kemungkinan, lalu rekomendasi fix setelah penyebab pasti.</dd><dt>Integrasi eksternal</dt><dd>Untuk WMS API, n8n, Power Automate, dan Microsoft Graph: cek request (header, auth, body), baca body error lengkap, dan cek status layanan pihak luar.</dd></dl>
+    </section>
+
+    <h2 id="dokumen">Dokumen & laporan</h2>
+    <section class="skill" id="user-guide">
+      <h3><code>user-guide</code></h3>
+      <p class="sum">Panduan pemakaian untuk pengguna non-teknis, dengan bahasa sederhana dan langkah per fitur.</p>
+      <dl><dt>Kapan</dt><dd>Saat kamu minta user guide, panduan pengguna, atau manual book. Ditawarkan otomatis di akhir <code>feature-flow</code>.</dd><dt>Alur</dt><dd><ol><li>PRD dipakai sebagai sumber fitur, role, dan alur.</li><li>Untuk dokumen besar (lebih dari 5 bagian), outline disepakati dulu sebelum menulis.</li><li>Dokumen ditulis per role dan per fitur.</li></ol></dd><dt>Struktur</dt><dd>Judul dan pembuka, daftar isi, memulai, panduan per fitur, flowchart dalam bahasa sehari-hari, slot screenshot, FAQ, dan kontak bantuan.</dd><dt>Prinsip</dt><dd>Istilah pengguna, bukan istilah teknis; satu langkah satu tindakan.</dd></dl>
+    </section>
+    <section class="skill" id="standup-update">
+      <h3><code>standup-update</code></h3>
+      <p class="sum">Merangkum pekerjaan menjadi update standup harian atau laporan mingguan.</p>
+      <dl><dt>Kapan</dt><dd>Saat kamu minta standup, update harian, status report, atau progress report.</dd><dt>Sumber</dt><dd><ul><li>Kalau ada tiket noskill: tiket yang DONE sejak update terakhir jadi Yesterday, tiket yang sedang jalan jadi Today, tiket HOLD jadi Blockers, semuanya dari Riwayat tiket.</li><li>Selain itu: commit log, daftar task, atau ceritamu.</li></ul></dd><dt>Format</dt><dd>Daily: Yesterday, Today, Blockers. Mingguan: ringkasan per project yang rapi ditempel ke Notion.</dd><dt>Prinsip</dt><dd>Bahasa hasil, bukan daftar commit; dikelompokkan per project; blocker yang tersirat diangkat secara eksplisit.</dd></dl>
+    </section>
+    <section class="skill" id="freelance-proposal">
+      <h3><code>freelance-proposal</code></h3>
+      <p class="sum">Proposal dan scoping project freelance dengan fase, timeline, dan harga dalam Rupiah.</p>
+      <dl><dt>Kapan</dt><dd>Saat kamu minta proposal, quotation, penawaran harga, atau estimasi project untuk client.</dd><dt>Struktur</dt><dd><ol><li>Ringkasan kebutuhan.</li><li>Lingkup per fase, setiap fase punya hasil yang bisa didemokan.</li><li>Stack teknologi.</li><li>Timeline.</li><li>Harga per fase dalam Rupiah.</li><li>Syarat dan ketentuan, termasuk syarat pembayaran.</li></ol></dd><dt>Estimasi</dt><dd>Mempertimbangkan integrasi pihak ketiga, jenis client, dan kompleksitas (landing page vs full-stack dengan panel admin). Angka akhir selalu didiskusikan denganmu, tidak ditentukan otomatis.</dd></dl>
+    </section>
+
+    <footer>noskill · oleh Wahid · <a href="https://awahids.my.id">awahids.my.id</a> · <a href="https://github.com/awahids/noskill">github.com/awahids/noskill</a></footer>
+  </main>
+</div>
+</body>
+</html>

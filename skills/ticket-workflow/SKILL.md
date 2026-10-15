@@ -72,7 +72,7 @@ type: task            # task | bug
 complexity: simple    # simple | complex — menentukan model developer (lihat di bawah)
 repo: api             # opsional, hanya untuk fitur multi-repo: nama repo dari bagian Repo di project-profile
 status: TODO
-trace: US-INV-001 / TECH-003   # dari erp-brd-traceability, "—" kalau tidak ada
+trace: US-INV-001 / TECH-003   # dari dokumen BRD (erp-requirements), "—" kalau tidak ada
 ac: [AC-002]
 tc: [TC-INV-002]
 depends_on: [WMS-BE-001]   # harus DONE sebelum tiket ini dikerjakan

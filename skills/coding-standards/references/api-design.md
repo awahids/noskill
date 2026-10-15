@@ -257,4 +257,4 @@ Konvensi operator untuk filter selain exact-match (opsional, sesuaikan kebutuhan
 | `_in` | daftar nilai (comma-separated) | `status_in=pending,paid` |
 | `relation.field` | filter lewat relasi (dot notation) | `items.product_id=prod-001` |
 
-Endpoint yang mendukung filter kompleks **wajib didokumentasikan** di Swagger/OpenAPI (lihat skill `api-doc-standard`) — sebutkan field mana saja yang bisa difilter dan operator apa yang didukung, supaya konsumen API (termasuk frontend kamu sendiri) tahu tanpa buka kode backend.
+Endpoint yang mendukung filter kompleks **wajib didokumentasikan** di Swagger/OpenAPI (lihat `references/api-doc.md`) — sebutkan field mana saja yang bisa difilter dan operator apa yang didukung, supaya konsumen API (termasuk frontend kamu sendiri) tahu tanpa buka kode backend.

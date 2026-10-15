@@ -206,6 +206,8 @@ Error log (untuk debugging, retensi pendek) dan audit log (siapa-ubah-apa untuk 
 
 **Baca [`references/api-design.md`](references/api-design.md) sebelum** membuat atau mengubah endpoint. Isinya: 6.1 URL prefix & versioning, 6.2 response format (termasuk implementasi Golang/Gin yang wajib sama persis), 6.3 endpoint naming, 6.4 HTTP status code, 6.5 query parameter untuk multi-field filtering.
 
+**Baca [`references/api-doc.md`](references/api-doc.md) sebelum** menambah atau mengubah dokumentasi Swagger/OpenAPI endpoint. Isinya: decorator/anotasi wajib per endpoint untuk NestJS (`@nestjs/swagger`), Laravel (`l5-swagger`/`scramble`), dan Golang (`swaggo`), skema response standar, setup versioning, checklist breaking change, dan checklist sebelum merge.
+
 Ringkasan yang selalu berlaku: semua endpoint pakai prefix `/api/v{n}`, satu format response envelope yang sama di semua endpoint & versi, dan `statusCode` di body selalu sama dengan HTTP status.
 
 ---
@@ -238,7 +240,7 @@ Tipe: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `style`, `perf`
 Untuk project yang punya rilis/versi yang perlu dikomunikasikan (dipakai user lain, dirilis ke production secara berkala, atau open source) — generate `CHANGELOG.md` dari histori commit, bukan ditulis manual dari ingatan:
 
 - Karena commit sudah mengikuti Conventional Commits (8.1), changelog bisa di-generate otomatis (`conventional-changelog`, `git-cliff`, atau built-in changelog generator dari platform seperti GitHub Releases) — kelompokkan otomatis per tipe (`feat` → "Features", `fix` → "Bug Fixes", dst)
-- Commit dengan `BREAKING CHANGE:` di footer atau `!` setelah tipe (`feat!:`) ditandai jelas di changelog sebagai breaking — selaras dengan checklist breaking change di `api-doc-standard`
+- Commit dengan `BREAKING CHANGE:` di footer atau `!` setelah tipe (`feat!:`) ditandai jelas di changelog sebagai breaking — selaras dengan checklist breaking change di `references/api-doc.md`
 - Untuk project kecil/internal yang tidak dirilis ke pihak luar, changelog opsional — tidak perlu dipaksakan kalau tidak ada yang membacanya
 
 ---

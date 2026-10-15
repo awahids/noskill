@@ -2,6 +2,18 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.3.0 — 2026-10-15
+
+### Ditambahkan
+- Shortcut `/noskill:lazy` (lazy senior dev mode): langsung kerjakan solusi paling sederhana dan terpendek yang jalan — YAGNI, stdlib dulu, tanpa abstraksi yang tidak diminta — tanpa tiket, review, atau QA. Tetap wajib bukti test, dan berhenti lalu menyarankan `/noskill:fix` atau `/noskill:feature-flow` kalau ternyata menyentuh aturan bisnis baru, skema, lebih dari ±5 file, atau beberapa repo.
+- Halaman `docs/skills.html`: penjelasan detail setiap skill.
+- Shortcut `/noskill:rapikan`: merapikan tiket TODO/HOLD yang sudah dibuat agar sesuai aturan tiket terbaru (gabung tiket per layer, pecah yang terlalu besar, lengkapi Kontrak API, `integrates_with`, `complexity`, AC negatif, File/Lokasi nyata). Usulan ditampilkan dulu dan baru diterapkan setelah disetujui. `/noskill:rapikan review <ID>` mereview ulang commit tiket DONE; temuan jadi tiket BUG baru.
+
+### Diubah — skill digabung
+- `erp-domain-design` dan `erp-brd-traceability` digabung menjadi `erp-requirements` (Bagian A: desain domain, Bagian B: BRD traceability). Agent `brd-tracer` sekarang memuat satu skill ini.
+- `api-doc-standard` dipindah ke `coding-standards` sebagai `references/api-doc.md`, dibaca saat tiket menyentuh endpoint.
+- Jumlah skill: 18 → 17 (termasuk dua shortcut baru).
+
 ## 1.2.0 — 2026-10-15
 
 ### Diubah — tiket lebih cepat

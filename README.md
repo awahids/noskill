@@ -6,22 +6,23 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 
 ## Skills
 
+Penjelasan detail tiap skill (kapan dipakai, langkah kerja, hasil, aturan penting): **[awahids.github.io/noskill/skills.html](https://awahids.github.io/noskill/skills.html)** (sumber: [`docs/skills.html`](docs/skills.html)).
+
 | Skill | Fungsi |
 |---|---|
-| [`prd-writer`](skills/prd-writer/) | Menyusun Product Requirements Document lengkap dengan diagram Mermaid |
-| [`task-breakdown`](skills/task-breakdown/) | Memecah PRD jadi task development actionable, termasuk task integrasi ke sistem existing |
-| [`coding-standards`](skills/coding-standards/) | Naming convention, struktur folder, dan konvensi kode untuk NestJS/Laravel/Golang/Vue/Next.js |
-| [`api-doc-standard`](skills/api-doc-standard/) | Standar dokumentasi Swagger/OpenAPI untuk NestJS/Laravel/Golang |
-| [`debug-assistant`](skills/debug-assistant/) | Alur debugging terstruktur (reproduce → isolasi → diagnosa → fix & verifikasi) |
-| [`mockup-prototype`](skills/mockup-prototype/) | Membuat mockup/prototype UI dari PRD |
-| [`user-guide`](skills/user-guide/) | Menyusun dokumentasi end-user yang mudah dipahami orang non-teknis |
-| [`standup-update`](skills/standup-update/) | Merangkum aktivitas kerja jadi update standup/status report |
-| [`freelance-proposal`](skills/freelance-proposal/) | Template proposal/scoping project freelance dengan harga IDR |
-| [`erp-domain-design`](skills/erp-domain-design/) | Checklist desain domain ERP/WMS sebelum bikin schema — stock ledger, RBAC, audit trail, roadmap MVP |
-| [`erp-brd-traceability`](skills/erp-brd-traceability/) | Framework requirement ERP dengan traceability: Business Requirement → Process → User Story → Acceptance Criteria → Technical Task → Test Case → UAT |
-| [`feature-flow`](skills/feature-flow/) | Orkestrator siklus fitur penuh: PRD → BRD → tiket → develop → review → QA → DONE (atau BUG/HOLD) |
-| [`ticket-workflow`](skills/ticket-workflow/) | Format file tiket dan alur status (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG & HOLD) |
-| [`project-profile`](skills/project-profile/) | Scan repo sekali → `docs/noskill/project-profile.md` (stack, command test/lint, struktur, helper, aturan project) yang dibaca semua agent |
+| [`feature-flow`](skills/feature-flow/) | Orkestrator: tiket → developer → reviewer → QA → DONE (atau BUG/HOLD). Mode cepat dan lengkap, paralel, multi-repo, branch dan PR |
+| [`ticket-workflow`](skills/ticket-workflow/) | Format file tiket, arti tiap status, aturan transisi, verdict agent, dan board |
+| [`project-profile`](skills/project-profile/) | Scan repo sekali → `docs/noskill/project-profile.md` (stack, command, struktur, helper, aturan) yang dibaca semua agent |
+| [`lazy`](skills/lazy/) · [`fix`](skills/fix/) · [`board`](skills/board/) · [`lanjut`](skills/lanjut/) · [`rapikan`](skills/rapikan/) | Shortcut: kerjakan langsung dengan solusi paling sederhana, bug fix lewat mode cepat, lihat board tiket, lanjutkan tiket dari sesi sebelumnya, rapikan tiket lama atau review ulang tiket DONE |
+| [`prd-writer`](skills/prd-writer/) | PRD baku dengan diagram Mermaid, didahului minimal 5 pertanyaan klarifikasi; juga Reverse-PRD dari kode |
+| [`erp-requirements`](skills/erp-requirements/) | ERP/WMS: (A) checklist desain domain — master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP; (B) rantai requirement BR → PROC → US → AC → TECH → TC → UAT dengan ID yang bisa ditelusuri |
+| [`task-breakdown`](skills/task-breakdown/) | PRD/BRD → tiket: satu per endpoint (BE, dengan Kontrak API), per fitur (FE), atau per bug |
+| [`mockup-prototype`](skills/mockup-prototype/) | Mockup/prototype UI dari PRD, per layar dan per role, termasuk state loading/kosong/error |
+| [`coding-standards`](skills/coding-standards/) | Naming, struktur folder, ORM, API, dokumentasi Swagger/OpenAPI, TDD, quality gate, dan checklist review untuk NestJS/Laravel/Golang/Vue/Next.js |
+| [`debug-assistant`](skills/debug-assistant/) | Debugging terstruktur: reproduce → isolasi → root cause → fix → verifikasi dengan bukti |
+| [`user-guide`](skills/user-guide/) | Panduan pengguna non-teknis per role dan per fitur |
+| [`standup-update`](skills/standup-update/) | Standup harian atau laporan mingguan, dibaca dari Riwayat tiket |
+| [`freelance-proposal`](skills/freelance-proposal/) | Proposal project per fase dengan harga Rupiah dan syarat pembayaran |
 
 ## Agent
 
@@ -29,7 +30,7 @@ Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field 
 
 | Agent | Peran | Skill yang dimuat | Bisa ubah kode? |
 |---|---|---|---|
-| [`brd-tracer`](agents/brd-tracer.md) | PRD → BR/PROC/US/AC/TECH/TC di `docs/noskill/01..05` | `erp-brd-traceability`, `erp-domain-design` | Tidak (hanya tulis dokumen) |
+| [`brd-tracer`](agents/brd-tracer.md) | PRD → BR/PROC/US/AC/TECH/TC di `docs/noskill/01..05` | `erp-requirements` | Tidak (hanya tulis dokumen) |
 | [`task-planner`](agents/task-planner.md) | BRD → file tiket `docs/noskill/tickets/*.md` status TODO | `task-breakdown`, `ticket-workflow` | Tidak (hanya tulis tiket) |
 | [`developer`](agents/developer.md) | Kerjakan satu tiket / fix BUG sampai Cara Verifikasi lolos | `coding-standards`, `debug-assistant`, `ticket-workflow` | Ya |
 | [`ticket-reviewer`](agents/ticket-reviewer.md) | Cek perubahan sesuai AC tiket & standar → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
@@ -53,6 +54,9 @@ Pengaturan ini berlaku untuk semua project di komputer itu.
 
 | Perintah | Fungsi |
 |---|---|
+| `/noskill:rapikan [ID]` | Rapikan tiket TODO/HOLD agar sesuai aturan tiket terbaru (gabung tiket per layer, lengkapi Kontrak API, `integrates_with`, `complexity`); usulan ditampilkan dulu sebelum diterapkan |
+| `/noskill:rapikan review <ID>` | Review ulang kode tiket DONE; temuan jadi tiket BUG baru |
+| `/noskill:lazy <permintaan>` | Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan (YAGNI, stdlib dulu, tanpa abstraksi), tanpa tiket/review/QA |
 | `/noskill:fix <deskripsi>` | Bug fix atau perubahan kecil lewat mode cepat |
 | `/noskill:board` | Tampilkan board tiket + pertanyaan tiket HOLD |
 | `/noskill:lanjut [jawaban]` | Lanjutkan tiket yang tertunda dari sesi sebelumnya |
@@ -82,7 +86,7 @@ Mode lengkap:
 
 ```
 [sesi utama, interaktif]           [agent]
-erp-domain-design → prd-writer ──► brd-tracer ──► task-planner ──► tiket TODO
+erp-requirements A → prd-writer ──► brd-tracer ──► task-planner ──► tiket TODO
    (tanya-jawab + persetujuan)      docs/noskill/01..05     docs/noskill/tickets/
 
 Per tiket:
@@ -99,13 +103,13 @@ Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-
 
 ## Eval
 
-`evals/` berisi 7 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, aturan inti dari hook berlaku tanpa skill, task-planner membuat tiket langsung dari PRD (tanpa BRD), task-planner memecah fitur lintas repo jadi tiket per repo, dan developer bekerja di worktree tiket tanpa menyentuh checkout utama (mode paralel). Jalankan setelah mengubah skill atau agent:
+`evals/` berisi 9 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, aturan inti dari hook berlaku tanpa skill, task-planner membuat tiket langsung dari PRD (tanpa BRD), task-planner memecah fitur lintas repo jadi tiket per repo, developer bekerja di worktree tiket tanpa menyentuh checkout utama (mode paralel), `/noskill:lazy` memakai helper yang ada tanpa membuat tiket atau abstraksi baru, dan `/noskill:rapikan` mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui. Jalankan setelah mengubah skill atau agent:
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
 ```
 
-Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $1–2 (7 case).
+Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $1–2 (9 case).
 
 ## Cara install
 

@@ -12,7 +12,7 @@ Kamu adalah orkestrator (tech lead + scrum master). Kamu yang bicara dengan user
 
 ```
 Tahap 1-2 (interaktif, di sesi ini)     Tahap 3-4 (agent)                 Tahap 5 (loop per tiket, agent)
-erp-domain-design → prd-writer ──► brd-tracer ──► task-planner ──► developer → ticket-reviewer → qa-tester
+erp-requirements A → prd-writer ──► brd-tracer ──► task-planner ──► developer → ticket-reviewer → qa-tester
      <docs>/prd.md                    <docs>/01..05      <docs>/tickets/      └── BUG / HOLD / revisi ◄──┘
 ```
 
@@ -32,7 +32,7 @@ Sebelum mulai, pastikan tahu (tanya sekaligus kalau belum jelas). Untuk mode cep
 - Project baru (greenfield) atau menambah ke codebase existing (path/repo-nya di mana)
 - **Satu repo atau beberapa.** Kalau fitur menyentuh lebih dari satu repo (misal backend + web + mobile), lihat bagian Multi-Repo.
 - Level BRD: **lengkap** (BR→UAT, untuk fitur lintas divisi atau yang butuh sign-off/UAT formal), **ringkas** (US→AC→TECH + TC), atau **tanpa BRD** (PRD sudah cukup rinci; tiket dibuat langsung dari PRD)
-- Mulai dari tahap mana. Kalau `<docs>/prd.md`, dokumen BRD, atau `<docs>/tickets/` sudah ada, lanjutkan dari tahap berikutnya — jangan tulis ulang.
+- Mulai dari tahap mana. Kalau `<docs>/prd.md`, dokumen BRD, atau `<docs>/tickets/` sudah ada, lanjutkan dari tahap berikutnya — jangan tulis ulang. Kalau tiket lama dibuat dengan aturan yang berbeda (misal dipecah per layer), sarankan `/noskill:rapikan` dulu.
 - **Profil project.** Mode lengkap: kalau `<docs>/project-profile.md` belum ada, jalankan skill `project-profile` dulu (sekali per project). Mode cepat: pakai kalau ada; kalau belum ada, lanjut saja dan tawarkan membuatnya di akhir. Kalau sudah ada, pakai saja; refresh hanya kalau manifest/lockfile berubah sejak commit di header-nya atau command di profil gagal.
 - **Branch kerja.** Kalau project adalah repo git, buat branch baru dari branch saat ini sebelum kode pertama ditulis: `feat/<prefix-atau-slug>` untuk fitur, `fix/<slug>` untuk bug. Semua commit tiket masuk ke branch ini. Multi-repo: nama branch yang sama di setiap repo yang punya tiket. Kalau working tree tidak bersih, tanya user dulu (commit, stash, atau lanjut di branch saat ini).
 
@@ -46,7 +46,7 @@ Pengganti Tahap 1–4 untuk perubahan kecil:
 
 ## Tahap 1 — Desain Domain (khusus ERP/WMS)
 
-Jalankan checklist skill `erp-domain-design` di sesi ini. Lewati untuk fitur non-ERP.
+Jalankan checklist skill `erp-requirements` Bagian A (desain domain) di sesi ini. Lewati untuk fitur non-ERP.
 
 ## Tahap 2 — PRD
 
@@ -164,5 +164,5 @@ Kalau `<docs>/project-profile.md` berisi `tracker: github` atau `tracker: notion
 
 - **Jangan lompat tahap tanpa gate.** Mode lengkap: user menyetujui PRD, BRD, dan daftar tiket sebelum kode ditulis. Mode cepat: user menyetujui tiketnya.
 - **Kamu tidak menulis kode sendiri di Tahap 5** — itu tugas `developer`. Kamu tidak menilai kode sendiri — itu tugas `ticket-reviewer` dan `qa-tester`. Peranmu memindahkan tiket berdasarkan verdict.
-- **Kalau agent tidak tersedia** (misal di Claude.ai), kerjakan tahap itu sendiri di sesi ini dengan mengikuti skill yang sama yang dipakai agent tersebut (`erp-brd-traceability`, `task-breakdown`, `coding-standards`, `debug-assistant`), tapi tetap jalankan review dan QA sebagai langkah terpisah dengan verdict eksplisit.
+- **Kalau agent tidak tersedia** (misal di Claude.ai), kerjakan tahap itu sendiri di sesi ini dengan mengikuti skill yang sama yang dipakai agent tersebut (`erp-requirements`, `task-breakdown`, `coding-standards`, `debug-assistant`), tapi tetap jalankan review dan QA sebagai langkah terpisah dengan verdict eksplisit.
 - Kalau user cuma minta satu tahap ("PRD aja", "tiketnya aja"), jalankan tahap itu saja lalu tanya apakah mau lanjut.

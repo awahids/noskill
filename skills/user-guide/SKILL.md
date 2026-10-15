@@ -13,7 +13,7 @@ Menyusun dokumentasi yang dibaca oleh **pengguna akhir aplikasi** (karyawan, adm
 | Skill | Audiens | Bahasa | Isi |
 |---|---|---|---|
 | `prd-writer` | Tim dev/product | Teknis | Requirement, arsitektur, schema |
-| `api-doc-standard` | Developer konsumen API | Teknis | Endpoint, payload, status code |
+| `coding-standards` (`references/api-doc.md`) | Developer konsumen API | Teknis | Endpoint, payload, status code |
 | **`user-guide`** | **Pengguna aplikasi (non-teknis)** | **Sederhana, langsung ke tindakan** | **Cara pakai fitur, langkah klik, screenshot** |
 
 Kalau user minta "dokumentasi" tanpa spesifik, tanyakan atau simpulkan dari konteks — kalau yang dibutuhkan buat dibaca karyawan/admin yang pakai aplikasinya, ini skill yang tepat.
