@@ -21,5 +21,5 @@ Setiap kali menulis kode baru, membuat file/folder baru, menamai variable/functi
 
 ## Terkait
 
-- `api-doc-standard` — dokumentasi endpoint mengikuti versioning yang ditentukan di sini
+- Standar dokumentasi Swagger/OpenAPI ada di `references/api-doc.md` (dulu skill `api-doc-standard`)
 - `task-breakdown` — struktur folder/konvensi dari sini dipakai untuk task project baru (greenfield)

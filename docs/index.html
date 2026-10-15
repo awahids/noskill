@@ -232,15 +232,13 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <h3>Requirement &amp; desain</h3>
     <div class="tbl"><table><tbody>
       <tr><td><code>prd-writer</code></td><td>PRD baku dengan diagram Mermaid, didahului minimal 5 pertanyaan klarifikasi. Ada juga mode Reverse-PRD dari kode yang sudah ada.</td></tr>
-      <tr><td><code>erp-domain-design</code></td><td>Checklist ERP/WMS: master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP.</td></tr>
-      <tr><td><code>erp-brd-traceability</code></td><td>Rantai requirement BR → PROC → US → AC → TECH → TC → UAT dengan ID yang bisa ditelusuri.</td></tr>
+      <tr><td><code>erp-requirements</code></td><td>ERP/WMS dalam dua bagian: checklist desain domain (master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP) dan rantai requirement BR → PROC → US → AC → TECH → TC → UAT dengan ID yang bisa ditelusuri.</td></tr>
       <tr><td><code>task-breakdown</code></td><td>Memecah PRD/BRD menjadi task yang punya dependency, cara verifikasi, dan kolom Trace.</td></tr>
       <tr><td><code>mockup-prototype</code></td><td>Mockup atau prototype UI dari PRD, per layar dan per role.</td></tr>
     </tbody></table></div>
     <h3>Standar &amp; kualitas</h3>
     <div class="tbl"><table><tbody>
-      <tr><td><code>coding-standards</code></td><td>Naming, struktur folder, ORM dan migration, format response API, TDD, quality gate, dan checklist review untuk NestJS, Laravel, Golang, Vue, dan Next.js. Detail per stack dibaca saat dibutuhkan saja.</td></tr>
-      <tr><td><code>api-doc-standard</code></td><td>Dokumentasi Swagger/OpenAPI untuk NestJS, Laravel, dan Golang.</td></tr>
+      <tr><td><code>coding-standards</code></td><td>Naming, struktur folder, ORM dan migration, format response API, dokumentasi Swagger/OpenAPI, TDD, quality gate, dan checklist review untuk NestJS, Laravel, Golang, Vue, dan Next.js. Detail per stack dibaca saat dibutuhkan saja.</td></tr>
       <tr><td><code>debug-assistant</code></td><td>Debugging terstruktur: reproduce → isolasi → root cause → verifikasi dengan bukti.</td></tr>
     </tbody></table></div>
     <h3>Dokumen &amp; laporan</h3>
@@ -254,6 +252,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <div class="tbl"><table>
       <thead><tr><th>Perintah</th><th>Fungsi</th></tr></thead>
       <tbody>
+        <tr><td><code>/noskill:rapikan [ID]</code></td><td>Rapikan tiket lama agar sesuai aturan tiket terbaru. Usulan ditampilkan dulu, diterapkan setelah kamu setujui. <code>/noskill:rapikan review &lt;ID&gt;</code> mereview ulang kode tiket DONE.</td></tr>
         <tr><td><code>/noskill:lazy &lt;permintaan&gt;</code></td><td>Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan, tanpa tiket, review, atau QA.</td></tr>
         <tr><td><code>/noskill:fix &lt;deskripsi&gt;</code></td><td>Bug fix atau perubahan kecil lewat mode cepat.</td></tr>
         <tr><td><code>/noskill:board</code></td><td>Status semua tiket, beserta pertanyaan dari tiket HOLD.</td></tr>
@@ -278,7 +277,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <p>Isi <code>tracker: github</code> atau <code>tracker: notion</code> di profil project supaya board tercermin di GitHub Issues atau database Notion. Sinkronnya satu arah dari file ke tracker, dan hanya terjadi saat tiket dibuat, DONE, BUG, atau HOLD.</p>
 
     <h2 id="eval">Eval</h2>
-    <p>Repo ini menyertakan 8 case uji perilaku:</p>
+    <p>Repo ini menyertakan 9 case uji perilaku:</p>
     <ul>
       <li>developer memakai helper yang ada dan menulis test negatif/batas</li>
       <li>reviewer menolak duplikasi</li>
@@ -288,6 +287,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <li>fitur lintas repo dipecah jadi tiket per repo</li>
       <li>developer bekerja di worktree tiket (mode paralel)</li>
       <li><code>/noskill:lazy</code> memakai helper yang ada, tanpa tiket atau abstraksi baru</li>
+      <li><code>/noskill:rapikan</code> mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui</li>
     </ul>
     <p>Jalankan setelah mengubah skill atau agent:</p>
     <div class="cmd"><pre>claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash</pre><button type="button" data-copy>Salin</button></div>

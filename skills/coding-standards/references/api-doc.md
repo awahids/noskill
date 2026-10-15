@@ -1,9 +1,4 @@
----
-name: api-doc-standard
-description: >-
-  Standar dokumentasi Swagger/OpenAPI untuk NestJS, Laravel, dan Golang (swaggo): decorator/anotasi per endpoint, response schema, tag, dan versioning. Gunakan saat membuat atau mendokumentasikan endpoint, atau user menyebut "swagger", "openapi", "api spec", "dokumentasi endpoint".
----
-
+<!-- Bagian dari skill coding-standards. Dibaca sebelum menambah atau mengubah dokumentasi Swagger/OpenAPI. -->
 # API Documentation Standard
 
 Gunakan standar ini setiap kali membuat atau mendokumentasikan endpoint API (NestJS/Laravel/Golang), agar dokumentasi Swagger/OpenAPI konsisten antar service dan mudah dipahami konsumen API (frontend, tim lain, client eksternal).
@@ -13,7 +8,7 @@ Gunakan standar ini setiap kali membuat atau mendokumentasikan endpoint API (Nes
 - Setiap endpoint publik/internal yang dipakai lebih dari satu konsumen **wajib** didokumentasikan.
 - Dokumentasi ditulis bersamaan dengan kode, bukan belakangan.
 - Contoh request/response harus realistis, bukan placeholder kosong (`"string"`, `"example"`).
-- Semua path di dokumentasi **wajib** mengikuti prefix `/api/v{n}` sesuai standar versioning di skill `coding-standards` bagian 6.1 — jangan ada dokumentasi endpoint tanpa versi.
+- Semua path di dokumentasi **wajib** mengikuti prefix `/api/v{n}` sesuai standar versioning di `coding-standards` bagian 6.1 (`references/api-design.md`) — jangan ada dokumentasi endpoint tanpa versi.
 
 ## 2. NestJS (`@nestjs/swagger`)
 

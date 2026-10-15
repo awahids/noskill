@@ -15,7 +15,7 @@ Mengubah PRD menjadi task list yang siap masuk ke tracker (Notion/Jira/Trello/Gi
 1. **Project baru murni (greenfield)** atau **integrasi/penambahan ke project existing**? Cek bagian Architecture di PRD — kalau ada penyebutan sistem lain yang sudah berjalan (repo existing, stack yang harus disamakan, endpoint yang sudah ada), ini kasus integrasi.
 2. Kalau **integrasi ke existing project**, task **wajib mengikuti struktur folder, pola kode, dan konvensi yang sudah disebutkan PRD-nya sebagai existing** — bukan membuat task "setup project baru dari nol". Kutip path/file konkret yang disebut PRD (contoh: `server/internal/delivery/handlers/canteen_proxy.handler.go`, pola `stores/attendance.js`) sebagai referensi langsung di task, bukan folder generik seperti `src/handlers/`.
 3. Kalau PRD tidak menyebutkan detail struktur existing secara spesifik tapi menyebut "terintegrasi ke sistem X", **tanyakan ke user** apakah ada akses ke codebase existing tersebut (path lokal, repo) supaya task-nya presisi — jangan menebak struktur folder yang tidak disebutkan.
-4. **Cek apakah sudah ada dokumen `erp-brd-traceability`** (US-xxx, AC-xxx, TECH-xxx) untuk fitur ini. Kalau ada, dokumen itu jadi sumber utama breakdown — lihat aturan traceability di Langkah 4. Kalau tidak ada, sumbernya PRD saja.
+4. **Cek apakah sudah ada dokumen BRD (`erp-requirements` Bagian B)** (US-xxx, AC-xxx, TECH-xxx) untuk fitur ini. Kalau ada, dokumen itu jadi sumber utama breakdown — lihat aturan traceability di Langkah 4. Kalau tidak ada, sumbernya PRD saja.
 5. Identifikasi **berapa banyak sistem/codebase yang terdampak** (contoh: 2 — backend/frontend sistem Kantin baru, plus penambahan tipis di backend/frontend HRIS existing). Setiap sistem yang terdampak dapat kelompok task terpisah; kalau sistem itu repo terpisah, tiketnya diberi field `repo:` (lihat `feature-flow` bagian Multi-Repo).
 
 ## Aturan Tiket — Satu Tiket per Endpoint, per Fitur, atau per Bug
@@ -73,7 +73,7 @@ Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), l
 - [ ] **[TASK-ID]** [Judul task singkat, actionable]
   - **Deskripsi:** [apa yang dikerjakan, 1-2 kalimat]
   - **Acuan PRD:** [section/bagian PRD terkait, misal "Database Schema — tabel orders"]
-  - **Trace:** [hanya kalau ada dokumen `erp-brd-traceability` — `US-INV-001 / TECH-003 / AC-002` yang dipenuhi task ini]
+  - **Trace:** [hanya kalau ada dokumen BRD (`erp-requirements` Bagian B) — `US-INV-001 / TECH-003 / AC-002` yang dipenuhi task ini]
   - **File/lokasi:** [path konkret kalau project existing, atau struktur folder yang berlaku dari `coding-standards`]
   - **Acceptance Criteria:**
     - [ ] [kriteria terverifikasi 1]
@@ -88,7 +88,7 @@ Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), l
 
 **Aturan penomoran Task-ID:** prefix per sistem/modul supaya gampang dilacak, misal `KTN-BE-001` (Kantin Backend), `KTN-FE-001` (Kantin Frontend), `HR-INT-001` (integrasi di HRIS) — konsisten dan pendek.
 
-**Traceability ke `erp-brd-traceability` (kalau dokumennya ada):**
+**Traceability ke dokumen BRD (`erp-requirements` Bagian B, kalau dokumennya ada):**
 - Setiap TECH-xxx tercakup **minimal satu** task; beberapa TECH kecil untuk perilaku yang sama boleh digabung dalam satu task (kolom Trace berisi semuanya). TECH yang terlalu besar boleh dipecah jadi beberapa task, tapi semuanya merujuk TECH yang sama di kolom **Trace** — jangan buat ulang task dari PRD untuk hal yang sudah tercakup TECH.
 - Acceptance Criteria task diambil dari AC-xxx yang dirujuk TECH tersebut (tulis ID-nya, misal `AC-002: qty > outstanding ditolak`), bukan ditulis ulang dengan kata-kata baru.
 - Task tambahan yang tidak berasal dari TECH mana pun (setup, CI/CD, integrasi existing) tetap boleh, tapi kolom Trace diisi `—` dan alasannya di Deskripsi.
@@ -111,7 +111,7 @@ Default urutan (sesuaikan kalau PRD punya kebutuhan berbeda):
 4. **Integrasi ke sistem existing** (proxy, sync endpoint) — setelah API utama stabil, supaya tidak integrasi ke API yang masih berubah-ubah
 5. **Frontend** — bisa paralel dengan integrasi kalau tim beda orang, tapi urutkan setelah API dasar ada
 6. **Fitur pendukung** (notifikasi, analitik, export laporan) — biasanya bisa belakangan, tidak blocking fitur inti
-7. **QA/testing & dokumentasi** — termasuk kalau perlu `api-doc-standard` atau `user-guide` sebagai task terpisah di fase ini
+7. **QA/testing & dokumentasi** — termasuk `user-guide` kalau perlu (dokumentasi Swagger ikut di tiket endpoint-nya, bukan task terpisah)
 
 Tandai task mana yang **bisa dikerjakan paralel** vs yang **strictly sequential** lewat kolom Dependency, supaya kalau dikerjakan tim/beberapa orang jelas mana yang boleh mulai bersamaan.
 
@@ -131,6 +131,6 @@ Tandai task mana yang **bisa dikerjakan paralel** vs yang **strictly sequential*
 
 ## Referensi Skill Terkait
 - `prd-writer` — sumber PRD yang jadi acuan breakdown
-- `erp-brd-traceability` — kalau ada, sumber US/AC/TECH yang wajib dirujuk di kolom Trace
+- `erp-requirements` — kalau ada dokumen BRD (Bagian B), sumber US/AC/TECH yang wajib dirujuk di kolom Trace
 - `coding-standards` — dipakai untuk struktur folder/konvensi task backend/frontend kalau project baru (tidak ada existing pattern untuk diikuti)
 - `standup-update` — setelah task dikerjakan, progress-nya bisa dirangkum pakai skill ini

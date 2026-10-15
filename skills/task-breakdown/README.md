@@ -21,4 +21,4 @@ Setelah PRD selesai (dari `prd-writer` atau upload user), saat diminta "buatkan 
 - `prd-writer` — sumber PRD yang jadi acuan breakdown
 - `coding-standards` — struktur folder/konvensi task untuk project baru
 - `standup-update` — merangkum progress setelah task dikerjakan
-- `erp-brd-traceability` — untuk fitur ERP, Acceptance Criteria & Technical Task dari skill itu jadi input breakdown di sini
+- `erp-requirements` — untuk fitur ERP, Acceptance Criteria & Technical Task dari BRD (Bagian B) jadi input breakdown di sini
