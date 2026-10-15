@@ -2,7 +2,7 @@
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk alur tiket lengkap (develop → review → QA) dengan agent.
 
-📖 **Dokumentasi lengkap:** [noskill Docs](https://claude.ai/artifact/QZPKn7Z6QL3XpB2XdHLgTx) — cara install, cara kerja alur tiket, semua skill & agent, shortcut, dan konfigurasi.
+📖 **Dokumentasi lengkap:** [awahids.github.io/noskill](https://awahids.github.io/noskill/) (sumber: [`docs/index.html`](docs/index.html)) — cara install, cara kerja alur tiket, semua skill & agent, shortcut, dan konfigurasi.
 
 ## Skills
 
@@ -99,9 +99,9 @@ claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
 
 Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $1.
 
-## Cara pakai
+## Cara install
 
-**Claude Code (sebagai plugin):**
+### Claude Code (terminal, desktop, VS Code)
 ```
 /plugin install noskill --marketplace awahids/noskill
 ```
@@ -110,9 +110,18 @@ Untuk Claude Code versi lama (sebelum 2.1.275), dua langkah:
 /plugin marketplace add awahids/noskill
 /plugin install noskill@noskill
 ```
-Skill dipanggil dengan prefix plugin, misal `/noskill:prd-writer`. Detail per-skill ada di README masing-masing folder di `skills/`.
+Skill dipanggil dengan prefix plugin, misal `/noskill:fix`. Plugin yang dipasang dengan cara ini hanya ada di komputer itu.
 
-**Claude.ai:**
+### Akun Claude (claude.ai, aplikasi desktop, Cowork, dan sesi cloud)
+Pasang sekali di akun, lalu plugin tersinkron ke chat, Cowork, dan setiap sesi Claude Code yang login dengan akun yang sama:
+1. Buka [claude.ai/customize/plugins](https://claude.ai/customize/plugins) (**Customize → Plugins**).
+2. Pilih **Add → Add marketplace**, isi `awahids/noskill`.
+3. Pilih plugin **noskill**, lalu **Add**. Opsional: aktifkan **Sync automatically** supaya update dari GitHub langsung masuk.
+4. Di sesi Claude Code yang sudah terbuka, jalankan `/reload-plugins`.
+
+Di chat claude.ai hanya skill yang aktif; agent dan hook berjalan di Claude Code dan Cowork. Pada plan Team/Enterprise, menu **Add marketplace** bisa dibatasi oleh Owner organisasi.
+
+### Skill satuan di Claude.ai
 ZIP satu folder skill utuh (nama folder harus sama dengan `name` di SKILL.md, `references/` ikut di dalamnya), lalu upload lewat **Customize → Skills → + → Upload a skill**. Contoh:
 ```bash
 cd skills && zip -r prd-writer.zip prd-writer
@@ -120,5 +129,4 @@ cd skills && zip -r prd-writer.zip prd-writer
 
 ## Lisensi
 
-Bebas dipakai dan dimodifikasi.
-
+[MIT](LICENSE).

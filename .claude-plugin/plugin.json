@@ -1,12 +1,23 @@
 {
   "name": "noskill",
   "version": "1.0.0",
-  "description": "Skill & agent untuk siklus pengembangan fitur: desain domain ERP/WMS, PRD, BRD traceability, task breakdown, coding & API standard, debugging, user guide, standup, dan proposal freelance.",
+  "description": "Alur kerja seperti tim engineering di Claude: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu DONE — dengan aturan scope, reuse, solusi sederhana, dan test positif/negatif. Termasuk skill PRD, BRD ERP, coding standard, debugging, dan dokumentasi.",
   "author": {
     "name": "Wahid",
     "url": "https://awahids.my.id"
   },
   "repository": "https://github.com/awahids/noskill",
+  "homepage": "https://github.com/awahids/noskill",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "code-review",
+    "qa",
+    "tdd",
+    "prd",
+    "erp",
+    "tickets"
+  ],
   "userConfig": {
     "docs_dir": {
       "type": "string",

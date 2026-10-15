@@ -9,7 +9,7 @@
     {
       "name": "noskill",
       "source": "./",
-      "description": "Skill & agent untuk siklus pengembangan fitur ERP/WMS dan kerja development sehari-hari."
+      "description": "Alur kerja seperti tim engineering di Claude: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu DONE — dengan aturan scope, reuse, solusi sederhana, dan test positif/negatif. Termasuk skill PRD, BRD ERP, coding standard, debugging, dan dokumentasi."
     }
   ]
 }
