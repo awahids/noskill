@@ -105,6 +105,12 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
 ## Cara Verifikasi
 [command/langkah konkret yang membuktikan tiket selesai]
 
+## Catatan
+<!-- opsional: temuan pembuat tiket saat membaca kode, supaya developer tidak mencari ulang -->
+- Helper yang dipakai ulang: `lib/stock/outstanding.ts` — `getOutstandingQty(poId, itemId)`
+- Pola yang diikuti: `src/modules/goods-receipt/goods-receipt.service.ts` (validasi di service, bukan controller)
+- Test yang sudah ada: `src/modules/goods-receipt/goods-receipt.service.spec.ts`
+
 ## Riwayat
 - 2026-10-14 09:12 TODO — dibuat oleh task-planner
 ```

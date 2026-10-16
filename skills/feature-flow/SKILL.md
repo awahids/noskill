@@ -39,7 +39,7 @@ Sebelum mulai, pastikan tahu (tanya sekaligus kalau belum jelas). Untuk mode cep
 ## Mode Cepat — Satu Tiket Langsung
 
 Pengganti Tahap 1–4 untuk perubahan kecil:
-1. Baca kode yang terkait permintaan (grep, buka file-nya) supaya `File/Lokasi` berisi path nyata.
+1. Baca kode yang terkait permintaan (grep, buka file-nya) supaya `File/Lokasi` berisi path nyata. Catat yang kamu temukan di bagian `## Catatan` tiket — helper yang bisa dipakai ulang (path + nama fungsi), pola/file yang jadi contoh, dan file test yang sudah ada — supaya developer tidak mengulang pencarian yang sama.
 2. Tulis tiket mengikuti Aturan Tiket di `task-breakdown` — satu per bug, per endpoint, atau per fitur; kalau BE dan FE sama-sama berubah, satu tiket BE dengan `## Kontrak API` plus satu tiket FE dengan `integrates_with` — di `<docs>/tickets/<ID>.md` sesuai format `ticket-workflow`: ID `FIX-NNN` untuk bug atau `TASK-NNN` untuk fitur kecil (lanjutkan nomor yang sudah ada), `trace: —`, `complexity` (lihat `ticket-workflow`), AC berisi sisi positif **dan** negatif, `File/Lokasi`, dan `Cara Verifikasi` berupa command nyata.
 3. Kalau requirement-nya ambigu, tanyakan dulu — jangan menebak AC.
 4. **Gate:** tampilkan tiket (AC + File/Lokasi) dan minta persetujuan singkat. Setelah disetujui, lanjut ke Tahap 5.

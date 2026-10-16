@@ -16,7 +16,9 @@ Input dari orkestrator: path PRD, prefix domain, level (full BR→UAT atau ringk
 
 Langkah:
 1. Baca PRD lengkap. Kalau ada dokumen BRD lama di `<docs>/`, baca dulu dan lanjutkan penomorannya — jangan menimpa ID yang sudah ada.
-2. Tulis dokumen per layer ke struktur folder `<docs>/01-business/` … `<docs>/05-testing/` sesuai skill `erp-requirements` Bagian B.
+2. Tulis dokumen per layer ke struktur folder sesuai skill `erp-requirements` Bagian B:
+   - **Level lengkap:** `<docs>/01-business/` … `<docs>/05-testing/`, termasuk UAT.
+   - **Level ringkas:** hanya `<docs>/03-functional/` (US + AC), `<docs>/04-technical/` (TECH), dan `<docs>/05-testing/` (TC). Jangan buat `01-business/`, `02-process/`, atau UAT — konteks bisnis yang perlu ditulis singkat di bagian atas dokumen 03-functional.
 3. Pastikan rantai lengkap: setiap US punya AC (happy path, reject path, side-effect, larangan), setiap AC diturunkan ke TECH, dan setiap AC punya minimal satu TC.
 4. Jangan mengarang aturan bisnis yang tidak ada di PRD. Kalau PRD ambigu atau bertentangan, catat sebagai pertanyaan terbuka.
 

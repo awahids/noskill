@@ -110,13 +110,13 @@ Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-
 
 ## Eval
 
-`evals/` berisi 9 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, aturan inti dari hook berlaku tanpa skill, task-planner membuat tiket langsung dari PRD (tanpa BRD), task-planner memecah fitur lintas repo jadi tiket per repo, developer bekerja di worktree tiket tanpa menyentuh checkout utama (mode paralel), `/noskill:lazy` memakai helper yang ada tanpa membuat tiket atau abstraksi baru, dan `/noskill:rapikan` mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui. Jalankan setelah mengubah skill atau agent:
+`evals/` berisi 14 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, aturan inti dari hook berlaku tanpa skill, task-planner membuat tiket langsung dari PRD (tanpa BRD), task-planner memecah fitur lintas repo jadi tiket per repo, developer bekerja di worktree tiket tanpa menyentuh checkout utama (mode paralel), `/noskill:lazy` memakai helper yang ada tanpa membuat tiket atau abstraksi baru, `/noskill:rapikan` mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui lalu menerapkannya setelah disetujui, `/noskill:rapikan review` membuat tiket BUG dari temuan review ulang, QA menolak (FAIL) implementasi yang AC negatifnya gagal dan meloloskan (PASS) yang benar, dan `brd-tracer` menurunkan PRD jadi dokumen BRD ringkas dengan ID traceable. Jalankan setelah mengubah skill atau agent:
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
 ```
 
-Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $1–2 (9 case).
+Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $2–3 (14 case).
 
 ## Cara install
 
