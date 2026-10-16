@@ -10,7 +10,7 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - **Jam di Riwayat dan durasi di board.** Riwayat ditulis dengan `YYYY-MM-DD HH:MM`. `/noskill:board` menghitung menit per tiket di tahap developer, review, dan QA, rata-rata per tahap, dan tahap yang paling lama.
 
 ### Ditambahkan
-- Logo noskill (`docs/logo.svg`, `docs/logo.png` 512px): tiket dengan tanda centang. Dipakai di README, favicon, dan navigasi halaman docs.
+- Logo noskill: huruf **n** yang sekaligus jalur kerja tiket — titik biru (developer), kuning (reviewer), dan centang (QA lolos/DONE). File: `docs/logo.svg` (ikon), `docs/logo-wordmark.svg` / `docs/logo-wordmark-dark.svg` (ikon + tulisan, untuk latar terang/gelap), `docs/logo.png` 512px. Dipakai di README, favicon, dan navigasi halaman docs.
 
 ## 1.3.0 — 2026-10-15
 

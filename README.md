@@ -1,4 +1,9 @@
-<p align="center"><img src="docs/logo.svg" width="96" alt="Logo noskill"></p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo-wordmark-dark.svg">
+    <img src="docs/logo-wordmark.svg" width="300" alt="noskill">
+  </picture>
+</p>
 
 # noskill
 
