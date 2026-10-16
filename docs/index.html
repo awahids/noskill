@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>noskill Docs</title>
 <meta name="description" content="Dokumentasi plugin noskill untuk Claude Code: install, alur tiket developer–reviewer–QA, skill, agent, shortcut, dan konfigurasi.">
@@ -46,7 +47,7 @@ a { color: var(--accent); }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 48px; padding-block: 40px 80px; }
 nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 13.5px; }
-nav.toc .brand { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--fg); text-decoration: none; display: block; margin-bottom: 14px; }
+nav.toc .brand { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--fg); text-decoration: none; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 nav.toc a { display: block; padding: 4px 10px; border-radius: 6px; color: var(--muted); text-decoration: none; }
 nav.toc a:hover { background: var(--accent-soft); color: var(--fg); }
@@ -98,7 +99,7 @@ html { scroll-behavior: smooth; }
 
 <div class="wrap">
   <nav class="toc" aria-label="Daftar isi">
-    <a class="brand" href="#top">noskill</a>
+    <a class="brand" href="#top"><img src="logo.svg" alt="" width="28" height="28">noskill</a>
     <ol>
       <li><a href="#install">Install</a></li>
       <li><a href="#mulai">Mulai cepat</a></li>

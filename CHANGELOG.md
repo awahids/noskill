@@ -9,6 +9,9 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - **Laporan agent ke file.** Developer, reviewer, dan QA menulis laporan lengkap ke `<docs>/reports/<ID>/dev|review|qa-<putaran>.md` dan menjawab orkestrator maksimal 6 baris (verdict, ringkasan, path). Agent berikutnya membaca laporan dari file. Sesi utama tetap ringan di fitur dengan banyak tiket, dan Riwayat tiket cukup merujuk path laporan.
 - **Jam di Riwayat dan durasi di board.** Riwayat ditulis dengan `YYYY-MM-DD HH:MM`. `/noskill:board` menghitung menit per tiket di tahap developer, review, dan QA, rata-rata per tahap, dan tahap yang paling lama.
 
+### Ditambahkan
+- Logo noskill (`docs/logo.svg`, `docs/logo.png` 512px): tiket dengan tanda centang. Dipakai di README, favicon, dan navigasi halaman docs.
+
 ## 1.3.0 — 2026-10-15
 
 ### Ditambahkan
