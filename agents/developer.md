@@ -5,7 +5,6 @@ description: >-
 tools: Read, Write, Edit, Bash, Glob, Grep
 skills:
   - coding-standards
-  - ticket-workflow
 model: inherit
 color: green
 ---
@@ -33,7 +32,7 @@ Kalau ada profil project — path yang diberikan orkestrator (multi-repo: profil
 
 
 1. Baca file tiket lengkap, termasuk `## Riwayat`. Kalau ini revisi (ada catatan review) atau `status: BUG` (ada bug report), yang dikerjakan adalah poin-poin di catatan terakhir itu saja.
-2. Baca kode di `## File/Lokasi` dan sekitarnya. **Cari dulu** (grep) helper, service, pola, dan dependency yang sudah melakukan hal serupa — grep konsepnya, bukan hanya nama fungsi (misal `clamp|limit|min|max` untuk pembatasan nilai, `format|currency` untuk format uang). Kalau ada, pakai itu, jangan tulis versi baru — helper yang sudah ada menang atas versi inline, meskipun versi inline-nya cuma satu baris stdlib. Logic bisnis baru ditaruh di layer yang bisa dipakai ulang dan dites (service/usecase/`lib`), bukan di controller atau komponen UI (`coding-standards` prinsip 4).
+2. Kalau tiket punya `## Catatan`, mulai dari sana: helper, file contoh, dan test yang tercatat sudah dicari pembuat tiket — pakai langsung, jangan grep ulang hal yang sama. Lalu baca kode di `## File/Lokasi` dan sekitarnya. Untuk konsep yang **belum** tercakup catatan, **cari dulu** (grep) helper, service, pola, dan dependency yang sudah melakukan hal serupa — grep konsepnya, bukan hanya nama fungsi (misal `clamp|limit|min|max` untuk pembatasan nilai, `format|currency` untuk format uang). Kalau ada, pakai itu, jangan tulis versi baru — helper yang sudah ada menang atas versi inline, meskipun versi inline-nya cuma satu baris stdlib. Logic bisnis baru ditaruh di layer yang bisa dipakai ulang dan dites (service/usecase/`lib`), bukan di controller atau komponen UI (`coding-standards` prinsip 4).
 3. **Susun rencana sebelum menulis kode:**
    - File yang akan diubah (harus cocok dengan `## File/Lokasi`)
    - Pendekatan yang dipilih, dan alternatif yang lebih sederhana yang sudah dipertimbangkan beserta alasan kenapa tidak cukup

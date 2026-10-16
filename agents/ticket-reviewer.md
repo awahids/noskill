@@ -5,7 +5,6 @@ description: >-
 tools: Read, Bash, Glob, Grep
 skills:
   - coding-standards
-  - ticket-workflow
 model: sonnet
 color: yellow
 ---

@@ -88,48 +88,7 @@ Kalau project sudah punya struktur sendiri, ikuti struktur existing — referens
 - Return type eksplisit untuk public method/service (khusus TypeScript).
 - Error handling: jangan silent-catch (`catch {}` kosong). Gunakan custom exception deskriptif, ditangani di layer filter/handler.
 
-Contoh:
-```typescript
-// ❌ Kurang baik
-async function getUser(id) {
-  const user = await this.repo.find(id);
-  return user;
-}
-
-// ✅ Baik
-async function getUserById(id: string): Promise<UserResponseDto> {
-  const user = await this.userRepository.findById(id);
-  if (!user) {
-    throw new NotFoundException(`User with id ${id} not found`);
-  }
-  return UserMapper.toDto(user);
-}
-```
-
-**Golang — error handling idiomatik (return error, jangan panic untuk expected error):**
-```go
-// ❌ Kurang baik — error ditelan diam-diam
-func GetOrderByID(id string) *Order {
-    order, _ := repo.FindByID(id)
-    return order
-}
-
-// ✅ Baik — error di-wrap dengan konteks, sentinel error untuk kasus spesifik
-var ErrOrderNotFound = errors.New("order not found")
-
-func (s *OrderService) GetOrderByID(ctx context.Context, id string) (*Order, error) {
-    order, err := s.repo.FindByID(ctx, id)
-    if errors.Is(err, sql.ErrNoRows) {
-        return nil, ErrOrderNotFound
-    }
-    if err != nil {
-        return nil, fmt.Errorf("failed to get order %s: %w", id, err)
-    }
-    return order, nil
-}
-```
-- `panic` hanya untuk error yang benar-benar tidak boleh terjadi (programmer error), bukan untuk expected error seperti "data tidak ditemukan"
-- Handler yang menerima error dari service memetakan ke HTTP status code yang sesuai (`errors.Is(err, ErrOrderNotFound)` → 404), bukan generic 500 untuk semua error
+Contoh TypeScript dan pola error handling Golang (wrap error, sentinel error, `panic` hanya untuk programmer error, handler memetakan error ke status code): [`references/functions-tdd.md`](references/functions-tdd.md).
 
 ### 5.1 Test-Driven Development (TDD)
 
@@ -140,22 +99,7 @@ Untuk logic yang punya aturan bisnis nontrivial (kalkulasi, validasi bercabang, 
 2. **GREEN** — tulis kode **paling minimal** supaya test lulus, jangan sekalian menambah fitur lain yang belum ada test-nya (YAGNI — *You Aren't Gonna Need It*)
 3. **REFACTOR** — rapikan kode setelah test hijau (naming, duplikasi, struktur), jalankan ulang test tiap kali refactor untuk pastikan masih lulus
 
-```typescript
-// 1. RED — test dulu, belum ada implementasi calculateExcessAmount
-it('should return 0 excess when subsidy covers full meal price', () => {
-  expect(calculateExcessAmount({ mealPrice: 15000, subsidyAmount: 15000 })).toBe(0);
-});
-it('should return the gap when subsidy is less than meal price', () => {
-  expect(calculateExcessAmount({ mealPrice: 15000, subsidyAmount: 10000 })).toBe(5000);
-});
-
-// 2. GREEN — implementasi minimal
-function calculateExcessAmount({ mealPrice, subsidyAmount }: { mealPrice: number; subsidyAmount: number }): number {
-  return Math.max(0, mealPrice - subsidyAmount);
-}
-
-// 3. REFACTOR — kalau perlu rapikan lebih lanjut, test di atas jadi jaring pengaman
-```
+Contoh siklus lengkap dengan kode: [`references/functions-tdd.md`](references/functions-tdd.md).
 
 **Aturan tambahan:**
 - Kalau menulis kode duluan lalu sadar butuh test, tulis test-nya lalu **pastikan test itu bisa gagal** kalau logic-nya salah (revert sementara implementasi, cek test merah, baru kembalikan) — test yang tidak pernah terbukti bisa gagal tidak bisa dipercaya
@@ -180,21 +124,11 @@ Sebelum kode dianggap "selesai", jalankan berurutan — **kalau satu tahap gagal
 2. Kalau implementasi yang salah → perbaiki implementasi, test tetap
 3. Kalau memang test-nya salah (ekspektasi keliru) → boleh diubah, tapi **jelaskan alasannya** (di commit message atau komentar), jangan diam-diam diubah supaya cepat hijau
 
-Contoh anti-pattern yang harus dihindari:
-```typescript
-// ❌ Test awalnya expect(result).toBe(150000), gagal karena bug di kalkulasi
-// Lalu "diperbaiki" dengan mengubah expected value supaya cocok dengan output yang salah:
-expect(result).toBe(145000);  // <- ini nutup bug, bukan nemuin bug
-```
-Kalau nilai yang diharapkan berubah karena requirement memang berubah, itu sah — bedanya ada di alasan perubahannya, bukan sekadar "biar lulus".
+Contoh anti-pattern: [`references/functions-tdd.md`](references/functions-tdd.md).
 
 ### 5.3 Simplify Pass — Setelah Fitur Jalan
 
-Setelah implementasi lulus test dan quality gates, ada tahap terpisah untuk merapikan kode **tanpa mengubah perilakunya**:
-- Sasaran: nested ternary yang membingungkan, function yang melakukan lebih dari satu hal, logic yang terlalu padat/sulit dibaca sekali lihat, abstraksi yang masuk akal saat ditulis tapi sekarang membingungkan
-- **Aturan ketat: hanya boleh mengubah *cara* perilaku diekspresikan, tidak boleh mengubah perilakunya.** Kalau simplify pass butuh mengubah logic/hasil, itu bukan simplify lagi — itu perubahan fungsional yang butuh test baru/diperbarui
-- Jalankan ulang test setelah simplify pass untuk pastikan masih hijau — kalau ada test yang gagal setelah "sekadar merapikan", berarti perilakunya kebawa berubah, itu bug baru yang harus diperbaiki, bukan tanda test-nya perlu disesuaikan
-- Tidak perlu dilakukan untuk kode sepele; paling berguna untuk logic yang ditulis cepat saat awal implementasi dan belum sempat dirapikan
+Merapikan kode tanpa mengubah perilaku, setelah test dan quality gates hijau; test dijalankan ulang sesudahnya. Detail: [`references/functions-tdd.md`](references/functions-tdd.md).
 
 ### 5.4 Logging: Error Log vs Audit Log
 
@@ -220,28 +154,7 @@ Ringkasan yang selalu berlaku: semua endpoint pakai prefix `/api/v{n}`, satu for
 
 ## 8. Git & Commit Convention
 
-### 8.1 Branch & Commit
-
-Branch: `feature/order-checkout-flow`, `fix/user-login-null-pointer`, `hotfix/payment-webhook-timeout`, `refactor/order-service-cleanup`
-
-Commit (Conventional Commits): `<type>: <deskripsi singkat, present tense>`
-Tipe: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `style`, `perf`
-
-### 8.2 Environment & Secrets
-
-- **`.env` tidak pernah di-commit** — wajib ada di `.gitignore` sejak commit pertama project. Kalau project sudah terlanjur commit `.env`, hapus dari history (`git filter-repo`/BFG) dan **rotate semua secret yang sempat ke-expose**, jangan cuma dihapus dari commit terbaru (masih ada di history git).
-- **Selalu sertakan `.env.example`** di-commit ke repo — isinya nama variable yang dibutuhkan dengan value placeholder/dummy (`DATABASE_URL=postgres://user:pass@localhost:5432/dbname`), supaya orang lain (atau diri sendiri 6 bulan kemudian) tahu env var apa saja yang perlu diisi tanpa harus menebak dari kode.
-- **Secret di CI/CD dan production** disimpan di secret manager platform (GitHub Actions secrets, Vercel/Railway env vars, dll), bukan hardcoded di file config yang ikut ter-commit.
-- **Rotasi secret** setelah: ada anggota tim yang keluar dan sempat punya akses, ada indikasi kebocoran (log ke-expose, screenshot ke-share tidak sengaja), atau secara berkala untuk kredensial sensitif (payment gateway, service-to-service key) sesuai kebijakan yang wajar untuk skala project.
-- Untuk kredensial yang dipakai lintas sistem (contoh pola `X-Service-Key` di integrasi antar backend) — simpan di `.env` masing-masing sistem, jangan hardcode di kode meskipun "cuma internal".
-
-### 8.3 Changelog
-
-Untuk project yang punya rilis/versi yang perlu dikomunikasikan (dipakai user lain, dirilis ke production secara berkala, atau open source) — generate `CHANGELOG.md` dari histori commit, bukan ditulis manual dari ingatan:
-
-- Karena commit sudah mengikuti Conventional Commits (8.1), changelog bisa di-generate otomatis (`conventional-changelog`, `git-cliff`, atau built-in changelog generator dari platform seperti GitHub Releases) — kelompokkan otomatis per tipe (`feat` → "Features", `fix` → "Bug Fixes", dst)
-- Commit dengan `BREAKING CHANGE:` di footer atau `!` setelah tipe (`feat!:`) ditandai jelas di changelog sebagai breaking — selaras dengan checklist breaking change di `references/api-doc.md`
-- Untuk project kecil/internal yang tidak dirilis ke pihak luar, changelog opsional — tidak perlu dipaksakan kalau tidak ada yang membacanya
+Ringkasan yang selalu berlaku: commit memakai Conventional Commits (`feat:`, `fix:`, `refactor:`, …), `.env` tidak pernah di-commit (yang di-commit `.env.example`), dan secret tidak di-hardcode. **Baca [`references/git.md`](references/git.md)** untuk penamaan branch, aturan secret dan rotasinya, serta changelog.
 
 ---
 
