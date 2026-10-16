@@ -34,7 +34,7 @@ Sebelum mulai, pastikan tahu (tanya sekaligus kalau belum jelas). Untuk mode cep
 - Level BRD: **lengkap** (BR→UAT, untuk fitur lintas divisi atau yang butuh sign-off/UAT formal), **ringkas** (US→AC→TECH + TC), atau **tanpa BRD** (PRD sudah cukup rinci; tiket dibuat langsung dari PRD)
 - Mulai dari tahap mana. Kalau `<docs>/prd.md`, dokumen BRD, atau `<docs>/tickets/` sudah ada, lanjutkan dari tahap berikutnya — jangan tulis ulang. Kalau tiket lama dibuat dengan aturan yang berbeda (misal dipecah per layer), sarankan `/noskill:rapikan` dulu.
 - **Profil project.** Mode lengkap: kalau `<docs>/project-profile.md` belum ada, jalankan skill `project-profile` dulu (sekali per project). Mode cepat: pakai kalau ada; kalau belum ada, lanjut saja dan tawarkan membuatnya di akhir. Kalau sudah ada, pakai saja; refresh hanya kalau manifest/lockfile berubah sejak commit di header-nya atau command di profil gagal.
-- **Branch kerja.** Kalau project adalah repo git, buat branch baru dari branch saat ini sebelum kode pertama ditulis: `feat/<prefix-atau-slug>` untuk fitur, `fix/<slug>` untuk bug. Semua commit tiket masuk ke branch ini. Multi-repo: nama branch yang sama di setiap repo yang punya tiket. Kalau working tree tidak bersih, tanya user dulu (commit, stash, atau lanjut di branch saat ini).
+- **Branch kerja.** Kalau project adalah repo git, buat branch baru dari branch saat ini sebelum kode pertama ditulis: `feat/<prefix-atau-slug>` untuk fitur, `fix/<slug>` untuk bug. Semua commit tiket masuk ke branch ini. Multi-repo: nama branch yang sama di setiap repo yang punya tiket. Kalau working tree tidak bersih, tanya user dulu (commit, stash, atau lanjut di branch saat ini). Tambahkan `.noskill-cache/` ke `.git/info/exclude` (cache typecheck/lint versi cepat).
 
 ## Mode Cepat — Satu Tiket Langsung
 
@@ -78,23 +78,25 @@ Ambil tiket sesuai urutan di `ticket-workflow` (BUG dulu, lalu TODO yang depende
 
 Untuk satu tiket:
 
-1. **Develop** — set `IN_PROGRESS`, panggil agent `developer` dengan path tiket.
+**Laporan agent ke file.** Setiap pemanggilan agent menyertakan path laporannya: `<docs>/reports/<ID>/dev-<n>.md`, `review-<n>.md`, atau `qa-<n>.md` (n = `rounds` + 1). Agent menulis laporan lengkap ke sana dan menjawabmu maksimal 6 baris (verdict, ringkasan, path). Jangan membaca laporan lengkap kecuali perlu (misal untuk menyusun pertanyaan HOLD) — cukup teruskan path-nya ke agent berikutnya.
+
+1. **Develop** — set `IN_PROGRESS`, panggil agent `developer` dengan path tiket dan path laporan.
    - **Model:** tiket `complexity: simple` → panggil developer dengan model `sonnet`; `complex` atau tidak diisi → model sesi. Tiket `simple` yang sudah 2 kali kembali ke developer (`rounds` = 2) dikerjakan ulang dengan model sesi.
-   - **Revisi (CHANGES_REQUESTED/BUG): lanjutkan developer yang sama.** Kirim catatan review/bug report terbaru ke agent developer yang mengerjakan tiket itu sebelumnya (SendMessage ke ID agent-nya — simpan ID itu selama sesi), bukan agent baru, karena konteks tiket dan kodenya sudah ada. Panggil developer baru hanya kalau agent lama tidak tersedia (sesi baru, setelah HOLD, atau ganti model).
+   - **Revisi (CHANGES_REQUESTED/BUG): lanjutkan developer yang sama.** Kirim path laporan review/QA terbaru ke agent developer yang mengerjakan tiket itu sebelumnya (SendMessage ke ID agent-nya — simpan ID itu selama sesi), bukan agent baru, karena konteks tiket dan kodenya sudah ada. Panggil developer baru hanya kalau agent lama tidak tersedia (sesi baru, setelah HOLD, atau ganti model).
    - `READY_FOR_REVIEW` → set `REVIEW`
    - `BLOCKED` → set `HOLD`
-2. **Review** — panggil agent `ticket-reviewer` dengan path tiket dan laporan `READY_FOR_REVIEW` terakhir dari developer (sudah ringkas, termasuk bukti RED). Reviewer butuh laporan itu untuk menilai bukti test.
+2. **Review** — panggil agent `ticket-reviewer` dengan path tiket, path laporan developer terakhir (berisi bukti RED dan gates), dan path laporan review.
    - `APPROVED` → set `QA`
-   - `CHANGES_REQUESTED` → set `IN_PROGRESS`, `rounds + 1`, tulis catatan review di Riwayat, kembali ke langkah 1
+   - `CHANGES_REQUESTED` → set `IN_PROGRESS`, `rounds + 1`, tulis ringkasan temuan (1–3 baris) dan path laporan review di Riwayat, kembali ke langkah 1
    - `BLOCKED` → set `HOLD`
-3. **QA** — panggil agent `qa-tester` dengan path tiket dan folder `<docs>/05-testing/` (tidak ada kalau tanpa BRD — QA menguji langsung terhadap AC tiket). Tiket dengan `integrates_with` (FE) baru dikirim ke QA setelah semua tiket BE di daftar itu DONE; sampai saat itu tiket tetap `QA` dengan Riwayat "menunggu <ID BE>", dan QA mengujinya bersama BE (FE memanggil BE sungguhan).
+3. **QA** — panggil agent `qa-tester` dengan path tiket, path laporan QA, dan folder `<docs>/05-testing/` (tidak ada kalau tanpa BRD — QA menguji langsung terhadap AC tiket). Tiket dengan `integrates_with` (FE) baru dikirim ke QA setelah semua tiket BE di daftar itu DONE; sampai saat itu tiket tetap `QA` dengan Riwayat "menunggu <ID BE>", dan QA mengujinya bersama BE (FE memanggil BE sungguhan).
    - `PASS` → set `DONE`, centang AC di file tiket, lalu `git commit` perubahan di branch kerja dengan pesan `<ID>: <title>` (commit lokal, tidak push; lewati kalau bukan repo git atau user bilang jangan commit)
-   - `FAIL` → set `BUG`, `rounds + 1`, tulis bug report di Riwayat, kembali ke langkah 1
+   - `FAIL` → set `BUG`, `rounds + 1`, tulis ringkasan bug (1–3 baris) dan path laporan QA di Riwayat, kembali ke langkah 1
    - `BLOCKED` → set `HOLD`
    - Kalau QA melaporkan bug di luar tiket ini, buat tiket `BUG-NNN` baru sesuai `ticket-workflow`
 4. **`rounds` = 3** → set `HOLD` dengan ringkasan kenapa terus gagal.
 
-Setiap perpindahan status: update `status` di frontmatter dan tambah satu baris di `## Riwayat`. Lapor ke user satu baris per perpindahan (`WMS-BE-004: REVIEW → QA`), bukan narasi panjang. Saat memanggil agent, kirim path tiket dan hanya input yang dibutuhkan tahap itu: catatan review/bug report terakhir untuk developer, laporan developer terakhir untuk reviewer. Jangan kirim isi file atau laporan-laporan lama — agent bisa membaca file sendiri.
+Setiap perpindahan status: update `status` di frontmatter dan tambah satu baris di `## Riwayat` dengan tanggal **dan jam** (`date '+%Y-%m-%d %H:%M'`), supaya `board` bisa menghitung durasi tiap tahap. Lapor ke user satu baris per perpindahan (`WMS-BE-004: REVIEW → QA`), bukan narasi panjang. Saat memanggil agent, kirim path tiket dan path yang dibutuhkan tahap itu: path laporan review/QA terakhir untuk developer, path laporan developer terakhir untuk reviewer. Jangan kirim isi file atau laporan — agent membaca file sendiri.
 
 ### Mode Paralel (pipeline)
 

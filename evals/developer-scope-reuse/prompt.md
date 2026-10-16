@@ -5,4 +5,4 @@ timeout_seconds: 900
 allowed_tools: [Read, Glob, Grep, Skill, Agent]
 ---
 
-Kerjakan tiket docs/noskill/tickets/SHOP-002.md. Pakai agent developer dari plugin noskill kalau tersedia.
+Kerjakan tiket docs/noskill/tickets/SHOP-002.md. Pakai agent developer dari plugin noskill kalau tersedia. Path laporan developer (seperti yang dikirim orkestrator feature-flow): docs/noskill/reports/SHOP-002/dev-1.md di checkout utama.

@@ -16,6 +16,13 @@ Tujuan: satu file ringkas yang dibaca semua agent sebelum bekerja, jadi command 
 2. Struktur folder: `ls` dua level teratas (abaikan `node_modules`, `vendor`, `.git`, folder build).
 3. Helper umum: grep nama fungsi yang di-export di folder utilitas (`lib/`, `utils/`, `helpers/`, `pkg/`, `internal/*/util*`, `app/Helpers`). Ambil nama dan satu baris kegunaannya, jangan baca isinya penuh.
 4. **Verifikasi command**: jalankan command test (dan typecheck/lint kalau ada) sekali dengan output dibatasi (`| tail -n 5`). Catat apakah lulus, berapa lama, dan cara menjalankan satu file test saja.
+5. **Versi cepat** untuk dipakai per tiket, dengan cache di `.noskill-cache/` (tambahkan `.noskill-cache/` ke `.git/info/exclude`, bukan ke `.gitignore`, supaya tidak ikut ter-commit). Cek sekali bahwa versinya jalan, lalu catat:
+   - TypeScript: `npx tsc --noEmit --incremental --tsBuildInfoFile .noskill-cache/tsc.tsbuildinfo` (run kedua dan seterusnya hanya mengecek ulang file yang berubah)
+   - ESLint: `npx eslint --cache --cache-location .noskill-cache/eslint <file>`
+   - Jest: `npx jest --findRelatedTests <file>`; Vitest: `npx vitest related <file> --run`
+   - Go: `go vet ./<paket>/...` dan `go test ./<paket>/...` (Go sudah memakai cache sendiri)
+   - PHP: PHPStan dan Pest/PHPUnit dengan filter file atau test terkait
+   Kalau versi cepat gagal atau tidak didukung versi tool-nya, tulis `belum dicek` dan pakai versi biasa.
 
 ## Format `<docs>/project-profile.md` (maksimal ±80 baris)
 
@@ -33,10 +40,11 @@ _Dibuat: <tanggal> · sumber: <commit hash pendek>_
 | Test semua | `npm test` | lulus, 77 test, ±5 dtk |
 | Test satu file | `npx tsx --test lib/goals.test.ts` | — |
 | Test terkait file yang diubah | `npx jest --findRelatedTests <file>` | — |
-| Lint file tertentu | `npx eslint <file>` | — |
+| Lint file tertentu | `npx eslint --cache --cache-location .noskill-cache/eslint <file>` | — |
 | Jalankan environment (DB + server, untuk QA) | `docker compose up -d db && npm run start:dev` | — |
 | Health check | `curl -sf localhost:3000/health` | — |
 | Typecheck | `npx tsc --noEmit` | lulus |
+| Typecheck cepat (per tiket) | `npx tsc --noEmit --incremental --tsBuildInfoFile .noskill-cache/tsc.tsbuildinfo` | lulus, ±3 dtk setelah run pertama |
 | Lint | `npm run lint` | lulus |
 | Folder dependency (tidak di-commit) | `node_modules/` | — |
 

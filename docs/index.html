@@ -204,6 +204,9 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <li>Revisi dilanjutkan oleh developer yang sama, jadi tiket dan kode tidak dibaca ulang dari nol.</li>
       <li>Setiap tiket punya <code>complexity</code>. Tiket <code>simple</code> dikerjakan developer dengan Sonnet, tiket <code>complex</code> dengan model sesi.</li>
       <li>Database dan server dinyalakan sekali per sesi lalu dipakai bersama oleh semua QA.</li>
+      <li>Typecheck dan lint per tiket memakai versi cepat dengan cache (<code>tsc --incremental</code>, <code>eslint --cache</code>), dicatat di profil project.</li>
+      <li>Laporan lengkap agent disimpan di <code>docs/noskill/reports/</code>. Sesi utama hanya menerima verdict dan ringkasan beberapa baris, jadi tetap ringan di fitur dengan banyak tiket.</li>
+      <li>Riwayat tiket mencatat jam, dan <code>/noskill:board</code> menampilkan berapa lama tiap tiket di tahap developer, review, dan QA.</li>
     </ul>
 
     <h3>Multi-repo</h3>
@@ -255,7 +258,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
         <tr><td><code>/noskill:rapikan [ID]</code></td><td>Rapikan tiket lama agar sesuai aturan tiket terbaru. Usulan ditampilkan dulu, diterapkan setelah kamu setujui. <code>/noskill:rapikan review &lt;ID&gt;</code> mereview ulang kode tiket DONE.</td></tr>
         <tr><td><code>/noskill:lazy &lt;permintaan&gt;</code></td><td>Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan, tanpa tiket, review, atau QA.</td></tr>
         <tr><td><code>/noskill:fix &lt;deskripsi&gt;</code></td><td>Bug fix atau perubahan kecil lewat mode cepat.</td></tr>
-        <tr><td><code>/noskill:board</code></td><td>Status semua tiket, beserta pertanyaan dari tiket HOLD.</td></tr>
+        <tr><td><code>/noskill:board</code></td><td>Status semua tiket, pertanyaan dari tiket HOLD, dan durasi tiap tahap per tiket.</td></tr>
         <tr><td><code>/noskill:lanjut [jawaban]</code></td><td>Melanjutkan tiket yang tertunda dari sesi sebelumnya.</td></tr>
         <tr><td><code>/noskill:feature-flow</code></td><td>Alur kerja lengkap, mode cepat atau dari PRD.</td></tr>
         <tr><td><code>/noskill:project-profile</code></td><td>Membuat atau me-refresh profil project.</td></tr>
@@ -270,9 +273,14 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
 ├── project-profile.md      profil project
 ├── prd.md                  PRD (mode lengkap)
 ├── 01-business/ … 05-testing/   BRD: BR, PROC, US/AC, TECH, TC/UAT
-└── tickets/
-    ├── FIX-001.md          satu file per tiket
-    └── WMS-BE-004.md</pre>
+├── tickets/
+│   ├── FIX-001.md          satu file per tiket
+│   └── WMS-BE-004.md
+└── reports/
+    └── WMS-BE-004/         laporan lengkap agent per putaran
+        ├── dev-1.md
+        ├── review-1.md
+        └── qa-1.md</pre>
     <h3>Tracker</h3>
     <p>Isi <code>tracker: github</code> atau <code>tracker: notion</code> di profil project supaya board tercermin di GitHub Issues atau database Notion. Sinkronnya satu arah dari file ke tracker, dan hanya terjadi saat tiket dibuat, DONE, BUG, atau HOLD.</p>
 
