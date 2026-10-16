@@ -7,6 +7,7 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 ### Diubah — agent lebih ringan
 - `coding-standards` dirampingkan (23,4k → 18,2k karakter): contoh kode fungsi/TDD, anti-pattern test, dan simplify pass pindah ke `references/functions-tdd.md`; Git, secrets, dan changelog pindah ke `references/git.md`. Aturannya tetap di SKILL.md, contoh dan detailnya dibaca saat dibutuhkan.
 - Developer, reviewer, dan QA tidak lagi memuat `ticket-workflow` (±8k karakter) — verdict dan aturan yang mereka butuhkan sudah ada di definisi agent masing-masing. `task-planner` tetap memuatnya.
+- `brd-tracer` level ringkas hanya menulis `03-functional/`, `04-technical/`, dan `05-testing/` (tanpa `01-business/`, `02-process/`, atau UAT) — sebelumnya sesekali ikut membuat `01-business/`.
 - Bagian baru `## Catatan` di tiket: orkestrator (mode cepat) dan `task-planner` mencatat helper yang bisa dipakai ulang, file contoh pola, dan test yang sudah ada. Developer mulai dari catatan itu dan tidak mengulang pencarian yang sama.
 
 ### Ditambahkan — eval

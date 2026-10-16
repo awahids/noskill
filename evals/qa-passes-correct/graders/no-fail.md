@@ -1,5 +1,5 @@
 ---
 type: regex
-pattern: "\\bFAIL\\b"
+pattern: "(^|\\n)[\\s>*`#|-]*(Verdict:?\\s*)?\\**FAIL\\b"
 match: not_contains
 ---
