@@ -106,19 +106,21 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
 [command/langkah konkret yang membuktikan tiket selesai]
 
 ## Riwayat
-- 2026-10-14 TODO — dibuat oleh task-planner
+- 2026-10-14 09:12 TODO — dibuat oleh task-planner
 ```
 
 **complexity** diisi saat tiket dibuat:
 - `simple` — bug dengan penyebab jelas, endpoint CRUD tanpa aturan bisnis khusus, perubahan UI tanpa logic state yang rumit, kira-kira ≤ 4 file.
 - `complex` — aturan bisnis (stok, uang, approval/workflow status), transaksi atau konkurensi, banyak tabel, atau penyebab bug belum diketahui. Kalau ragu, isi `complex`.
 
-**Riwayat** ditulis append-only, satu baris per perpindahan status: `- <tanggal> <STATUS> — <ringkasan alasan>`. Untuk perpindahan ke BUG/HOLD/IN_PROGRESS (revisi), tambahkan detail di bawahnya (indent) — catatan review, bug report, atau pertanyaan untuk user.
+**Riwayat** ditulis append-only, satu baris per perpindahan status: `- <YYYY-MM-DD HH:MM> <STATUS> — <ringkasan alasan>` (jam dari `date '+%Y-%m-%d %H:%M'`, dipakai `board` untuk menghitung durasi tiap tahap). Untuk perpindahan ke BUG/HOLD/IN_PROGRESS (revisi), tambahkan ringkasan 1–3 baris di bawahnya (indent) beserta path laporan agent, atau pertanyaan untuk user.
+
+**Laporan agent** disimpan di `<docs>/reports/<ID>/` — `dev-<n>.md`, `review-<n>.md`, `qa-<n>.md` (n = putaran). Riwayat cukup merujuk path-nya, tidak menyalin isinya.
 
 ## Bug Report (QA → BUG)
 
 ```markdown
-- 2026-10-14 BUG — TC-INV-002 gagal
+- 2026-10-14 14:05 BUG — TC-INV-002 gagal (laporan: <docs>/reports/WMS-BE-004/qa-1.md)
   - **Langkah:** POST /api/v1/goods-receipts dengan outstanding=30, received=40
   - **Expected:** 422, transaksi ditolak
   - **Actual:** 201, GR tersimpan

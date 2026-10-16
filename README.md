@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo-wordmark-dark.svg">
+    <img src="docs/logo-wordmark.svg" width="300" alt="noskill">
+  </picture>
+</p>
+
 # noskill
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk alur tiket lengkap (develop → review → QA) dengan agent.
@@ -58,7 +65,7 @@ Pengaturan ini berlaku untuk semua project di komputer itu.
 | `/noskill:rapikan review <ID>` | Review ulang kode tiket DONE; temuan jadi tiket BUG baru |
 | `/noskill:lazy <permintaan>` | Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan (YAGNI, stdlib dulu, tanpa abstraksi), tanpa tiket/review/QA |
 | `/noskill:fix <deskripsi>` | Bug fix atau perubahan kecil lewat mode cepat |
-| `/noskill:board` | Tampilkan board tiket + pertanyaan tiket HOLD |
+| `/noskill:board` | Tampilkan board tiket, pertanyaan tiket HOLD, dan durasi tiap tahap per tiket |
 | `/noskill:lanjut [jawaban]` | Lanjutkan tiket yang tertunda dari sesi sebelumnya |
 | `/noskill:feature-flow` | Alur lengkap (mode cepat atau dari PRD) |
 | `/noskill:project-profile` | Buat/refresh profil project |
@@ -76,7 +83,7 @@ Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket.
 
 **Mode paralel** (opsional): selagi tiket A di-review/QA, developer sudah mengerjakan tiket B di git worktree terpisah. Maksimal 2 tiket aktif, atau 3 kalau tiketnya di repo berbeda.
 
-**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (DB + server) dinyalakan sekali per sesi untuk semua QA.
+**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (DB + server) dinyalakan sekali per sesi untuk semua QA; typecheck dan lint memakai versi cepat dengan cache (`tsc --incremental`, `eslint --cache`); laporan lengkap agent disimpan di `docs/noskill/reports/` sehingga sesi utama hanya menerima verdict singkat; Riwayat tiket mencatat jam, dan `/noskill:board` menampilkan durasi developer/review/QA per tiket.
 
 **Multi-repo:** satu fitur bisa menyentuh beberapa repo (misal api NestJS + web Vue + mobile Flutter). Daftarkan repo di bagian `## Repo` pada `project-profile.md`; PRD, BRD, dan tiket tetap di satu repo (repo tempat sesi berjalan). Setiap tiket punya field `repo:`, branch kerja bernama sama dibuat di tiap repo, commit di repo masing-masing, dan di akhir dibuat satu PR per repo yang saling menautkan.
 

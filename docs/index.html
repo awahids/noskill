@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>noskill Docs</title>
 <meta name="description" content="Dokumentasi plugin noskill untuk Claude Code: install, alur tiket developer–reviewer–QA, skill, agent, shortcut, dan konfigurasi.">
@@ -46,7 +47,7 @@ a { color: var(--accent); }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 48px; padding-block: 40px 80px; }
 nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 13.5px; }
-nav.toc .brand { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--fg); text-decoration: none; display: block; margin-bottom: 14px; }
+nav.toc .brand { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--fg); text-decoration: none; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 nav.toc a { display: block; padding: 4px 10px; border-radius: 6px; color: var(--muted); text-decoration: none; }
 nav.toc a:hover { background: var(--accent-soft); color: var(--fg); }
@@ -98,7 +99,7 @@ html { scroll-behavior: smooth; }
 
 <div class="wrap">
   <nav class="toc" aria-label="Daftar isi">
-    <a class="brand" href="#top">noskill</a>
+    <a class="brand" href="#top"><img src="logo.svg" alt="" width="28" height="28">noskill</a>
     <ol>
       <li><a href="#install">Install</a></li>
       <li><a href="#mulai">Mulai cepat</a></li>
@@ -204,6 +205,9 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <li>Revisi dilanjutkan oleh developer yang sama, jadi tiket dan kode tidak dibaca ulang dari nol.</li>
       <li>Setiap tiket punya <code>complexity</code>. Tiket <code>simple</code> dikerjakan developer dengan Sonnet, tiket <code>complex</code> dengan model sesi.</li>
       <li>Database dan server dinyalakan sekali per sesi lalu dipakai bersama oleh semua QA.</li>
+      <li>Typecheck dan lint per tiket memakai versi cepat dengan cache (<code>tsc --incremental</code>, <code>eslint --cache</code>), dicatat di profil project.</li>
+      <li>Laporan lengkap agent disimpan di <code>docs/noskill/reports/</code>. Sesi utama hanya menerima verdict dan ringkasan beberapa baris, jadi tetap ringan di fitur dengan banyak tiket.</li>
+      <li>Riwayat tiket mencatat jam, dan <code>/noskill:board</code> menampilkan berapa lama tiap tiket di tahap developer, review, dan QA.</li>
     </ul>
 
     <h3>Multi-repo</h3>
@@ -255,7 +259,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
         <tr><td><code>/noskill:rapikan [ID]</code></td><td>Rapikan tiket lama agar sesuai aturan tiket terbaru. Usulan ditampilkan dulu, diterapkan setelah kamu setujui. <code>/noskill:rapikan review &lt;ID&gt;</code> mereview ulang kode tiket DONE.</td></tr>
         <tr><td><code>/noskill:lazy &lt;permintaan&gt;</code></td><td>Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan, tanpa tiket, review, atau QA.</td></tr>
         <tr><td><code>/noskill:fix &lt;deskripsi&gt;</code></td><td>Bug fix atau perubahan kecil lewat mode cepat.</td></tr>
-        <tr><td><code>/noskill:board</code></td><td>Status semua tiket, beserta pertanyaan dari tiket HOLD.</td></tr>
+        <tr><td><code>/noskill:board</code></td><td>Status semua tiket, pertanyaan dari tiket HOLD, dan durasi tiap tahap per tiket.</td></tr>
         <tr><td><code>/noskill:lanjut [jawaban]</code></td><td>Melanjutkan tiket yang tertunda dari sesi sebelumnya.</td></tr>
         <tr><td><code>/noskill:feature-flow</code></td><td>Alur kerja lengkap, mode cepat atau dari PRD.</td></tr>
         <tr><td><code>/noskill:project-profile</code></td><td>Membuat atau me-refresh profil project.</td></tr>
@@ -270,9 +274,14 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
 ├── project-profile.md      profil project
 ├── prd.md                  PRD (mode lengkap)
 ├── 01-business/ … 05-testing/   BRD: BR, PROC, US/AC, TECH, TC/UAT
-└── tickets/
-    ├── FIX-001.md          satu file per tiket
-    └── WMS-BE-004.md</pre>
+├── tickets/
+│   ├── FIX-001.md          satu file per tiket
+│   └── WMS-BE-004.md
+└── reports/
+    └── WMS-BE-004/         laporan lengkap agent per putaran
+        ├── dev-1.md
+        ├── review-1.md
+        └── qa-1.md</pre>
     <h3>Tracker</h3>
     <p>Isi <code>tracker: github</code> atau <code>tracker: notion</code> di profil project supaya board tercermin di GitHub Issues atau database Notion. Sinkronnya satu arah dari file ke tracker, dan hanya terjadi saat tiket dibuat, DONE, BUG, atau HOLD.</p>
 

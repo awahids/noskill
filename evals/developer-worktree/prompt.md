@@ -5,4 +5,4 @@ timeout_seconds: 900
 allowed_tools: [Read, Glob, Grep, Skill, Agent]
 ---
 
-Mode paralel. Kerjakan tiket docs/noskill/tickets/SHOP-002.md dengan agent developer dari plugin noskill (kalau tersedia). Direktori kerja tiket ini: .worktrees/SHOP-002 (git worktree di branch ticket/SHOP-002). Checkout utama sedang dipakai tiket lain, jadi jangan diubah.
+Mode paralel. Kerjakan tiket docs/noskill/tickets/SHOP-002.md dengan agent developer dari plugin noskill (kalau tersedia). Direktori kerja tiket ini: .worktrees/SHOP-002 (git worktree di branch ticket/SHOP-002). Checkout utama sedang dipakai tiket lain, jadi jangan diubah. Path laporan developer (seperti yang dikirim orkestrator feature-flow): docs/noskill/reports/SHOP-002/dev-1.md di checkout utama.

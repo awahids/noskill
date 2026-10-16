@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>noskill Skills</title>
 <meta name="description" content="Penjelasan detail setiap skill noskill: kapan dipakai, cara memanggil, langkah kerja, hasil, dan aturan penting.">
@@ -46,7 +47,7 @@ a { color: var(--accent); }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 48px; padding-block: 40px 80px; }
 nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 13.5px; }
-nav.toc .brand { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--fg); text-decoration: none; display: block; margin-bottom: 14px; }
+nav.toc .brand { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--fg); text-decoration: none; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 nav.toc a { display: block; padding: 4px 10px; border-radius: 6px; color: var(--muted); text-decoration: none; }
 nav.toc a:hover { background: var(--accent-soft); color: var(--fg); }
@@ -117,7 +118,7 @@ html { scroll-behavior: smooth; }
 
 <div class="wrap">
   <nav class="toc" aria-label="Daftar isi">
-    <a class="brand" href="index.html">noskill</a>
+    <a class="brand" href="index.html"><img src="logo.svg" alt="" width="28" height="28">noskill</a>
     <ol>
       <li><a href="index.html">← Dokumentasi utama</a></li>
       <li><a href="#alur">Alur kerja</a></li><li><a href="#shortcut-skill">Shortcut</a></li><li><a href="#requirement">Requirement & desain</a></li><li><a href="#standar">Standar & kualitas</a></li><li><a href="#dokumen">Dokumen & laporan</a></li>
@@ -168,7 +169,7 @@ html { scroll-behavior: smooth; }
     <section class="skill" id="board">
       <h3><code>board</code><span class="tag">/noskill:board</span></h3>
       <p class="sum">Menampilkan status semua tiket tanpa mengubah file apa pun.</p>
-      <dl><dt>Cara pakai</dt><dd><code>/noskill:board</code></dd><dt>Isi</dt><dd><ul><li>Satu tabel per status: TODO, IN_PROGRESS, REVIEW, QA, BUG, HOLD, DONE, dengan ID, judul, rounds, dan repo kalau ada.</li><li>Pertanyaan yang menunggu jawabanmu dari setiap tiket HOLD.</li><li>Jumlah per status dan tiket berikutnya yang akan diambil.</li></ul></dd><dt>Hemat token</dt><dd>Status dibaca sekaligus dengan satu <code>grep</code>; file tiket hanya dibuka penuh untuk tiket HOLD.</dd></dl>
+      <dl><dt>Cara pakai</dt><dd><code>/noskill:board</code></dd><dt>Isi</dt><dd><ul><li>Satu tabel per status: TODO, IN_PROGRESS, REVIEW, QA, BUG, HOLD, DONE, dengan ID, judul, rounds, dan repo kalau ada.</li><li>Pertanyaan yang menunggu jawabanmu dari setiap tiket HOLD.</li><li>Durasi tiap tiket di tahap developer, review, dan QA (dari jam di Riwayat), rata-rata per tahap, dan tahap yang paling lama.</li><li>Jumlah per status dan tiket berikutnya yang akan diambil.</li></ul></dd><dt>Hemat token</dt><dd>Status dibaca sekaligus dengan satu <code>grep</code>; file tiket hanya dibuka penuh untuk tiket HOLD.</dd></dl>
     </section>
     <section class="skill" id="lanjut">
       <h3><code>lanjut</code><span class="tag">/noskill:lanjut</span></h3>

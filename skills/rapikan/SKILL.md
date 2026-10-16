@@ -33,9 +33,9 @@ Yang diproses hanya tiket berstatus `TODO` dan `HOLD`. Tiket `IN_PROGRESS`, `REV
    - Pertanyaan terbuka
    Lalu minta persetujuan user.
 4. **Setelah disetujui:**
-   - Gabung: tiket hasil memakai ID tiket pertama dalam kelompok itu; AC, File/Lokasi, `trace`, `depends_on` digabung tanpa duplikat. File tiket lain dihapus. Riwayat tiket hasil ditambah `- <tanggal> <STATUS> — dirapikan: gabungan dari <ID>, <ID>`.
-   - Pecah: tiket baru memakai nomor lanjutan terakhir, Riwayat `- <tanggal> TODO — dirapikan: dipecah dari <ID>`.
-   - Lengkapi: ubah bagian yang kurang saja, Riwayat `- <tanggal> <STATUS> — dirapikan: <apa yang dilengkapi>`.
+   - Gabung: tiket hasil memakai ID tiket pertama dalam kelompok itu; AC, File/Lokasi, `trace`, `depends_on` digabung tanpa duplikat. File tiket lain dihapus. Riwayat tiket hasil ditambah `- <YYYY-MM-DD HH:MM> <STATUS> — dirapikan: gabungan dari <ID>, <ID>`.
+   - Pecah: tiket baru memakai nomor lanjutan terakhir, Riwayat `- <YYYY-MM-DD HH:MM> TODO — dirapikan: dipecah dari <ID>`.
+   - Lengkapi: ubah bagian yang kurang saja, Riwayat `- <YYYY-MM-DD HH:MM> <STATUS> — dirapikan: <apa yang dilengkapi>`.
    - Perbarui `depends_on` dan `integrates_with` di semua tiket (termasuk yang tidak diproses) yang merujuk ID yang hilang.
    - Kalau tracker aktif dan tiket punya `tracker_ref`, tutup issue/baris tiket yang dihapus dengan catatan "digabung ke <ID>", dan perbarui yang berubah.
    - Kalau repo git, commit file tiket: `chore(tickets): rapikan backlog`.
@@ -45,9 +45,9 @@ Yang diproses hanya tiket berstatus `TODO` dan `HOLD`. Tiket `IN_PROGRESS`, `REV
 
 1. Pastikan tiket berstatus `DONE`. Kalau belum DONE, katakan bahwa tiket itu masih di alur biasa dan berhenti.
 2. Cari commit tiket: `git log --grep "^<ID>:" --format="%h %s"` (multi-repo: di repo yang tertulis di field `repo`). Kalau tidak ketemu, tanya user commit atau range-nya.
-3. Panggil agent `ticket-reviewer` dengan path tiket, direktori kerja repo tiket, dan instruksi: "Nilai perubahan di commit <hash> (`git show --stat <hash>` dan `git show <hash>`), bukan working tree. Ini review ulang tiket yang sudah DONE."
+3. Panggil agent `ticket-reviewer` dengan path tiket, direktori kerja repo tiket, path laporan `<docs>/reports/<ID>/rereview-<n>.md`, dan instruksi: "Nilai perubahan di commit <hash> (`git show --stat <hash>` dan `git show <hash>`), bukan working tree. Ini review ulang tiket yang sudah DONE."
 4. Hasil:
-   - `APPROVED` → tambah Riwayat `- <tanggal> DONE — review ulang: APPROVED`.
-   - `CHANGES_REQUESTED` → tiket asal tetap DONE dengan Riwayat `- <tanggal> DONE — review ulang: ada temuan, lihat <BUG-ID>`. Buat tiket `BUG-NNN` baru (`type: bug`, `status: BUG`, `related: [<ID>]`, `complexity` sesuai temuan) dengan temuan reviewer sebagai AC dan File/Lokasi dari commit itu.
+   - `APPROVED` → tambah Riwayat `- <YYYY-MM-DD HH:MM> DONE — review ulang: APPROVED`.
+   - `CHANGES_REQUESTED` → tiket asal tetap DONE dengan Riwayat `- <YYYY-MM-DD HH:MM> DONE — review ulang: ada temuan, lihat <BUG-ID>`. Buat tiket `BUG-NNN` baru (`type: bug`, `status: BUG`, `related: [<ID>]`, `complexity` sesuai temuan) dengan temuan reviewer sebagai AC dan File/Lokasi dari commit itu.
    - `BLOCKED` → tampilkan pertanyaan reviewer ke user.
 5. Tampilkan hasilnya. Tiket BUG baru dikerjakan lewat `/noskill:lanjut` atau `feature-flow`.

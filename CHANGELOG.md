@@ -2,6 +2,16 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.4.0 — 2026-10-16
+
+### Diubah — lebih cepat dan lebih ringan
+- **Command cepat dengan cache.** `project-profile` mencatat versi cepat untuk per tiket: `tsc --incremental`, `eslint --cache` (cache di `.noskill-cache/`, dikecualikan lewat `.git/info/exclude`), `jest --findRelatedTests` / `vitest related`. Developer memakainya untuk quality gate per tiket.
+- **Laporan agent ke file.** Developer, reviewer, dan QA menulis laporan lengkap ke `<docs>/reports/<ID>/dev|review|qa-<putaran>.md` dan menjawab orkestrator maksimal 6 baris (verdict, ringkasan, path). Agent berikutnya membaca laporan dari file. Sesi utama tetap ringan di fitur dengan banyak tiket, dan Riwayat tiket cukup merujuk path laporan.
+- **Jam di Riwayat dan durasi di board.** Riwayat ditulis dengan `YYYY-MM-DD HH:MM`. `/noskill:board` menghitung menit per tiket di tahap developer, review, dan QA, rata-rata per tahap, dan tahap yang paling lama.
+
+### Ditambahkan
+- Logo noskill: huruf **n** yang sekaligus jalur kerja tiket — titik biru (developer), kuning (reviewer), dan centang (QA lolos/DONE). File: `docs/logo.svg` (ikon), `docs/logo-wordmark.svg` / `docs/logo-wordmark-dark.svg` (ikon + tulisan, untuk latar terang/gelap), `docs/logo.png` 512px. Dipakai di README, favicon, dan navigasi halaman docs.
+
 ## 1.3.0 — 2026-10-15
 
 ### Ditambahkan
