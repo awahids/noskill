@@ -8,7 +8,7 @@ description: >-
 
 Write the output in Bahasa Indonesia unless the user asks otherwise.
 
-noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
+noskill docs folder — written as `<docs>` below: `docs/noskill` by default. If that folder doesn't exist, find the folder holding `tickets/*.md` with a `status:` line (Glob, excluding `node_modules`).
 
 Use this skill to turn raw work notes (commit messages, task lists, progress notes) into a tidy update the team can read easily, without the user rewriting it from scratch.
 

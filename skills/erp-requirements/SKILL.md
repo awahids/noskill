@@ -2,6 +2,7 @@
 name: erp-requirements
 description: >-
   ERP/WMS requirements: (A) domain design checklist before schema/ERD — master data, stock ledger, workflow, RBAC, audit, numbering, MVP; (B) traceable BRD: BR→PROC→US→AC→TECH→TC→UAT. Use for "desain ERD inventory", "buatkan BRD", "user story + AC".
+user-invocable: false
 ---
 
 # ERP Requirements
@@ -223,7 +224,7 @@ Given outstanding quantity = 30
 When user memasukkan quantity = 40
 Then sistem menolak transaksi.
 ```
-ACs are the **system behavior contract** — don't start technical design until the ACs fully cover: happy path, validation/reject path, side-effects (e.g. a stock movement is created), and prohibitions (e.g. confirmed data cannot be edited).
+ACs are the **system behavior contract** — don't start technical design until the ACs fully cover: happy path, validation/reject path, side-effects (e.g. a stock movement is created), and prohibitions (e.g. confirmed data cannot be edited). For the validation path, also cover numeric limits including the database column limit (e.g. `int4`), case-insensitive/trimmed matching of codes and names, empty input, upload/import errors, and period boundaries — bugs found there after QA cost the most.
 
 ### Layer 4 — Technical Specification (TECH)
 
@@ -317,6 +318,6 @@ If the user asks for requirements/BRD/user stories for an ERP feature:
 ## Position in the noskill flow
 
 ```
-Bagian A (desain domain) → prd-writer → Bagian B (BRD) → task-breakdown → coding-standards → debug-assistant → user-guide
+Bagian A (desain domain) → prd-writer → Bagian B (BRD) → task-breakdown → coding-standards → debug-assistant → user-guide (noskill-extras)
 ```
 To run the whole flow until tickets are DONE (develop → review → QA), use the `feature-flow` skill — Part B is done by the `brd-tracer` agent, which loads this skill.

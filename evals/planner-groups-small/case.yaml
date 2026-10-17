@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: planner-groups-small
+tags: [agent, planner]
+context:
+  scaffold_script: scaffold.sh

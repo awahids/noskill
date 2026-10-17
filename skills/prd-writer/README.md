@@ -16,5 +16,5 @@ Setiap kali diminta "buatkan PRD", "susun product requirements", "dokumen requir
 
 - `coding-standards` — acuan konvensi teknis untuk bagian Architecture/Database/API di PRD
 - `task-breakdown` — memecah PRD hasil skill ini jadi task development
-- `mockup-prototype` — menerjemahkan PRD jadi wireframe/mockup
+- `mockup-prototype` (plugin `noskill-extras`) — menerjemahkan PRD jadi wireframe/mockup
 - `erp-requirements` — untuk fitur ERP/WMS: desain domain (Bagian A) sebelum PRD, lalu rantai requirement formal BR→PROC→US→AC (Bagian B) sesudahnya

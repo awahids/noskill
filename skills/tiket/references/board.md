@@ -1,10 +1,5 @@
----
-name: board
-description: Shortcut — show the ticket board by status, pending questions on HOLD tickets, and per-ticket stage durations (developer, review, QA). Use as /noskill:board.
-disable-model-invocation: true
----
+# board — show the ticket board
 
-noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
 Show the board from `<docs>/tickets/` without changing any file:
 
 1. Get all ticket statuses at once: `grep -H "^status:\|^title:\|^rounds:\|^repo:" <docs>/tickets/*.md`. Don't read ticket files one by one except for HOLD tickets.
@@ -28,4 +23,4 @@ Show the board from `<docs>/tickets/` without changing any file:
    Show a duration table for DONE tickets (dev · review · QA · total), the average per stage, and the slowest stage — that's the next optimization candidate.
 5. Close with one line: count per status and the next ticket to be picked per the order in skill `ticket-workflow`.
 
-If `<docs>/tickets/` doesn't exist, say there are no tickets yet and suggest `/noskill:fix` or `/noskill:feature-flow`.
+If `<docs>/tickets/` doesn't exist, say there are no tickets yet and suggest `/noskill:tiket fix <deskripsi>` or skill `feature-flow`.

@@ -2,6 +2,7 @@
 name: coding-standards
 description: >-
   Code standards for NestJS, Laravel, Go/Gin, Vue, Next.js, PostgreSQL/MySQL: naming, folders, ORM/migrations, API responses, state, TDD, quality gates, review checklist. Use for new code, code review, or "sesuai standar", "naming", "struktur folder".
+user-invocable: false
 ---
 
 # Coding Standards — Reference for Writing & Reviewing Code

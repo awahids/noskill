@@ -2,6 +2,7 @@
 name: ticket-workflow
 description: >-
   noskill ticket file format and status flow (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG and HOLD), agent verdicts, and the board. Use when creating, moving, or reporting tickets, or when the user asks "status tiket" or "board tiket".
+user-invocable: false
 ---
 
 # Ticket Workflow
@@ -119,7 +120,7 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
 - `simple` — bug with a clear cause, CRUD endpoint without special business rules, UI change without complex state logic, roughly ≤ 4 files.
 - `complex` — business rules (stock, money, approval/workflow status), transactions or concurrency, many tables, or bug cause still unknown. If unsure, use `complex`.
 
-**Riwayat** is append-only, one line per status change: `- <YYYY-MM-DD HH:MM> <STATUS> — <ringkasan alasan>` (time from `date '+%Y-%m-%d %H:%M'`, used by `board` to compute each stage's duration). For changes to BUG/HOLD/IN_PROGRESS (revision), add a 1–3 line summary beneath it (indented) with the agent report path, or the question for the user.
+**Riwayat** is append-only, one line per status change: `- <YYYY-MM-DD HH:MM> <STATUS> — <ringkasan alasan>` (time from `date '+%Y-%m-%d %H:%M'`, used by `/noskill:tiket board` to compute each stage's duration). For changes to BUG/HOLD/IN_PROGRESS (revision), add a 1–3 line summary beneath it (indented) with the agent report path, or the question for the user.
 
 **Agent reports** are stored in `<docs>/reports/<ID>/` — `dev-<n>.md`, `review-<n>.md`, `qa-<n>.md` (n = round). Riwayat only references the path, it doesn't copy the contents.
 

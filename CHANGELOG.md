@@ -2,6 +2,17 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.7.0 — 2026-10-17
+
+### Diubah — skill lebih sedikit
+- **Shortcut tiket digabung jadi `/noskill:tiket`.** `/noskill:board`, `/noskill:fix`, `/noskill:lanjut`, dan `/noskill:rapikan` menjadi `/noskill:tiket [board]`, `/noskill:tiket fix <deskripsi>`, `/noskill:tiket lanjut [catatan]`, dan `/noskill:tiket rapikan [review] [ID]`. Hanya file aksi yang dipilih (`skills/tiket/references/`) yang dibaca. `/noskill:lazy` tetap terpisah.
+- **Skill internal disembunyikan dari menu `/`:** `ticket-workflow`, `task-breakdown`, `erp-requirements`, dan `coding-standards` (`user-invocable: false`). Skill ini tetap dimuat agent dan dipanggil Claude otomatis saat relevan.
+- **Skill tambahan pindah ke plugin `noskill-extras`:** `user-guide`, `mockup-prototype`, `standup-update`, dan `freelance-proposal` (folder `extras/`, satu marketplace). Pasang dengan `/plugin install noskill-extras@noskill` kalau perlu. `standup-update` mencari folder tiket sendiri (default `docs/noskill`) karena plugin ini tidak punya pengaturan folder.
+- **Perubahan kecil digabung jadi satu tiket.** Maksimal 3 endpoint `simple` di resource yang sama (list, detail, lookup, CRUD biasa), atau perubahan kecil di halaman/layar yang sama, jadi satu tiket. Endpoint dengan aturan bisnis, transaksi, perubahan akses, atau tabel baru tetap tiket sendiri. Alasannya: di project nyata tiket 0–5 menit dev tetap membayar ongkos tetap ±4–5 menit (agent, review, QA, commit). `/noskill:tiket rapikan` juga mengusulkan penggabungan tiket TODO yang terlalu kecil.
+- **Checklist AC untuk mencegah tiket BUG.** Saat menulis AC (task-planner, mode cepat, BRD), setiap input dan aturan dicek terhadap: batas angka termasuk batas kolom database (misal `int4`), pencocokan teks case-insensitive dan tanpa spasi berlebih, input kosong, respons error persis sesuai Kontrak API, upload/import, batas periode, dan role yang ditolak. Pemicunya: di satu fitur nyata, 4 tiket BUG (batas int4, channel case-insensitive, pesan error) memakan ±100 menit.
+- Eval baru `planner-groups-small`: endpoint GET sederhana digabung, endpoint kuota tetap sendiri dengan AC batas int4 dan case-insensitive. Aturan lama 0/3, aturan baru 3/3.
+- Hasilnya, plugin inti punya 10 skill (sebelumnya 17), dan yang muncul di menu `/` tinggal 6: `feature-flow`, `tiket`, `lazy`, `project-profile`, `prd-writer`, `debug-assistant`.
+
 ## 1.6.0 — 2026-10-17
 
 ### Diubah — hemat token
