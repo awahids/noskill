@@ -15,6 +15,7 @@ Only tickets with status `TODO` and `HOLD` are processed. `IN_PROGRESS`, `REVIEW
 2. Check each ticket against the Ticket Rules (Aturan Tiket) section in `task-breakdown` and the `ticket-workflow` format:
    - **Per layer or per file** (separate migration, DTO, service, controller, test, Swagger) → merge into the endpoint/feature ticket that needs it.
    - **Too large** (several endpoints that aren't small CRUD, or several repos in one ticket) → split.
+   - **Too small** (several `simple` TODO tickets on the same resource or page, same repo) → merge, max 3 per ticket, per the grouping rule in `task-breakdown`.
    - **BE ticket for an endpoint without `## Kontrak API`** → fill it from the PRD/BRD or existing code. Anything not written in any source becomes a question, not invented.
    - **FE ticket using a BE ticket's endpoint via `depends_on`** → change to `integrates_with`.
    - **Empty `complexity`** → fill per `ticket-workflow` criteria (unsure → `complex`).

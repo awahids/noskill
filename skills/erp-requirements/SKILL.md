@@ -224,7 +224,7 @@ Given outstanding quantity = 30
 When user memasukkan quantity = 40
 Then sistem menolak transaksi.
 ```
-ACs are the **system behavior contract** — don't start technical design until the ACs fully cover: happy path, validation/reject path, side-effects (e.g. a stock movement is created), and prohibitions (e.g. confirmed data cannot be edited).
+ACs are the **system behavior contract** — don't start technical design until the ACs fully cover: happy path, validation/reject path, side-effects (e.g. a stock movement is created), and prohibitions (e.g. confirmed data cannot be edited). For the validation path, also cover numeric limits including the database column limit (e.g. `int4`), case-insensitive/trimmed matching of codes and names, empty input, upload/import errors, and period boundaries — bugs found there after QA cost the most.
 
 ### Layer 4 — Technical Specification (TECH)
 

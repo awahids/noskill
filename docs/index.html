@@ -195,7 +195,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <p>Setiap tiket adalah satu file Markdown di <code>docs/noskill/tickets/</code>. Isinya acceptance criteria, file yang boleh diubah, cara verifikasi, dan bagian <code>Riwayat</code> yang mencatat setiap perpindahan status beserta alasannya. Agent tidak saling memanggil. Mereka mengembalikan verdict ke orkestrator (<code>feature-flow</code>), yang menjadi satu-satunya pihak yang memindahkan status. Dengan begitu setiap keputusan tercatat di file dan bisa di-commit.</p>
 
     <h3>Aturan tiket</h3>
-    <p>Satu tiket per endpoint (BE), per fitur atau halaman (FE), atau per bug. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer.</p>
+    <p>Satu tiket per endpoint (BE), per fitur atau halaman (FE), atau per bug. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer. Perubahan kecil digabung: maksimal 3 endpoint <code>simple</code> di resource yang sama, atau perubahan kecil di halaman yang sama, jadi satu tiket. AC ditulis dengan checklist batas (batas kolom database, pencocokan teks case-insensitive, input kosong, respons error, upload/import, periode, role).</p>
     <p>Kalau BE dan FE sama-sama berubah, tiket BE memuat Kontrak API sejak dibuat: path, request, response sukses, dan kode error. Tiket FE merujuk kontrak itu lewat <code>integrates_with</code>, jadi developer FE bisa mulai bersamaan dengan BE. QA tiket FE menunggu tiket BE selesai, lalu menguji FE dan BE bersama dengan BE sungguhan.</p>
     <p> Selama loop, test hanya dijalankan untuk yang tersentuh tiket. Typecheck, lint, dan seluruh test dijalankan sekali di akhir.</p>
 
@@ -291,7 +291,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <p>Isi <code>tracker: github</code> atau <code>tracker: notion</code> di profil project supaya board tercermin di GitHub Issues atau database Notion. Sinkronnya satu arah dari file ke tracker, dan hanya terjadi saat tiket dibuat, DONE, BUG, atau HOLD.</p>
 
     <h2 id="eval">Eval</h2>
-    <p>Repo ini menyertakan 15 case uji perilaku:</p>
+    <p>Repo ini menyertakan 16 case uji perilaku:</p>
     <ul>
       <li>developer memakai helper yang ada dan menulis test negatif/batas</li>
       <li>reviewer menolak duplikasi</li>
@@ -299,6 +299,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <li>aturan inti berlaku tanpa skill</li>
       <li>tiket dibuat langsung dari PRD (tanpa BRD)</li>
       <li>fitur lintas repo dipecah jadi tiket per repo</li>
+      <li>endpoint kecil di resource yang sama digabung jadi satu tiket, dengan AC batas (int4, case-insensitive)</li>
       <li>developer bekerja di worktree tiket (mode paralel)</li>
       <li><code>/noskill:lazy</code> memakai helper yang ada, tanpa tiket atau abstraksi baru</li>
       <li><code>/noskill:tiket rapikan</code> mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui, lalu menerapkannya setelah disetujui</li>

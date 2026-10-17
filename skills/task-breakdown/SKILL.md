@@ -31,8 +31,22 @@ The rule is deliberately simple so the ticket count is predictable:
 | **Feature without an endpoint** (job, scheduler, internal logic change) | one feature | the logic and its test |
 
 - No tickets per layer or per file: migration, DTO, test, Swagger, or seeder go into the endpoint/feature ticket that needs them. A migration used by several endpoints goes into the first endpoint ticket that needs it; other tickets `depends_on` it.
-- Several very small endpoints for the same resource (e.g. list + detail with no special logic) may be one feature ticket.
-- Ticket count follows the number of endpoints, pages, and bugs — no more. If the result is more than 8 for one feature, re-check for per-layer tickets that should be merged.
+- **Group small changes into one ticket** — every ticket pays a fixed cost (new agent, review, QA, commit) of a few minutes, which outweighs a 2-minute change. Group, at most 3 per ticket, in the same repo:
+  - BE: endpoints on the same resource that would each be `complexity: simple` (list, detail, lookup, plain CRUD, a field added to a response) — each endpoint keeps its own block in `## Kontrak API` and its own AC.
+  - FE/mobile: small changes on the same page/screen (a column, field, filter, label, removed element).
+  - Never group an endpoint/change with a new business rule, a transaction, a permission change, or a new table — that stays its own ticket. The grouped ticket is still `simple`; if it no longer fits `simple`, split it back.
+- Ticket count is at most the number of endpoints, pages, and bugs — fewer after grouping small changes. If the result is more than 8 for one feature, re-check for per-layer tickets that should be merged.
+
+### AC checklist — catch boundary bugs when the ticket is written
+
+Bugs found late (a BUG ticket after QA or the final check) cost the most. When writing AC, go through this list for every input and rule the ticket touches, and add a negative/boundary AC for each item that applies — skip items that don't apply, don't pad:
+- **Numbers:** the rule's min/max and the **database column limit** (e.g. `int4` max 2,147,483,647, decimal precision/scale). Above the limit → validation error (4xx), never a 500.
+- **Text matching** (codes, channel, status, email, names used as keys): case-insensitive and trimmed unless the PRD says otherwise; duplicate checks compare the same way.
+- **Empty input:** missing/null/empty fields, empty list, empty file.
+- **Error responses:** each error case returns the exact status + code/message from `## Kontrak API`.
+- **Upload/import:** wrong template or columns, empty file, duplicate rows, per-row errors reported with the row number.
+- **Dates/periods:** first/last day of the period, overlapping periods, timezone.
+- **Access:** a role that must be rejected.
 
 ### BE and FE: contract first, work together, QA together
 

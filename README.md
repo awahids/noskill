@@ -91,7 +91,7 @@ Panggil `/noskill:feature-flow` lalu jelaskan pekerjaannya.
 - **Mode cepat** — bug fix atau fitur kecil. Orkestrator langsung menulis satu tiket (AC positif & negatif, File/Lokasi, Cara Verifikasi), kamu setujui, lalu masuk loop developer → reviewer → QA.
 - **Mode lengkap** — fitur atau modul baru, mulai dari PRD. Level BRD bisa dipilih: **lengkap** (BR→UAT, untuk sign-off/UAT formal), **ringkas** (US→AC→TECH + Test Case), atau **tanpa BRD** (tiket langsung dari PRD, AC ditulis di tiket).
 
-Aturan tiket: **satu tiket per endpoint (BE), per fitur/halaman (FE), atau per bug**. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer. Kalau BE dan FE sama-sama berubah, tiket BE memuat **Kontrak API** (path, request, response, kode error) sejak dibuat; tiket FE memakai `integrates_with` ke tiket BE itu sehingga keduanya bisa dikerjakan bersamaan, lalu QA menguji FE dan BE bersama setelah tiket BE DONE. Selama loop, test hanya dijalankan untuk yang tersentuh tiket; typecheck, lint, dan suite penuh sekali di akhir.
+Aturan tiket: **satu tiket per endpoint (BE), per fitur/halaman (FE), atau per bug**. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer. Perubahan kecil digabung: maksimal 3 endpoint `simple` di resource yang sama, atau perubahan kecil di halaman yang sama, jadi satu tiket, karena setiap tiket punya ongkos tetap (agent, review, QA, commit). AC ditulis dengan checklist batas (batas kolom database seperti `int4`, pencocokan teks case-insensitive, input kosong, respons error, upload/import, periode, role) supaya bug tidak baru ketahuan setelah QA. Kalau BE dan FE sama-sama berubah, tiket BE memuat **Kontrak API** (path, request, response, kode error) sejak dibuat; tiket FE memakai `integrates_with` ke tiket BE itu sehingga keduanya bisa dikerjakan bersamaan, lalu QA menguji FE dan BE bersama setelah tiket BE DONE. Selama loop, test hanya dijalankan untuk yang tersentuh tiket; typecheck, lint, dan suite penuh sekali di akhir.
 
 Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket. Di akhir kamu memilih: push + PR (deskripsi PR disusun otomatis dari tiket), merge lokal, atau biarkan dulu.
 
@@ -124,13 +124,13 @@ Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-
 
 ## Eval
 
-`evals/` berisi 15 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, aturan inti dari hook berlaku tanpa skill, task-planner membuat tiket langsung dari PRD (tanpa BRD), task-planner memecah fitur lintas repo jadi tiket per repo, developer bekerja di worktree tiket tanpa menyentuh checkout utama (mode paralel), `/noskill:lazy` memakai helper yang ada tanpa membuat tiket atau abstraksi baru, `/noskill:tiket rapikan` mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui lalu menerapkannya setelah disetujui, `/noskill:tiket rapikan review` membuat tiket BUG dari temuan review ulang, QA menolak (FAIL) implementasi yang AC negatifnya gagal dan meloloskan (PASS) yang benar, QA langsung BLOCKED tanpa menyalakan environment sendiri kalau URL-nya tidak diberikan, dan `brd-tracer` menurunkan PRD jadi dokumen BRD ringkas dengan ID traceable. Jalankan setelah mengubah skill atau agent:
+`evals/` berisi 16 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, aturan inti dari hook berlaku tanpa skill, task-planner membuat tiket langsung dari PRD (tanpa BRD), task-planner memecah fitur lintas repo jadi tiket per repo, task-planner menggabungkan endpoint kecil dan menulis AC batas (int4, case-insensitive), developer bekerja di worktree tiket tanpa menyentuh checkout utama (mode paralel), `/noskill:lazy` memakai helper yang ada tanpa membuat tiket atau abstraksi baru, `/noskill:tiket rapikan` mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui lalu menerapkannya setelah disetujui, `/noskill:tiket rapikan review` membuat tiket BUG dari temuan review ulang, QA menolak (FAIL) implementasi yang AC negatifnya gagal dan meloloskan (PASS) yang benar, QA langsung BLOCKED tanpa menyalakan environment sendiri kalau URL-nya tidak diberikan, dan `brd-tracer` menurunkan PRD jadi dokumen BRD ringkas dengan ID traceable. Jalankan setelah mengubah skill atau agent:
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
 ```
 
-Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $2–3 (15 case).
+Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $2–3 (16 case).
 
 ## Cara install
 
