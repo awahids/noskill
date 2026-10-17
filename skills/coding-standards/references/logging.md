@@ -1,25 +1,25 @@
 # Coding Standards — Logging
 
-> Bagian dari skill `coding-standards`. Nomor bagian dipertahankan supaya rujukan seperti "bagian 5.4" tetap valid.
+> Part of the `coding-standards` skill. Section numbers are kept so references like "section 5.4" stay valid.
 
 ### 5.4 Logging: Error Log vs Audit Log
 
-Dua konsep beda yang sering tercampur — pisahkan dengan jelas karena tujuan, isi, dan siapa yang membaca beda:
+Two different concepts that often get mixed — separate them clearly, because their purpose, content, and readers differ:
 
 | | **Error Log** | **Audit Log** |
 |---|---|---|
-| Tujuan | Debugging — kenapa sistem gagal/error | Traceability — siapa melakukan apa, kapan, untuk kebutuhan compliance/investigasi |
-| Isi | Stack trace, request context, pesan error teknis | Aktor, aksi, entity yang terdampak, nilai sebelum/sesudah |
-| Retensi | Biasanya pendek (rolling/beberapa minggu), volume tinggi | Panjang/permanen, volume lebih terkontrol |
-| Siapa baca | Developer saat debugging | Admin/GA/audit/compliance saat investigasi |
-| Contoh | "NullPointerException di OrderService.calculateTotal, line 42" | "User `usr-123` (GA) mengubah `subsidy_amount` karyawan `usr-456` dari 10000 ke 15000 pada 2026-08-11 10:30" |
+| Purpose | Debugging — why the system failed/errored | Traceability — who did what, when, for compliance/investigation |
+| Content | Stack trace, request context, technical error message | Actor, action, affected entity, before/after values |
+| Retention | Usually short (rolling/a few weeks), high volume | Long/permanent, more controlled volume |
+| Readers | Developers while debugging | Admin/GA/audit/compliance during investigation |
+| Example | "NullPointerException in OrderService.calculateTotal, line 42" | "User `usr-123` (GA) changed employee `usr-456`'s `subsidy_amount` from 10000 to 15000 on 2026-08-11 10:30" |
 
 #### Error Log
 
-**Structured logging wajib** — bukan `console.log`/`fmt.Println` string bebas, supaya bisa di-query dan di-filter di log aggregator (kalau ada):
+**Structured logging is mandatory** — not free-form `console.log`/`fmt.Println` strings, so logs can be queried and filtered in a log aggregator (if any):
 
 ```typescript
-// NestJS — pakai logger service (winston/pino), bukan console.log
+// NestJS — use a logger service (winston/pino), not console.log
 this.logger.error('Failed to process order', {
   orderId: order.id,
   userId: order.user_id,
@@ -28,7 +28,7 @@ this.logger.error('Failed to process order', {
 });
 ```
 ```go
-// Golang — structured logger (zerolog/zap), bukan fmt.Println
+// Golang — structured logger (zerolog/zap), not fmt.Println
 logger.Error().
     Str("order_id", orderID).
     Str("user_id", userID).
@@ -36,40 +36,40 @@ logger.Error().
     Msg("failed to process order")
 ```
 
-**Level log** dipakai konsisten sesuai tingkat keparahan:
-- `debug` — detail teknis untuk development, tidak aktif di production (atau di-filter)
-- `info` — event normal yang berguna untuk trace alur (request masuk, job selesai)
-- `warn` — sesuatu yang tidak ideal tapi sistem masih jalan (retry, fallback ke default)
-- `error` — operasi gagal, butuh perhatian tapi sistem masih hidup
-- `fatal`/`panic` — sistem tidak bisa lanjut, biasanya diikuti crash/restart
+**Log levels** are used consistently by severity:
+- `debug` — technical detail for development, disabled in production (or filtered)
+- `info` — normal events useful for tracing flow (request received, job finished)
+- `warn` — something not ideal but the system still runs (retry, fallback to default)
+- `error` — an operation failed, needs attention but the system is still alive
+- `fatal`/`panic` — the system cannot continue, usually followed by a crash/restart
 
-**Wajib disertakan di tiap log error:** context yang cukup untuk reproduce tanpa harus tanya balik ke user — `request_id`/`trace_id` (untuk korelasi antar log di request yang sama), `user_id` kalau relevan, endpoint/operasi yang gagal, pesan error asli.
+**Required in every error log:** enough context to reproduce without asking the user back — `request_id`/`trace_id` (to correlate logs within the same request), `user_id` if relevant, the failed endpoint/operation, the original error message.
 
-**Jangan pernah log data sensitif:** password (meski hashed), token/API key, nomor kartu kredit lengkap, data pribadi yang tidak perlu (NIK lengkap, dll) — masking/redact kalau field itu perlu muncul di log untuk konteks (`user_id` boleh, `user.password_hash` tidak boleh).
+**Never log sensitive data:** passwords (even hashed), tokens/API keys, full credit card numbers, unnecessary personal data (full NIK, etc.) — mask/redact if the field must appear in the log for context (`user_id` is allowed, `user.password_hash` is not).
 
 #### Audit Log
 
-Dibutuhkan untuk aksi yang **mengubah data penting** dan perlu bisa ditelusuri siapa yang bertanggung jawab — terutama untuk aksi admin/privileged yang mengubah data milik orang lain (contoh: admin mengubah `subsidy_amount` karyawan, Super Admin menyalakan/mematikan fitur).
+Needed for actions that **change important data** and must be traceable to who is responsible — especially admin/privileged actions that change other people's data (e.g. an admin changing an employee's `subsidy_amount`, a Super Admin turning a feature on/off).
 
-**Kapan wajib ada audit log** (bukan semua aksi butuh, jangan berlebihan):
-- Perubahan data finansial/subsidi/pricing oleh admin
-- Perubahan konfigurasi sistem yang berdampak luas (toggle fitur, ubah aturan bisnis global)
-- Aksi privileged yang mengubah data milik user lain (admin edit/hapus data user)
-- Login/akses ke data sensitif (kalau relevan untuk compliance)
+**When an audit log is mandatory** (not every action needs one; don't overdo it):
+- Changes to financial/subsidy/pricing data by an admin
+- Changes to system configuration with wide impact (feature toggles, changing global business rules)
+- Privileged actions that change another user's data (admin edits/deletes user data)
+- Login/access to sensitive data (if relevant for compliance)
 
-**Tabel audit log — mengikuti konvensi database di bagian 2.5:**
+**Audit log table — follows the database conventions in section 2.5:**
 ```
 audit_logs
 ├── id (PK)
-├── actor_id        (FK ke users — siapa yang melakukan aksi)
-├── action           (string — "update_subsidy", "toggle_rfid", "delete_user", dst — konsisten snake_case)
-├── entity_type       (string — "user", "catering_settings", dst — nama tabel yang terdampak)
-├── entity_id          (uuid — id row yang terdampak)
-├── before_value        (jsonb, nullable — state sebelum perubahan)
-├── after_value          (jsonb, nullable — state sesudah perubahan)
+├── actor_id        (FK to users — who performed the action)
+├── action           (string — "update_subsidy", "toggle_rfid", "delete_user", etc. — consistently snake_case)
+├── entity_type       (string — "user", "catering_settings", etc. — name of the affected table)
+├── entity_id          (uuid — id of the affected row)
+├── before_value        (jsonb, nullable — state before the change)
+├── after_value          (jsonb, nullable — state after the change)
 ├── ip_address            (nullable)
 ├── created_at
 ```
-- `before_value`/`after_value` cukup simpan field yang berubah, tidak perlu seluruh row kalau row-nya besar
-- Audit log **tidak pernah di-update atau di-delete** setelah dibuat (append-only) — kalau perlu koreksi, buat entry baru, jangan edit entry lama (integritas audit trail rusak kalau bisa diubah)
-- Penulisan audit log dilakukan di layer service (setelah aksi berhasil), bukan di controller/handler — supaya konsisten meskipun ada banyak entry point yang memicu aksi yang sama
+- `before_value`/`after_value` only need the changed fields, not the whole row if the row is large
+- Audit logs are **never updated or deleted** once created (append-only) — if a correction is needed, create a new entry; don't edit the old one (the audit trail's integrity breaks if entries can be changed)
+- Audit logs are written in the service layer (after the action succeeds), not in the controller/handler — so they stay consistent even when many entry points trigger the same action

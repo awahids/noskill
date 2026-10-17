@@ -1,24 +1,24 @@
-<!-- Bagian dari skill coding-standards. Dibaca sebelum menambah atau mengubah dokumentasi Swagger/OpenAPI. -->
+<!-- Part of the coding-standards skill. Read before adding or changing Swagger/OpenAPI documentation. -->
 # API Documentation Standard
 
-Gunakan standar ini setiap kali membuat atau mendokumentasikan endpoint API (NestJS/Laravel/Golang), agar dokumentasi Swagger/OpenAPI konsisten antar service dan mudah dipahami konsumen API (frontend, tim lain, client eksternal).
+Use this standard whenever you create or document an API endpoint (NestJS/Laravel/Golang), so Swagger/OpenAPI docs stay consistent across services and are easy for API consumers (frontend, other teams, external clients) to understand.
 
-## 1. Prinsip
+## 1. Principles
 
-- Setiap endpoint publik/internal yang dipakai lebih dari satu konsumen **wajib** didokumentasikan.
-- Dokumentasi ditulis bersamaan dengan kode, bukan belakangan.
-- Contoh request/response harus realistis, bukan placeholder kosong (`"string"`, `"example"`).
-- Semua path di dokumentasi **wajib** mengikuti prefix `/api/v{n}` sesuai standar versioning di `coding-standards` bagian 6.1 (`references/api-design.md`) — jangan ada dokumentasi endpoint tanpa versi.
+- Every public/internal endpoint used by more than one consumer **must** be documented.
+- Write documentation together with the code, not afterwards.
+- Request/response examples must be realistic, not empty placeholders (`"string"`, `"example"`).
+- Every path in the docs **must** use the `/api/v{n}` prefix per the versioning standard in `coding-standards` section 6.1 (`references/api-design.md`) — no endpoint docs without a version.
 
 ## 2. NestJS (`@nestjs/swagger`)
 
-### Struktur wajib per endpoint
+### Required structure per endpoint
 
-**Setiap endpoint wajib mendokumentasikan contoh payload request DAN contoh response untuk setiap status code yang mungkin terjadi** — bukan cuma menyebut status code tanpa contoh isinya. Path juga wajib mengikuti versioning (`/api/v1/...`).
+**Every endpoint must document a request payload example AND a response example for every status code that can occur** — not just list status codes without example content. The path must also follow versioning (`/api/v1/...`).
 
 ```typescript
 @ApiTags('Orders')
-@Controller({ path: 'orders', version: '1' })   // hasil path: /api/v1/orders
+@Controller({ path: 'orders', version: '1' })   // resulting path: /api/v1/orders
 export class OrderController {
 
 @ApiOperation({ summary: 'Create a new order', description: 'Creates an order and reserves stock for each item.' })
@@ -116,38 +116,38 @@ createOrder(@Body() dto: CreateOrderDto): Promise<OrderResponseDto> {
 }
 ```
 
-**Wajib disertakan minimal (sesuaikan status code lain kalau endpoint punya kasus spesifik — misal 409 Conflict untuk duplikat, 429 Too Many Requests untuk rate limit):**
+**Required minimum (add other status codes if the endpoint has specific cases — e.g. 409 Conflict for duplicates, 429 Too Many Requests for rate limiting):**
 
-| Status | Kapan dipakai | Wajib contoh payload? |
+| Status | When used | Payload example required? |
 |---|---|---|
-| 200 | GET/PUT/PATCH sukses | Ya — contoh `data` sesuai isi sebenarnya |
-| 201 | POST sukses (create) | Ya — contoh entity yang baru dibuat lengkap dengan `id` |
-| 204 | DELETE sukses tanpa body | Tidak perlu body, cukup description |
-| 400 | Request salah format | Ya — contoh field mana yang error |
-| 401 | Belum login/token invalid | Ya — biasanya sama di semua endpoint, boleh reuse |
-| 403 | Tidak punya akses | Ya — sebutkan alasan spesifik kalau bisa (role, ownership) |
-| 404 | Resource tidak ditemukan | Ya — sebutkan resource mana yang dicari |
-| 409 | Konflik (misal data duplikat) | Ya, kalau endpoint punya kemungkinan ini |
-| 422 | Validasi bisnis gagal | Ya — beda dari 400, ini soal aturan bisnis bukan format |
-| 429 | Rate limit terlampaui | Ya, kalau endpoint di-rate-limit |
-| 500 | Server error tak terduga | Ya — pesan generik, jangan expose stack trace |
+| 200 | GET/PUT/PATCH success | Yes — `data` example matching the real content |
+| 201 | POST success (create) | Yes — example of the newly created entity including `id` |
+| 204 | DELETE success with no body | No body needed, description is enough |
+| 400 | Malformed request | Yes — example showing which field errored |
+| 401 | Not logged in/invalid token | Yes — usually the same across endpoints, may be reused |
+| 403 | No access | Yes — state the specific reason if possible (role, ownership) |
+| 404 | Resource not found | Yes — state which resource was looked up |
+| 409 | Conflict (e.g. duplicate data) | Yes, if the endpoint can hit this |
+| 422 | Business validation failed | Yes — differs from 400: business rules, not format |
+| 429 | Rate limit exceeded | Yes, if the endpoint is rate-limited |
+| 500 | Unexpected server error | Yes — generic message, never expose a stack trace |
 
-### Aturan lain
-- `@ApiTags` per modul, nama tag PascalCase plural sesuai domain: `Orders`, `Users`, `WarehouseStocks`
-- `@ApiOperation.summary` singkat (< 10 kata), `description` boleh lebih detail kalau perlu konteks bisnis
-- Setiap DTO field wajib `@ApiProperty()` dengan `description` dan `example`:
+### Other rules
+- `@ApiTags` per module, tag names PascalCase plural matching the domain: `Orders`, `Users`, `WarehouseStocks`
+- `@ApiOperation.summary` short (< 10 words); `description` may be more detailed if business context is needed
+- Every DTO field must have `@ApiProperty()` with `description` and `example`:
   ```typescript
   @ApiProperty({ description: 'Product SKU code', example: 'SKU-00123' })
   sku: string;
   ```
-- Dokumentasikan **semua** kemungkinan status code non-200 yang relevan (400, 401, 403, 404, 422, 500)
-- Field opsional pakai `@ApiPropertyOptional()`, jangan `@ApiProperty({ required: false })`
+- Document **all** relevant non-200 status codes (400, 401, 403, 404, 422, 500)
+- Optional fields use `@ApiPropertyOptional()`, not `@ApiProperty({ required: false })`
 
-## 3. Laravel (OpenAPI via anotasi / `l5-swagger` atau `scramble`)
+## 3. Laravel (OpenAPI via annotations / `l5-swagger` or `scramble`)
 
-### Struktur wajib per endpoint
+### Required structure per endpoint
 
-Sama seperti NestJS — **setiap status code wajib punya contoh payload/response konkret**, bukan cuma deklarasi skema kosong.
+Same as NestJS — **every status code must have a concrete payload/response example**, not just an empty schema declaration.
 
 ```php
 /**
@@ -212,17 +212,17 @@ Sama seperti NestJS — **setiap status code wajib punya contoh payload/response
  */
 ```
 
-Kalau pakai Laravel Scramble (auto-generate dari Form Request + Resource), Scramble otomatis membaca contoh dari:
-- `rules()` di Form Request untuk kasus 422 — pastikan pesan validasi custom (`messages()`) diisi supaya contoh error jelas, bukan generik
-- Tambahkan method `documentation()`/anotasi manual untuk melengkapi contoh 401/403/404/500 yang tidak otomatis terbaca dari kode
+With Laravel Scramble (auto-generated from Form Request + Resource), Scramble reads examples automatically from:
+- `rules()` in the Form Request for 422 cases — make sure custom validation messages (`messages()`) are filled in so error examples are clear, not generic
+- Add a `documentation()` method/manual annotations to complete the 401/403/404/500 examples that can't be read from code automatically
 
-### Aturan tambahan
-- Form Request punya `rules()` yang lengkap dan tipe data jelas (jangan `sometimes` tanpa alasan)
-- API Resource (`toArray()`) mencerminkan field yang benar-benar dikembalikan, bukan seluruh model mentah
+### Additional rules
+- Form Requests have complete `rules()` with clear data types (no `sometimes` without a reason)
+- API Resources (`toArray()`) reflect the fields actually returned, not the whole raw model
 
 ## 4. Golang/Gin (`swaggo/swag`)
 
-Sama seperti NestJS dan Laravel — **setiap endpoint wajib mendokumentasikan contoh payload request dan contoh response untuk setiap status code yang mungkin terjadi**, ditulis lewat komentar terstruktur di atas handler, di-generate jadi OpenAPI spec lewat `swag init`.
+Same as NestJS and Laravel — **every endpoint must document a request payload example and a response example for every status code that can occur**, written as structured comments above the handler and generated into an OpenAPI spec via `swag init`.
 
 ```go
 // CreateOrder godoc
@@ -246,7 +246,7 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 }
 ```
 
-**Contoh payload/response konkret** — swaggo tidak selalu bisa infer contoh realistis dari struct saja, jadi lengkapi dengan tag `example` di DTO:
+**Concrete payload/response examples** — swaggo can't always infer realistic examples from the struct alone, so add `example` tags in the DTO:
 
 ```go
 type CreateOrderRequest struct {
@@ -267,13 +267,13 @@ type OrderResponse struct {
 }
 ```
 
-**Setup project (sekali per project):**
+**Project setup (once per project):**
 ```bash
 go install github.com/swaggo/swag/cmd/swag@latest
 swag init -g cmd/api/main.go -o docs/swagger
 ```
 ```go
-// main.go — anotasi umum project, sekali di atas main()
+// main.go — general project annotations, once above main()
 // @title           Order API
 // @version         1.0
 // @BasePath        /api/v1
@@ -282,16 +282,16 @@ swag init -g cmd/api/main.go -o docs/swagger
 // @name Authorization
 ```
 
-**Aturan:**
-- Tag `@Router` **wajib** pakai path lengkap dengan prefix versi (`/api/v1/orders`), selaras dengan `coding-standards` bagian 6.1 — jangan tulis path tanpa versi di anotasi
-- `@Success`/`@Failure` **wajib** mengarah ke struct DTO/`response.Envelope` yang benar-benar dipakai handler (bagian 6.2 `coding-standards`), bukan `{object} interface{}` generik — supaya schema yang di-generate benar-benar mencerminkan bentuk response asli
-- Setiap field DTO yang butuh contoh realistis diberi tag `example:"..."`, terutama untuk field yang formatnya tidak jelas dari nama field saja (UUID, kode format khusus)
-- Regenerasi dokumentasi (`swag init`) jadi bagian dari langkah build/CI, bukan langkah manual yang gampang lupa dijalankan setelah ubah endpoint
-- Endpoint yang sudah deprecated ditandai dengan `@Deprecated` di komentar godoc
+**Rules:**
+- The `@Router` tag **must** use the full path with version prefix (`/api/v1/orders`), consistent with `coding-standards` section 6.1 — never write an unversioned path in annotations
+- `@Success`/`@Failure` **must** point to the DTO struct/`response.Envelope` the handler actually uses (`coding-standards` section 6.2), not a generic `{object} interface{}` — so the generated schema truly reflects the real response shape
+- Every DTO field that needs a realistic example gets an `example:"..."` tag, especially fields whose format isn't obvious from the name (UUID, special code formats)
+- Regenerating docs (`swag init`) is part of the build/CI step, not a manual step that's easy to forget after changing an endpoint
+- Deprecated endpoints are marked with `@Deprecated` in the godoc comment
 
 ## 5. Response Schema Standard
 
-Selaras dengan format response di skill `coding-standards` bagian 6.2 — `statusCode` di body selalu sama dengan HTTP status, field snake_case, pagination lewat `meta.pagination` dengan 6 field lengkap:
+Consistent with the response format in the `coding-standards` skill section 6.2 — `statusCode` in the body always equals the HTTP status, fields are snake_case, pagination via `meta.pagination` with all 6 fields:
 
 ```json
 {
@@ -302,7 +302,7 @@ Selaras dengan format response di skill `coding-standards` bagian 6.2 — `statu
 }
 ```
 
-Untuk list/pagination:
+For list/pagination:
 ```json
 {
   "success": true,
@@ -321,11 +321,11 @@ Untuk list/pagination:
   }
 }
 ```
-Dokumentasikan `data` sebagai schema object/array bertipe, bukan `"type": "object"` kosong. Untuk endpoint list, dokumentasikan juga struktur `meta.pagination` di response schema-nya.
+Document `data` as a typed object/array schema, not an empty `"type": "object"`. For list endpoints, also document the `meta.pagination` structure in the response schema.
 
-## 6. Setup Swagger/OpenAPI untuk Versioning
+## 6. Swagger/OpenAPI Setup for Versioning
 
-Karena semua endpoint wajib pakai prefix `/api/v{n}` (lihat `coding-standards` bagian 6.1), dokumentasi Swagger juga harus mencerminkan versi dengan benar, bukan cuma path-nya saja yang berubah.
+Since every endpoint must use the `/api/v{n}` prefix (see `coding-standards` section 6.1), Swagger docs must also reflect the version correctly, not just the path.
 
 **NestJS — `main.ts`:**
 ```typescript
@@ -333,61 +333,61 @@ app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
 const config = new DocumentBuilder()
   .setTitle('Order API')
-  .setVersion('1.0')          // versi dokumen Swagger, selaraskan dengan versi API aktif
+  .setVersion('1.0')          // Swagger document version, keep in sync with the active API version
   .addBearerAuth()
   .build();
 const document = SwaggerModule.createDocument(app, config);
 SwaggerModule.setup('api/docs', app, document);
 ```
-- Kalau ada `v2` yang berjalan paralel dengan `v1` (masa transisi), pertimbangkan dokumen Swagger terpisah per versi (`api/docs/v1`, `api/docs/v2`) supaya konsumen tidak bingung endpoint mana yang aktif di versi mana
-- Endpoint yang sudah deprecated tapi masih hidup untuk masa transisi wajib ditandai eksplisit: `@ApiOperation({ summary: '...', deprecated: true })`
+- If `v2` runs in parallel with `v1` (transition period), consider separate Swagger docs per version (`api/docs/v1`, `api/docs/v2`) so consumers aren't confused about which endpoint is active in which version
+- Endpoints that are deprecated but still alive during transition must be marked explicitly: `@ApiOperation({ summary: '...', deprecated: true })`
 
-**Laravel — pisahkan dokumentasi per versi kalau pakai `l5-swagger`:**
+**Laravel — separate docs per version when using `l5-swagger`:**
 ```php
-// config/l5-swagger.php — bisa punya multiple documentation instance
+// config/l5-swagger.php — can have multiple documentation instances
 'documentations' => [
     'v1' => [ 'api' => ['title' => 'Order API v1'], 'paths' => ['annotations' => [base_path('app/Http/Controllers/V1')]] ],
     'v2' => [ 'api' => ['title' => 'Order API v2'], 'paths' => ['annotations' => [base_path('app/Http/Controllers/V2')]] ],
 ],
 ```
 
-## 7. Breaking Change Checklist — Sebelum Memutuskan Naik Versi
+## 7. Breaking Change Checklist — Before Deciding to Bump the Version
 
-Perubahan API dikategorikan **breaking** (wajib naik versi, `v1` → `v2`) atau **non-breaking** (boleh tetap di versi yang sama). Salah kategorisasi ke arah "anggap aman" adalah penyebab paling umum konsumen API (termasuk frontend kamu sendiri) tiba-tiba error tanpa peringatan.
+API changes are classified as **breaking** (must bump version, `v1` → `v2`) or **non-breaking** (may stay on the same version). Misclassifying toward "assume it's safe" is the most common reason API consumers (including your own frontend) suddenly break without warning.
 
-**Dihitung BREAKING (wajib naik versi atau deprecate dulu):**
-- [ ] Menghapus field dari response yang sebelumnya ada
-- [ ] Mengubah tipe data field (`string` → `number`, `total_amount: 15000` → `total_amount: "15000"`)
-- [ ] Mengubah nama field (`total_amount` → `total_price`)
-- [ ] Menambah field **required** baru di request body (konsumen lama yang tidak kirim field ini akan gagal)
-- [ ] Mengubah struktur nested object (field yang tadinya flat jadi nested, atau sebaliknya)
-- [ ] Mengubah makna/validasi field tanpa mengubah nama (`status: "done"` yang tadinya berarti sukses, sekarang berarti sesuatu yang lain)
-- [ ] Mengubah default behavior yang konsumen lama sudah bergantung padanya (misal urutan default hasil `GET` berubah)
-- [ ] Menghapus endpoint yang masih dipakai
+**Counts as BREAKING (must bump version or deprecate first):**
+- [ ] Removing a field from the response that existed before
+- [ ] Changing a field's data type (`string` → `number`, `total_amount: 15000` → `total_amount: "15000"`)
+- [ ] Renaming a field (`total_amount` → `total_price`)
+- [ ] Adding a new **required** field to the request body (old consumers that don't send it will fail)
+- [ ] Changing nested object structure (a flat field becomes nested, or vice versa)
+- [ ] Changing a field's meaning/validation without renaming it (`status: "done"` used to mean success, now means something else)
+- [ ] Changing default behavior old consumers already depend on (e.g. the default ordering of `GET` results changes)
+- [ ] Removing an endpoint that is still in use
 
-**TIDAK breaking (boleh tetap di versi yang sama):**
-- [ ] Menambah field **baru** di response (konsumen lama yang tidak baca field itu tidak terpengaruh)
-- [ ] Menambah field **optional** baru di request body
-- [ ] Menambah endpoint baru
-- [ ] Menambah value baru di enum, **selama konsumen lama didesain untuk mengabaikan value yang tidak dikenal** (kalau konsumen lama pakai switch-case ketat tanpa default case, ini tetap berisiko breaking secara praktis meski secara kontrak API tidak — pertimbangkan kasus ini)
-- [ ] Memperbaiki bug yang membuat response sebelumnya salah (dengan catatan: kalau ada konsumen yang diam-diam bergantung ke bug tersebut, tetap komunikasikan sebelum fix)
+**NOT breaking (may stay on the same version):**
+- [ ] Adding a **new** field to the response (old consumers that don't read it are unaffected)
+- [ ] Adding a new **optional** field to the request body
+- [ ] Adding a new endpoint
+- [ ] Adding a new enum value, **as long as old consumers are designed to ignore unknown values** (if old consumers use a strict switch-case with no default case, this is still practically breaking even if not contractually — consider this case)
+- [ ] Fixing a bug that made the previous response wrong (note: if any consumer silently depends on that bug, still communicate before fixing)
 
-**Kalau ragu breaking atau tidak** — anggap breaking. Konsekuensi salah anggap "aman" (konsumen tiba-tiba error di production) jauh lebih mahal daripada konsekuensi salah anggap "breaking" (naik versi yang sebenarnya tidak perlu).
+**If unsure whether it's breaking** — treat it as breaking. The cost of wrongly assuming "safe" (consumers suddenly erroring in production) is far higher than wrongly assuming "breaking" (an unnecessary version bump).
 
-**Sebelum merge perubahan yang breaking:**
-1. Pastikan endpoint versi lama tetap jalan (tidak langsung diganti/dihapus)
-2. Tandai `deprecated: true` di dokumentasi versi lama (lihat bagian 6)
-3. Informasikan ke konsumen internal (kalau ada tim/proyek lain yang pakai) sebelum versi lama benar-benar dimatikan, beri jangka waktu migrasi yang wajar
+**Before merging a breaking change:**
+1. Make sure the old-version endpoint keeps working (not replaced/removed immediately)
+2. Mark `deprecated: true` in the old version's docs (see section 6)
+3. Inform internal consumers (if other teams/projects use it) before the old version is actually shut down, and give a reasonable migration window
 
-## 8. Checklist Sebelum Merge
+## 8. Pre-Merge Checklist
 
-- [ ] Semua endpoint baru punya tag, summary, dan response schema
-- [ ] **Path endpoint di dokumentasi sudah pakai prefix `/api/v{n}` sesuai versi aktif**, tidak ada path tanpa versi
-- [ ] Semua field DTO/Request punya description + example
-- [ ] **Setiap status code non-200 yang mungkin terjadi (400/401/403/404/409/422/429/500) sudah punya contoh payload request DAN contoh response**, bukan cuma disebut statusnya saja
-- [ ] Contoh request/response pakai data realistis (bukan `"string"`, `"example"` generik)
-- [ ] Status code error yang mungkin terjadi sudah didokumentasikan lengkap dengan pesan error yang sebenarnya dikembalikan sistem
-- [ ] Nama tag konsisten dengan nama modul/domain (cek skill `coding-standards`)
-- [ ] Kalau endpoint ini menggantikan versi lama, endpoint versi lama sudah ditandai `deprecated: true` di dokumentasi
-- [ ] Perubahan sudah dicek terhadap Breaking Change Checklist (bagian 7) — kalau breaking, sudah naik versi, bukan diam-diam diubah di versi yang sama
-- [ ] Dokumentasi sudah dicoba render di Swagger UI / `/api/docs` (NestJS/Laravel) atau hasil `swag init` (Golang), tidak ada error parsing
+- [ ] All new endpoints have tag, summary, and response schema
+- [ ] **Endpoint paths in the docs use the `/api/v{n}` prefix for the active version**, no unversioned paths
+- [ ] All DTO/Request fields have description + example
+- [ ] **Every non-200 status code that can occur (400/401/403/404/409/422/429/500) has a request payload example AND a response example**, not just the status listed
+- [ ] Request/response examples use realistic data (not generic `"string"`, `"example"`)
+- [ ] Possible error status codes are documented completely, with the error messages the system actually returns
+- [ ] Tag names are consistent with module/domain names (check the `coding-standards` skill)
+- [ ] If this endpoint replaces an old version, the old-version endpoint is marked `deprecated: true` in the docs
+- [ ] Changes were checked against the Breaking Change Checklist (section 7) — if breaking, the version was bumped, not silently changed in the same version
+- [ ] Docs were test-rendered in Swagger UI / `/api/docs` (NestJS/Laravel) or via `swag init` output (Golang), with no parsing errors

@@ -1,30 +1,30 @@
 # Coding Standards — Frontend State Management
 
-> Bagian dari skill `coding-standards`. Nomor bagian dipertahankan supaya rujukan seperti "bagian 7.2" tetap valid.
+> Part of the `coding-standards` skill. Section numbers are kept so references like "section 7.2" stay valid.
 
 ## 7. Frontend: State Management Standard (Vue.js & Next.js)
 
-**Aturan utama: komponen/halaman TIDAK BOLEH memanggil API secara langsung** (fetch/axios langsung di dalam component atau page). Semua komunikasi ke backend wajib melalui layer state management, dengan alur:
+**Core rule: components/pages MUST NOT call the API directly** (no fetch/axios inside a component or page). All backend communication must go through the state management layer, following:
 
 ```
 Component/Page → Store/Query Hook → API Service Layer → Backend
 ```
 
-> **Field passthrough:** Karena response API sudah snake_case sama persis dengan entity/database (bagian 6.2), **tidak perlu ada layer transformasi camelCase↔snake_case** di service layer atau store. Data dari API dipakai apa adanya. Ini menyederhanakan 3 layer di bawah — service dan store cukup pass-through data, tidak perlu mapping function tambahan.
+> **Field passthrough:** Since API responses are already snake_case, identical to the entity/database (section 6.2), **no camelCase↔snake_case transformation layer is needed** in the service layer or store. API data is used as is. This simplifies the 3 layers below — service and store just pass data through, no extra mapping functions.
 
-### 7.1 Kenapa
+### 7.1 Why
 
-- Komponen jadi susah di-test kalau bercampur dengan network call
-- Data yang sama dipanggil ulang-ulang dari komponen berbeda tanpa caching
-- Loading/error state tersebar tidak konsisten di tiap komponen
-- Sulit tracking state global (misal data user yang dipakai di banyak halaman)
+- Components become hard to test when mixed with network calls
+- The same data gets fetched repeatedly from different components without caching
+- Loading/error state is scattered and inconsistent across components
+- Global state is hard to track (e.g. user data used on many pages)
 
-### 7.2 Struktur Layer (wajib 3 layer, jangan lompat layer)
+### 7.2 Layer Structure (3 layers required, never skip a layer)
 
-**1. API Service Layer** — hanya berisi fungsi HTTP call, tidak ada state, tidak ada transformasi field
+**1. API Service Layer** — only HTTP call functions, no state, no field transformation
 ```typescript
 // services/order.service.ts
-// Type Order di sini field-nya snake_case, sama persis dengan response API
+// The Order type here uses snake_case fields, identical to the API response
 export const orderService = {
   getOrders: (params: OrderQueryParams) => apiClient.get<ApiResponse<Order[]>>('/api/v1/orders', { params }),
   getOrderById: (id: string) => apiClient.get<ApiResponse<Order>>(`/api/v1/orders/${id}`),
@@ -32,7 +32,7 @@ export const orderService = {
 };
 ```
 
-**2. State Management Layer** — di sinilah pemanggilan service terjadi, bukan di komponen
+**2. State Management Layer** — service calls happen here, not in components
 
 *Vue.js — Pinia:*
 ```typescript
@@ -44,7 +44,7 @@ export const useOrderStore = defineStore('order', {
       this.loading = true;
       try {
         const { data } = await orderService.getOrders(params);
-        this.orders = data.data;   // langsung assign, field sudah sesuai (snake_case)
+        this.orders = data.data;   // assign directly, fields already match (snake_case)
       } catch (e) {
         this.error = 'Failed to fetch orders';
       } finally {
@@ -55,7 +55,7 @@ export const useOrderStore = defineStore('order', {
 });
 ```
 
-*Next.js — TanStack Query (direkomendasikan) atau Zustand untuk client state:*
+*Next.js — TanStack Query (recommended) or Zustand for client state:*
 ```typescript
 // hooks/use-orders.ts
 export function useOrders(params: OrderQueryParams) {
@@ -66,9 +66,9 @@ export function useOrders(params: OrderQueryParams) {
 }
 ```
 
-**3. Component/Page Layer** — hanya konsumsi state, tidak tahu-menahu soal HTTP
+**3. Component/Page Layer** — only consumes state, knows nothing about HTTP
 ```vue
-<!-- Vue: komponen cukup panggil store, akses field langsung snake_case -->
+<!-- Vue: the component just calls the store, accesses snake_case fields directly -->
 <script setup>
 const orderStore = useOrderStore();
 onMounted(() => orderStore.fetchOrders({ page: 1 }));
@@ -80,55 +80,55 @@ onMounted(() => orderStore.fetchOrders({ page: 1 }));
 </template>
 ```
 ```tsx
-// Next.js: komponen cukup panggil hook, akses field langsung snake_case
+// Next.js: the component just calls the hook, accesses snake_case fields directly
 function OrderList() {
   const { data: orders, isLoading } = useOrders({ page: 1 });
   return orders?.map((o) => <div key={o.id}>{o.order_code} — {o.total_amount}</div>);
 }
 ```
 
-> **Catatan untuk project Next.js dengan Server Actions:** kalau memakai App Router Server Actions (bukan API service + client-side fetching), Server Action tetap berperan sebagai "service layer" — ambil/kirim data ke backend di dalam Server Action, komponen tetap tidak langsung `fetch()` sendiri. Field yang dikembalikan dari Server Action tetap ikuti field snake_case yang sama.
+> **Note for Next.js projects with Server Actions:** if you use App Router Server Actions (instead of an API service + client-side fetching), the Server Action still acts as the "service layer" — fetch/send backend data inside the Server Action; components still never call `fetch()` themselves. Fields returned from a Server Action still follow the same snake_case fields.
 
-### 7.3 Aturan Tambahan
+### 7.3 Additional Rules
 
-- **Server state** (data dari API) vs **client state** (UI state seperti modal terbuka/tertutup, filter form) ditangani terpisah — jangan campur keduanya dalam satu store besar
-  - Next.js: server state → TanStack Query atau Server Actions, client state → Zustand/`useState`
-  - Vue: server state & client state boleh sama-sama di Pinia, tapi pisahkan store-nya per domain (`useOrderStore`, `useUiStore`)
-- Loading, error, dan empty state wajib ditangani di layer state management, komponen tinggal render berdasarkan state yang sudah ada
-- **Field dari API tidak boleh diubah namanya** di store/hook (misal jangan diam-diam ganti `total_amount` jadi `totalAmount`) — kalau butuh nama tampilan berbeda di UI, itu dilakukan di level render/computed, bukan mengubah shape data di store
-- Satu service function = satu endpoint, jangan gabung beberapa call API jadi satu fungsi besar yang susah di-reuse
+- **Server state** (API data) and **client state** (UI state like modal open/closed, form filters) are handled separately — don't mix them in one big store
+  - Next.js: server state → TanStack Query or Server Actions, client state → Zustand/`useState`
+  - Vue: server and client state may both live in Pinia, but split stores per domain (`useOrderStore`, `useUiStore`)
+- Loading, error, and empty states must be handled in the state management layer; components just render based on existing state
+- **API field names must not be changed** in the store/hook (e.g. don't silently rename `total_amount` to `totalAmount`) — if the UI needs a different display name, do it at render/computed level, not by changing the data shape in the store
+- One service function = one endpoint; don't merge several API calls into one big function that's hard to reuse
 
-### 7.4 Urutan Prioritas Performance (React/Next.js & Vue)
+### 7.4 Performance Priority Order (React/Next.js & Vue)
 
-Kalau ada masalah performance, **perbaiki sesuai urutan dampak, jangan langsung lompat ke micro-optimization.** Kesalahan paling umum: langsung pasang `useMemo`/`React.memo`/`computed` di mana-mana padahal bottleneck sebenarnya ada di tempat lain yang dampaknya jauh lebih besar.
+For performance problems, **fix in order of impact; don't jump straight to micro-optimization.** The most common mistake: sprinkling `useMemo`/`React.memo`/`computed` everywhere while the real bottleneck is elsewhere with far bigger impact.
 
-**Urutan diagnosa (dari dampak terbesar ke terkecil):**
-1. **Request waterfall** — beberapa API call yang seharusnya bisa paralel malah dipanggil berurutan (call B menunggu call A selesai padahal tidak saling bergantung). Ini biasanya penyebab terbesar halaman terasa lambat, dan paling sering luput karena tidak error, cuma lambat.
-   - Next.js: gunakan `Promise.all()` untuk fetch paralel, atau Suspense boundary untuk streaming per bagian tanpa saling blocking
-   - Vue: `Promise.all()` di composable, atau paralel-kan pemanggilan beberapa store action
-2. **Bundle size** — cek apakah ada barrel import yang menarik seluruh library padahal cuma butuh satu fungsi/komponen (`import { Icon } from 'huge-icon-library'` yang ternyata nge-bundle semua icon). Gunakan `next/dynamic` (Next.js) atau `defineAsyncComponent` (Vue) untuk komponen berat yang tidak perlu dimuat di initial load.
-3. **Data fetching pattern** — N+1 query (lihat bagian 3), fetch data yang tidak dipakai, fetch ulang data yang sudah ada di cache
-4. **Re-render tidak perlu** — baru di titik ini pertimbangkan `useMemo`/`React.memo`/Vue `computed`, dan hanya di komponen yang benar-benar terbukti re-render berlebihan (profil dulu, jangan tebak-tebak pasang memoization di semua tempat)
-5. **Rendering/JS execution** — optimasi list panjang (virtualization, `content-visibility: auto`), lazy load gambar
+**Diagnosis order (largest to smallest impact):**
+1. **Request waterfall** — several API calls that could run in parallel are called sequentially (call B waits for call A though they're independent). This is usually the biggest cause of a slow-feeling page, and the most often missed because it doesn't error, it's just slow.
+   - Next.js: use `Promise.all()` for parallel fetches, or Suspense boundaries to stream sections without blocking each other
+   - Vue: `Promise.all()` in a composable, or parallelize multiple store action calls
+2. **Bundle size** — check for barrel imports that pull in a whole library when only one function/component is needed (`import { Icon } from 'huge-icon-library'` that turns out to bundle every icon). Use `next/dynamic` (Next.js) or `defineAsyncComponent` (Vue) for heavy components not needed on initial load.
+3. **Data fetching pattern** — N+1 queries (see section 3), fetching unused data, refetching data already in cache
+4. **Unnecessary re-renders** — only at this point consider `useMemo`/`React.memo`/Vue `computed`, and only in components proven to re-render excessively (profile first; don't guess and add memoization everywhere)
+5. **Rendering/JS execution** — optimize long lists (virtualization, `content-visibility: auto`), lazy-load images
 
-**Prinsip:** kalau belum profiling/mengukur di mana bottleneck sebenarnya, jangan langsung "optimasi" yang paling gampang dipikirkan (biasanya `useMemo`) — itu sering menambah kompleksitas tanpa menyelesaikan masalah nyata.
+**Principle:** if you haven't profiled/measured where the real bottleneck is, don't immediately apply the easiest-to-think-of "optimization" (usually `useMemo`) — it often adds complexity without solving the real problem.
 
-### 7.5 Composition Pattern — Hindari "Boolean Prop Hell"
+### 7.5 Composition Pattern — Avoid "Boolean Prop Hell"
 
-Komponen dengan banyak boolean prop yang saling terkait (`isCompact`, `showHeader`, `isRounded`, `hasBorder`, `isHighlighted` numpuk di satu komponen) susah dipahami, di-test, dan di-extend. Pakai pola yang lebih scalable:
+Components with many interrelated boolean props (`isCompact`, `showHeader`, `isRounded`, `hasBorder`, `isHighlighted` piling up on one component) are hard to understand, test, and extend. Use more scalable patterns:
 
-**Varian eksplisit, bukan boolean flag untuk mode yang saling eksklusif:**
+**Explicit variants, not boolean flags, for mutually exclusive modes:**
 ```typescript
-// ❌ Boolean prop menumpuk
+// ❌ Piled-up boolean props
 <Alert isDestructive isCompact showIcon={false} />
 
-// ✅ Varian eksplisit
+// ✅ Explicit variant
 <Alert.Destructive compact />
 ```
 
-**Compound component untuk struktur yang punya beberapa bagian terkait:**
+**Compound components for structures with several related parts:**
 ```tsx
-// ❌ Semua konfigurasi lewat props di satu komponen
+// ❌ All configuration through props on one component
 <Select
   options={options}
   showSearch
@@ -136,7 +136,7 @@ Komponen dengan banyak boolean prop yang saling terkait (`isCompact`, `showHeade
   contentMaxHeight={300}
 />
 
-// ✅ Compound component — tiap bagian komponen terpisah tapi terkait lewat context
+// ✅ Compound component — each part is a separate component, linked via context
 <Select>
   <Select.Trigger>Pilih menu</Select.Trigger>
   <Select.Content maxHeight={300}>
@@ -146,4 +146,4 @@ Komponen dengan banyak boolean prop yang saling terkait (`isCompact`, `showHeade
 </Select>
 ```
 
-**Kapan dipakai:** komponen reusable/shared (dipakai di banyak tempat, terutama kalau lagi bangun design system atau komponen yang bakal dipakai berulang) baru worth pola ini. Untuk komponen sekali pakai/spesifik satu halaman, boolean prop sederhana masih oke — jangan over-engineer komponen kecil yang tidak akan berkembang variasinya.
+**When to use:** only worth it for reusable/shared components (used in many places, especially when building a design system or components that will be reused repeatedly). For one-off/page-specific components, simple boolean props are still fine — don't over-engineer small components whose variations won't grow.

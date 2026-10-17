@@ -1,11 +1,11 @@
 ---
 name: fix
-description: Shortcut — kerjakan bug fix atau perubahan kecil lewat feature-flow mode cepat (satu tiket → developer → reviewer → QA). Pakai sebagai /noskill:fix <deskripsi>.
+description: Shortcut — do a bug fix or small change via feature-flow quick mode (one ticket → developer → reviewer → QA). Use as /noskill:fix <deskripsi>.
 disable-model-invocation: true
 ---
 
-Jalankan skill `feature-flow` dalam **mode cepat** untuk permintaan berikut:
+Run skill `feature-flow` in **quick mode** for this request:
 
 $ARGUMENTS
 
-Kalau deskripsinya kosong atau terlalu kabur untuk ditulis jadi acceptance criteria, tanyakan dulu satu kali secara singkat.
+If the description is empty or too vague to write acceptance criteria from, ask once, briefly, first.

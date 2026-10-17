@@ -1,17 +1,17 @@
-<!-- Bagian dari skill coding-standards: contoh kode fungsi, TDD, anti-pattern test, dan simplify pass. -->
-# Coding Standards — Contoh Fungsi, TDD, dan Simplify Pass
+<!-- Part of the coding-standards skill: function code examples, TDD, test anti-patterns, and simplify pass. -->
+# Coding Standards — Function Examples, TDD, and Simplify Pass
 
-## 5. Function & Method — contoh
+## 5. Function & Method — examples
 
-Contoh:
+Example:
 ```typescript
-// ❌ Kurang baik
+// ❌ Worse
 async function getUser(id) {
   const user = await this.repo.find(id);
   return user;
 }
 
-// ✅ Baik
+// ✅ Better
 async function getUserById(id: string): Promise<UserResponseDto> {
   const user = await this.userRepository.findById(id);
   if (!user) {
@@ -21,15 +21,15 @@ async function getUserById(id: string): Promise<UserResponseDto> {
 }
 ```
 
-**Golang — error handling idiomatik (return error, jangan panic untuk expected error):**
+**Golang — idiomatic error handling (return errors, don't panic for expected errors):**
 ```go
-// ❌ Kurang baik — error ditelan diam-diam
+// ❌ Worse — error silently swallowed
 func GetOrderByID(id string) *Order {
     order, _ := repo.FindByID(id)
     return order
 }
 
-// ✅ Baik — error di-wrap dengan konteks, sentinel error untuk kasus spesifik
+// ✅ Better — error wrapped with context, sentinel error for specific cases
 var ErrOrderNotFound = errors.New("order not found")
 
 func (s *OrderService) GetOrderByID(ctx context.Context, id string) (*Order, error) {
@@ -43,13 +43,13 @@ func (s *OrderService) GetOrderByID(ctx context.Context, id string) (*Order, err
     return order, nil
 }
 ```
-- `panic` hanya untuk error yang benar-benar tidak boleh terjadi (programmer error), bukan untuk expected error seperti "data tidak ditemukan"
-- Handler yang menerima error dari service memetakan ke HTTP status code yang sesuai (`errors.Is(err, ErrOrderNotFound)` → 404), bukan generic 500 untuk semua error
+- `panic` only for errors that truly must never happen (programmer error), not for expected errors such as "data not found"
+- A handler receiving an error from the service maps it to the appropriate HTTP status code (`errors.Is(err, ErrOrderNotFound)` → 404), not a generic 500 for every error
 
-## 5.1 TDD — contoh siklus RED → GREEN → REFACTOR
+## 5.1 TDD — RED → GREEN → REFACTOR cycle example
 
 ```typescript
-// 1. RED — test dulu, belum ada implementasi calculateExcessAmount
+// 1. RED — test first, calculateExcessAmount not implemented yet
 it('should return 0 excess when subsidy covers full meal price', () => {
   expect(calculateExcessAmount({ mealPrice: 15000, subsidyAmount: 15000 })).toBe(0);
 });
@@ -57,28 +57,28 @@ it('should return the gap when subsidy is less than meal price', () => {
   expect(calculateExcessAmount({ mealPrice: 15000, subsidyAmount: 10000 })).toBe(5000);
 });
 
-// 2. GREEN — implementasi minimal
+// 2. GREEN — minimal implementation
 function calculateExcessAmount({ mealPrice, subsidyAmount }: { mealPrice: number; subsidyAmount: number }): number {
   return Math.max(0, mealPrice - subsidyAmount);
 }
 
-// 3. REFACTOR — kalau perlu rapikan lebih lanjut, test di atas jadi jaring pengaman
+// 3. REFACTOR — tidy further if needed; the tests above are the safety net
 ```
 
 ## 5.2 Quality Gates — anti-pattern
 
-Contoh anti-pattern yang harus dihindari:
+Anti-pattern example to avoid:
 ```typescript
-// ❌ Test awalnya expect(result).toBe(150000), gagal karena bug di kalkulasi
-// Lalu "diperbaiki" dengan mengubah expected value supaya cocok dengan output yang salah:
-expect(result).toBe(145000);  // <- ini nutup bug, bukan nemuin bug
+// ❌ The test originally expected expect(result).toBe(150000) and failed due to a calculation bug
+// Then it was "fixed" by changing the expected value to match the wrong output:
+expect(result).toBe(145000);  // <- this hides the bug instead of finding it
 ```
-Kalau nilai yang diharapkan berubah karena requirement memang berubah, itu sah — bedanya ada di alasan perubahannya, bukan sekadar "biar lulus".
+If the expected value changes because the requirement really changed, that is legitimate — the difference lies in the reason for the change, not just "to make it pass".
 
-## 5.3 Simplify Pass — Setelah Fitur Jalan
+## 5.3 Simplify Pass — After the Feature Works
 
-Setelah implementasi lulus test dan quality gates, ada tahap terpisah untuk merapikan kode **tanpa mengubah perilakunya**:
-- Sasaran: nested ternary yang membingungkan, function yang melakukan lebih dari satu hal, logic yang terlalu padat/sulit dibaca sekali lihat, abstraksi yang masuk akal saat ditulis tapi sekarang membingungkan
-- **Aturan ketat: hanya boleh mengubah *cara* perilaku diekspresikan, tidak boleh mengubah perilakunya.** Kalau simplify pass butuh mengubah logic/hasil, itu bukan simplify lagi — itu perubahan fungsional yang butuh test baru/diperbarui
-- Jalankan ulang test setelah simplify pass untuk pastikan masih hijau — kalau ada test yang gagal setelah "sekadar merapikan", berarti perilakunya kebawa berubah, itu bug baru yang harus diperbaiki, bukan tanda test-nya perlu disesuaikan
-- Tidak perlu dilakukan untuk kode sepele; paling berguna untuk logic yang ditulis cepat saat awal implementasi dan belum sempat dirapikan
+After the implementation passes tests and quality gates, there is a separate stage to tidy the code **without changing its behavior**:
+- Targets: confusing nested ternaries, functions doing more than one thing, logic too dense/hard to read at a glance, abstractions that made sense when written but are now confusing
+- **Strict rule: you may only change *how* the behavior is expressed, never the behavior itself.** If the simplify pass needs to change logic/results, it is no longer a simplify — it is a functional change needing new/updated tests
+- Rerun the tests after the simplify pass to make sure they are still green — if a test fails after "just tidying", the behavior changed along with it; that is a new bug to fix, not a sign the test needs adjusting
+- Not needed for trivial code; most useful for logic written quickly early in implementation and not yet tidied

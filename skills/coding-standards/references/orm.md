@@ -1,33 +1,33 @@
 # Coding Standards — ORM & Database Access
 
-> Bagian dari skill `coding-standards`. Nomor bagian dipertahankan supaya rujukan seperti "bagian 3.1" tetap valid.
+> Part of the `coding-standards` skill. Section numbers are kept so references like "section 3.1" stay valid.
 
 ## 3. ORM & Database Access Standard (Node.js & Golang)
 
-Pilih satu ORM/query approach per project, jangan campur dalam satu service. Standar di bawah berlaku di atas naming convention bagian 2.5 (nama tabel/field/relasi tetap sama, ini soal cara implementasi di kode).
+Pick one ORM/query approach per project; don't mix within one service. The standards below build on the section 2.5 naming convention (table/field/relation names stay the same; this is about implementation in code).
 
-> **Prinsip disiplin migration — berlaku untuk semua ORM di bawah, ditegaskan di sini karena sering jadi sumber insiden production:**
-> - **Schema production tidak pernah diubah langsung.** Semua perubahan struktur tabel lewat file migration yang di-commit ke version control (`prisma migrate`, `typeorm migration:generate`, `golang-migrate`/`goose`) — bukan lewat GUI database, bukan `db push`/`AutoMigrate()`/`synchronize: true` di environment production.
-> - **Migration dites di environment development/staging dulu** sebelum dijalankan ke production, termasuk cek apakah migration bisa di-rollback (`down()` yang benar, bukan sekadar formalitas kosong).
-> - **Perubahan schema yang berpotensi merusak data existing** (drop column, ubah tipe data, tambah kolom `NOT NULL` tanpa default) butuh strategi migrasi bertahap (tambah kolom nullable dulu → backfill data → baru set constraint), bukan satu migration langsung destruktif — terutama untuk tabel yang sudah ada data production.
-> - Kalau kerja di tim/project dengan banyak orang menyentuh schema yang sama, pertimbangkan workflow branch-per-perubahan-schema (schema change di branch terpisah, direview sebelum merge) supaya konflik migration ketahuan sebelum sampai production, bukan sesudahnya.
+> **Migration discipline principles — apply to every ORM below, stressed here because they're a frequent source of production incidents:**
+> - **Production schema is never changed directly.** Every table-structure change goes through a migration file committed to version control (`prisma migrate`, `typeorm migration:generate`, `golang-migrate`/`goose`) — not via a database GUI, not `db push`/`AutoMigrate()`/`synchronize: true` in production.
+> - **Migrations are tested in development/staging first** before running in production, including checking that the migration can be rolled back (a correct `down()`, not an empty formality).
+> - **Schema changes that could damage existing data** (drop column, change data type, add a `NOT NULL` column without default) need a staged migration strategy (add nullable column first → backfill data → then set the constraint), not one directly destructive migration — especially for tables that already hold production data.
+> - When working in a team/project where many people touch the same schema, consider a branch-per-schema-change workflow (schema change on a separate branch, reviewed before merge) so migration conflicts surface before production, not after.
 
-### 3.1 Prisma (v7 ke atas)
+### 3.1 Prisma (v7 and up)
 
-Prisma 7 punya beberapa perubahan penting dari versi sebelumnya — pastikan setup project baru mengikuti ini. *(Catatan: sintaks spesifik seperti `prisma.config.ts` mengikuti Prisma 7 saat skill ini ditulis — kalau ada project baru dan sudah ada versi Prisma yang lebih baru, cek dulu changelog resmi Prisma untuk perubahan breaking sebelum mengikuti pola di bawah ini apa adanya.)*
+Prisma 7 has several important changes from earlier versions — make sure new project setup follows this. *(Note: specific syntax such as `prisma.config.ts` follows Prisma 7 as of writing this skill — for a new project where a newer Prisma version exists, check the official Prisma changelog for breaking changes before following the patterns below as-is.)*
 
-**Generator client (wajib Rust-free client di v7+):**
+**Client generator (Rust-free client required in v7+):**
 ```prisma
 generator client {
-  provider = "prisma-client"   // bukan "prisma-client-js" (versi lama/Rust-based)
+  provider = "prisma-client"   // not "prisma-client-js" (old/Rust-based)
   output   = "../src/generated/prisma"
 }
 ```
-- `output` **wajib** diarahkan ke dalam source project (misal `src/generated/prisma`), bukan default lama di `node_modules` — ini perilaku default Prisma 7, jangan override balik ke node_modules
-- Tambahkan folder hasil generate ke `.gitignore`
+- `output` **must** point inside the project source (e.g. `src/generated/prisma`), not the old `node_modules` default — this is Prisma 7's default behavior; don't override it back to node_modules
+- Add the generated folder to `.gitignore`
 
-**Konfigurasi project — gunakan `prisma.config.ts`:**
-Prisma 7 memisahkan konfigurasi project (lokasi schema, seed script, database URL) ke file config terpisah, bukan lagi ditaruh di `package.json` atau schema:
+**Project configuration — use `prisma.config.ts`:**
+Prisma 7 moves project configuration (schema location, seed script, database URL) into a separate config file, no longer in `package.json` or the schema:
 ```typescript
 // prisma.config.ts
 import { defineConfig } from 'prisma/config';
@@ -41,9 +41,9 @@ export default defineConfig({
 });
 ```
 
-**Naming di schema.prisma — field snake_case langsung, TANPA `@map`:**
+**Naming in schema.prisma — snake_case fields directly, WITHOUT `@map`:**
 
-Karena field entity wajib identik dengan nama kolom database (bagian 2.2), field di schema Prisma **ditulis langsung snake_case**, bukan camelCase + `@map`. Ini penting supaya object yang dibangun dari query params (`req.query`) bisa langsung dipakai sebagai `where` clause tanpa transformasi:
+Because entity fields must be identical to database column names (section 2.2), Prisma schema fields are **written directly in snake_case**, not camelCase + `@map`. This matters so an object built from query params (`req.query`) can be used directly as a `where` clause without transformation:
 
 ```prisma
 model OrderItem {
@@ -64,14 +64,14 @@ model OrderItem {
   @@index([order_id], map: "idx_order_items_order_id")
 }
 ```
-- Model name tetap PascalCase singular (`model OrderItem`), map ke tabel lewat `@@map("order_items")` — ini satu-satunya `@map` yang tetap dipakai (nama tabel), field kolom tidak perlu `@map` lagi karena sudah sama persis
-- `id` default `String @id @default(uuid())` — UUID sebagai default primary key (lihat bagian 2.5)
-- `created_by`/`updated_by`/`deleted_at` nullable (`String?`/`DateTime?`) sesuai kolom wajib di bagian 2.5 — lewatkan kalau tabelnya memang cuma ditulis sistem tanpa keterlibatan user
-- Enum: PascalCase nama, value UPPER_SNAKE_CASE, wajib `@@map` untuk nama tabel enum di DB kalau relevan
+- Model name stays PascalCase singular (`model OrderItem`), mapped to the table via `@@map("order_items")` — the only `@map` still used (table name); column fields need no `@map` since they already match exactly
+- `id` defaults to `String @id @default(uuid())` — UUID as default primary key (see section 2.5)
+- `created_by`/`updated_by`/`deleted_at` nullable (`String?`/`DateTime?`) per the required columns in section 2.5 — skip them if the table is only written by the system with no user involvement
+- Enum: PascalCase name, UPPER_SNAKE_CASE values, `@@map` required for the enum's DB table name when relevant
 
-**Keuntungan langsung untuk multi-field query & filter relasi:**
+**Direct benefit for multi-field queries & relation filters:**
 ```typescript
-// Query params dari request bisa langsung jadi where clause, tanpa mapping manual
+// Request query params become the where clause directly, no manual mapping
 // GET /api/v1/orders?status=pending&user_id=abc&items.product_id=xyz
 const { status, user_id, ...filters } = req.query;
 
@@ -85,31 +85,31 @@ const orders = await prisma.order.findMany({
   },
 });
 ```
-Karena nama field di Prisma Client sama persis dengan nama kolom/relasi, tidak perlu ada layer konversi `camelCase → snake_case` sebelum membangun query dinamis.
+Because Prisma Client field names exactly match column/relation names, no `camelCase → snake_case` conversion layer is needed before building dynamic queries.
 
-**Struktur folder integrasi dengan NestJS:**
+**Folder structure for NestJS integration:**
 ```
 src/
 ├── prisma/
-│   ├── prisma.service.ts     # wrap PrismaClient sebagai injectable service
+│   ├── prisma.service.ts     # wraps PrismaClient as an injectable service
 │   └── prisma.module.ts
-├── generated/prisma/          # hasil generate, di .gitignore
+├── generated/prisma/          # generated output, in .gitignore
 └── modules/
     └── order/
-        └── order.repository.ts   # query Prisma ditaruh di sini, bukan langsung di service
+        └── order.repository.ts   # Prisma queries live here, not directly in the service
 ```
 
-**Aturan query:**
-- Jangan panggil `PrismaClient` langsung di service/controller — wrap lewat `PrismaService` (injectable) dan taruh query kompleks di repository layer
-- Hindari N+1: gunakan `include`/`select` eksplisit, jangan query di dalam loop
-- Transaksi multi-step wajib pakai `prisma.$transaction([...])` atau interactive transaction, bukan multiple query terpisah tanpa rollback safety
-- Migration: `prisma migrate dev` untuk development, `prisma migrate deploy` untuk production — jangan pernah `db push` di production
+**Query rules:**
+- Don't call `PrismaClient` directly in a service/controller — wrap it via `PrismaService` (injectable) and put complex queries in the repository layer
+- Avoid N+1: use explicit `include`/`select`, no queries inside loops
+- Multi-step transactions must use `prisma.$transaction([...])` or an interactive transaction, not multiple separate queries without rollback safety
+- Migration: `prisma migrate dev` for development, `prisma migrate deploy` for production — never `db push` in production
 
 ### 3.2 TypeORM
 
-**Naming entity — field snake_case langsung, TANPA `name` mapping:**
+**Entity naming — snake_case fields directly, WITHOUT `name` mapping:**
 
-Sama seperti Prisma, field di class entity **ditulis langsung snake_case** mengikuti nama kolom, bukan camelCase + `@Column({ name: '...' })`. Tujuannya sama: field entity bisa langsung dipakai untuk membangun `where` dinamis dari query params tanpa transformasi.
+As with Prisma, entity class fields are **written directly in snake_case** matching column names, not camelCase + `@Column({ name: '...' })`. Same goal: entity fields can be used directly to build a dynamic `where` from query params without transformation.
 
 ```typescript
 @Entity('order_items')
@@ -143,12 +143,12 @@ export class OrderItem {
   deleted_at: Date;
 }
 ```
-- Wajib deklarasikan nama tabel eksplisit di `@Entity('nama_tabel')`, jangan andalkan auto-generate dari nama class
-- `@PrimaryGeneratedColumn('uuid')` — UUID sebagai default primary key (lihat bagian 2.5), bukan `@PrimaryGeneratedColumn()` biasa yang auto-increment integer
-- `created_by`/`updated_by` nullable, `deleted_at` pakai `@DeleteDateColumn()` (TypeORM otomatis exclude row yang punya `deleted_at` di query biasa kalau soft delete diaktifkan lewat `softDelete()`) — sesuai kolom wajib di bagian 2.5
-- `@JoinColumn({ name: '...' })` tetap perlu disebutkan eksplisit untuk relasi (TypeORM butuh ini untuk tahu kolom FK-nya), tapi nama kolom foreign key itu sendiri tetap snake_case sama seperti field biasa
+- Must declare the table name explicitly in `@Entity('table_name')`; don't rely on auto-generation from the class name
+- `@PrimaryGeneratedColumn('uuid')` — UUID as default primary key (see section 2.5), not plain `@PrimaryGeneratedColumn()` which is auto-increment integer
+- `created_by`/`updated_by` nullable, `deleted_at` uses `@DeleteDateColumn()` (TypeORM automatically excludes rows with `deleted_at` from normal queries when soft delete is enabled via `softDelete()`) — per the required columns in section 2.5
+- `@JoinColumn({ name: '...' })` still needs to be stated explicitly for relations (TypeORM needs it to know the FK column), but the foreign key column name itself stays snake_case like any other field
 
-**Query multi-field & filter relasi:**
+**Multi-field query & relation filter:**
 ```typescript
 const { status, order_id, product_id } = req.query;
 
@@ -156,32 +156,32 @@ const orders = await orderRepository.find({
   where: {
     ...(status && { status }),
     ...(order_id && { id: order_id }),
-    ...(product_id && { items: { product_id } }),  // filter lewat relasi langsung
+    ...(product_id && { items: { product_id } }),  // filter via relation directly
   },
   relations: ['items'],
 });
 ```
 
-**Struktur folder:** entity ditaruh di `entities/` per modul (lihat struktur NestJS bagian 4.1), repository custom lewat `@InjectRepository` di service, jangan taruh query builder kompleks langsung di controller.
+**Folder structure:** entities go in `entities/` per module (see NestJS structure section 4.1), custom repositories via `@InjectRepository` in the service; don't put complex query builders directly in the controller.
 
-**Aturan query:**
-- Gunakan `QueryBuilder` untuk query kompleks/join banyak tabel, `Repository` method bawaan (`find`, `findOne`) untuk kasus sederhana
-- Set `relations` eksplisit di query, jangan pakai `eager: true` berlebihan di semua relasi (bikin over-fetching)
-- Migration wajib generate lewat CLI (`typeorm migration:generate`), jangan `synchronize: true` di production — ini berisiko data loss
+**Query rules:**
+- Use `QueryBuilder` for complex/multi-table-join queries, built-in `Repository` methods (`find`, `findOne`) for simple cases
+- Set `relations` explicitly in queries; don't overuse `eager: true` on every relation (causes over-fetching)
+- Migrations must be generated via CLI (`typeorm migration:generate`); no `synchronize: true` in production — it risks data loss
 
-### 3.3 Memilih Antara Prisma vs TypeORM
+### 3.3 Choosing Between Prisma vs TypeORM
 
-| Kriteria | Prisma | TypeORM |
+| Criterion | Prisma | TypeORM |
 |---|---|---|
-| Type-safety | Lebih kuat (auto-generated types) | Cukup baik, tapi manual di beberapa kasus |
-| Kontrol query SQL kompleks | Terbatas, ada `$queryRaw` untuk fallback | Lebih fleksibel lewat QueryBuilder |
-| Cocok untuk | Project baru, API-first, tim yang mau DX cepat | Project dengan relasi kompleks/legacy schema, butuh kontrol lebih |
+| Type-safety | Stronger (auto-generated types) | Decent, but manual in some cases |
+| Control over complex SQL | Limited, `$queryRaw` as fallback | More flexible via QueryBuilder |
+| Best for | New projects, API-first, teams wanting fast DX | Projects with complex relations/legacy schema, needing more control |
 
-Untuk project baru tanpa constraint khusus, **Prisma (v7+) jadi default pilihan** karena type-safety dan DX lebih baik.
+For a new project with no special constraints, **Prisma (v7+) is the default choice** for its better type-safety and DX.
 
-### 3.4 Golang — GORM atau sqlx
+### 3.4 Golang — GORM or sqlx
 
-**GORM** (ORM penuh, cocok untuk CRUD standar dan relasi):
+**GORM** (full ORM, suited to standard CRUD and relations):
 ```go
 type Order struct {
     ID          string    `json:"id" gorm:"column:id;primaryKey"`
@@ -192,10 +192,10 @@ type Order struct {
     CreatedAt   time.Time `json:"created_at" gorm:"column:created_at"`
 }
 
-func (Order) TableName() string { return "orders" }   // wajib eksplisit, jangan andalkan pluralization otomatis GORM
+func (Order) TableName() string { return "orders" }   // must be explicit; don't rely on GORM's automatic pluralization
 ```
 
-**Multi-field query & filter relasi dengan GORM** — karena tag `json` dan `gorm:"column:"` sudah sinkron snake_case, query params bisa langsung dipetakan ke `Where`:
+**Multi-field query & relation filter with GORM** — since the `json` and `gorm:"column:"` tags are already in sync as snake_case, query params map directly to `Where`:
 ```go
 func (r *OrderRepository) FindOrders(filters map[string]interface{}) ([]Order, error) {
     query := r.db.Model(&Order{})
@@ -215,7 +215,7 @@ func (r *OrderRepository) FindOrders(filters map[string]interface{}) ([]Order, e
 }
 ```
 
-**sqlx** (kalau butuh kontrol SQL penuh, raw query dengan struct scanning):
+**sqlx** (when you need full SQL control, raw queries with struct scanning):
 ```go
 type Order struct {
     ID          string    `db:"id" json:"id"`
@@ -227,36 +227,36 @@ var orders []Order
 err := db.Select(&orders, "SELECT * FROM orders WHERE status = $1 AND user_id = $2", status, userID)
 ```
 
-**Aturan:**
-- Repository layer wajib terpisah dari handler (lihat struktur folder 4.5) — handler tidak boleh langsung panggil GORM/sqlx
-- Migration pakai tool terpisah (`golang-migrate`, `goose`, atau `atlas`), jangan `AutoMigrate()` GORM di production — sama seperti larangan `synchronize: true` di TypeORM
-- Hindari N+1: gunakan `Preload()` (GORM) eksplisit untuk relasi yang dibutuhkan, jangan query di dalam loop
-- Transaksi multi-step wajib pakai `db.Transaction(func(tx *gorm.DB) error { ... })`, bukan multiple query terpisah tanpa rollback safety
+**Rules:**
+- The repository layer must be separate from handlers (see folder structure 4.5) — handlers must not call GORM/sqlx directly
+- Migrations use a separate tool (`golang-migrate`, `goose`, or `atlas`); no GORM `AutoMigrate()` in production — same as the `synchronize: true` ban in TypeORM
+- Avoid N+1: use explicit `Preload()` (GORM) for needed relations, no queries inside loops
+- Multi-step transactions must use `db.Transaction(func(tx *gorm.DB) error { ... })`, not multiple separate queries without rollback safety
 
 ### 3.5 Supabase
 
-Supabase pakai PostgreSQL biasa di baliknya, jadi naming convention database (bagian 2.5) berlaku sama persis. Yang beda dari ORM tradisional: akses data lewat Supabase client (REST/JS SDK) sering langsung dari sisi tertentu tanpa backend custom, jadi **keamanan data berpindah ke level database** lewat Row Level Security (RLS) — bukan lagi dijaga di layer service seperti Prisma/TypeORM/GORM.
+Supabase runs plain PostgreSQL underneath, so the database naming convention (section 2.5) applies exactly the same. The difference from traditional ORMs: data access via the Supabase client (REST/JS SDK) often happens directly from certain sides without a custom backend, so **data security moves to the database level** via Row Level Security (RLS) — no longer guarded in the service layer as with Prisma/TypeORM/GORM.
 
-**Row Level Security (RLS) — wajib aktif untuk semua tabel yang diakses client-side:**
+**Row Level Security (RLS) — must be enabled on every table accessed client-side:**
 ```sql
--- Aktifkan RLS di tabel (wajib, defaultnya OFF berarti semua row bisa diakses siapa saja)
+-- Enable RLS on the table (required; default OFF means every row is accessible to anyone)
 alter table public.orders enable row level security;
 
--- Policy: user cuma bisa lihat order miliknya sendiri
+-- Policy: users can only see their own orders
 create policy "users_select_own_orders"
 on public.orders for select
 using (auth.uid() = user_id);
 
--- Policy: user cuma bisa insert order untuk dirinya sendiri
+-- Policy: users can only insert orders for themselves
 create policy "users_insert_own_orders"
 on public.orders for insert
 with check (auth.uid() = user_id);
 ```
 
-**Aturan:**
-- **Tabel yang diakses langsung dari client (browser/mobile) via Supabase SDK wajib punya RLS aktif dan policy eksplisit** — kalau RLS mati atau policy belum dibuat, data di tabel itu bisa diakses/diubah siapa saja yang punya anon key (yang notabene ada di kode frontend, jadi bukan rahasia)
-- Penamaan policy: `{role/scope}_{action}_{scope}`, deskriptif — `users_select_own_orders`, `admin_select_all_orders`, `vendor_update_own_menus` — bukan nama generik seperti `policy1`
-- Tabel yang **hanya** diakses dari backend sendiri (bukan langsung dari client) tetap sebaiknya RLS on dengan policy yang membatasi ke `service_role` saja, jangan andalkan "toh cuma backend yang akses" sebagai satu-satunya proteksi — defense in depth (lihat prinsip di `debug-assistant`)
-- **Jangan expose `service_role` key ke frontend** — key ini bypass semua RLS, cuma boleh dipakai di server/edge function, disimpan sebagai secret (lihat bagian 8.2)
-- Edge Functions (kalau dipakai) mengikuti struktur folder & error handling yang sama dengan konvensi TypeScript di bagian 2.2/5 — tetap function pendek, single responsibility, error di-throw dengan pesan jelas
-- Migration schema Supabase tetap lewat file migration (`supabase migration new`, `supabase db push` ke arah yang benar — dari local ke remote lewat CI/CD terkontrol, bukan edit langsung di dashboard production) — prinsip disiplin migration di bagian 3 tetap berlaku penuh
+**Rules:**
+- **Tables accessed directly from the client (browser/mobile) via the Supabase SDK must have RLS enabled and explicit policies** — if RLS is off or no policy exists, the table's data can be read/changed by anyone with the anon key (which lives in frontend code, so it isn't secret)
+- Policy naming: `{role/scope}_{action}_{scope}`, descriptive — `users_select_own_orders`, `admin_select_all_orders`, `vendor_update_own_menus` — not generic names like `policy1`
+- Tables accessed **only** from your own backend (not directly from the client) should still have RLS on with a policy restricting to `service_role` only; don't rely on "only the backend accesses it anyway" as the sole protection — defense in depth (see the principle in `debug-assistant`)
+- **Never expose the `service_role` key to the frontend** — it bypasses all RLS; use it only on the server/edge functions, stored as a secret (see section 8.2)
+- Edge Functions (if used) follow the same folder structure & error handling as the TypeScript conventions in section 2.2/5 — short functions, single responsibility, errors thrown with clear messages
+- Supabase schema migrations still go through migration files (`supabase migration new`, `supabase db push` in the right direction — local to remote via controlled CI/CD, not direct edits in the production dashboard) — the migration discipline principles in section 3 apply in full

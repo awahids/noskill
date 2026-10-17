@@ -1,12 +1,13 @@
-noskill — aturan kerja inti. Berlaku untuk setiap tugas coding di sesi ini, juga saat tidak ada skill yang dipanggil:
+noskill core rules — apply to every coding task in this session, with or without a skill:
 
-- Scope: perubahan kode hanya menyentuh yang diminta. Refactor, rename, reformat, dependency baru, atau "sekalian membenahi" kode lain tidak dilakukan tanpa diminta; temuan di luar scope cukup dilaporkan.
-- Pikir dulu: sebelum mengedit, file yang akan diubah dan pendekatannya sudah ditentukan.
-- Sederhana dulu: perlu dibuat atau tidak → sudah ada di codebase → standard library → dependency yang terpasang → kode minimal. Tidak ada abstraksi, config, atau opsi yang tidak diminta. Validasi input, error handling yang mencegah data rusak, dan keamanan tidak dipangkas.
-- Reuse: helper/service yang sudah ada dicari (grep) dan dipakai, meskipun penggantinya cuma satu baris. Logic bisnis ada di service/lib, bukan di UI atau controller.
-- Test: logic bisnis punya test positif, negatif, dan batas. Test dibuktikan gagal dulu (RED) sebelum implementasi.
-- Kode efisien: tidak ada query di dalam loop (N+1), ambil hanya kolom/baris yang dibutuhkan, data besar dipaginasi, hindari loop bersarang di data besar. Optimasi mikro tanpa masalah nyata tidak dilakukan.
-- Hemat token: cari dulu dengan grep/glob, lalu baca hanya bagian file yang relevan (pakai offset/limit untuk file besar); file yang baru diedit tidak dibaca ulang; output command dibatasi (`| tail -n 30`, mode quiet) dan yang dilaporkan hanya ringkasannya (jumlah pass/fail, nama test yang gagal); test yang relevan dijalankan dulu, suite penuh sekali di akhir; tool call yang tidak saling bergantung dijalankan paralel.
-- Bukti: "selesai" atau "sudah fix" hanya diklaim setelah test/command dijalankan dan output-nya terlihat. Yang belum dicek disebut terus terang.
-- Jawaban: ringkas dan langsung ke hasil; akhiri dengan apa yang dilewati atau belum dicek, dan risikonya kalau ada.
-- Detail standar ada di skill `coding-standards`. Alur kerja dengan review dan QA ada di skill `feature-flow` (mode cepat untuk perubahan kecil, mode lengkap dari PRD).
+- Scope: change only what was asked. No refactor, rename, reformat, new dependency, or side fixes unless asked; report out-of-scope findings instead.
+- Think first: decide the files and approach before editing.
+- Simplest first: needed at all? → already in the codebase (grep) → stdlib → installed dependency → minimal code. No unrequested abstractions, config, or options. Never cut input validation, data-safety error handling, or security.
+- Reuse existing helpers/services even for one-liners. Business logic lives in service/lib, not UI or controller.
+- Tests: business logic gets positive, negative, and boundary tests; prove the test fails first (RED).
+- Efficient code: no N+1 queries, fetch only needed rows/columns, paginate large data. No micro-optimizations without a real problem.
+- Save tokens: grep/glob first, read only relevant parts (offset/limit), don't re-read files you just edited, trim command output (`| tail -n 30`, quiet modes) and report only summaries, run relevant tests first and the full suite once at the end, run independent tool calls in parallel.
+- Evidence: claim "done"/"fixed" only after running a test/command and seeing its output; state plainly what wasn't checked.
+- Answers: short and result-first; end with what was skipped or unchecked and any risk.
+- Language: write everything the user reads in Bahasa Indonesia unless the user writes in another language.
+- Details: skill `coding-standards`. Review/QA workflow: skill `feature-flow` (quick mode for small changes, full mode from a PRD); `/noskill:lazy` for the simplest direct fix.

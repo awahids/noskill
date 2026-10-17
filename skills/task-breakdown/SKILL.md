@@ -1,70 +1,70 @@
 ---
 name: task-breakdown
 description: >-
-  Memecah PRD atau dokumen BRD menjadi task actionable per fase dengan dependency, acceptance criteria, cara verifikasi, dan kolom Trace ke US/AC/TECH; menyesuaikan struktur codebase yang sudah ada. Gunakan saat user minta "pecah jadi task", "breakdown PRD", atau backlog dari PRD.
+  Breaks a PRD or BRD into actionable tasks per phase with dependencies, acceptance criteria, verification steps, and a Trace column to US/AC/TECH, fitted to the existing codebase. Use for "pecah jadi task", "breakdown PRD", or a backlog from a PRD.
 ---
 
 # PRD to Task Breakdown
 
-Mengubah PRD menjadi task list yang siap masuk ke tracker (Notion/Jira/Trello/GitHub Issues) atau langsung dikerjakan. Beda dari `prd-writer` (dokumen requirement) — skill ini fokus ke **eksekusi**: apa yang harus dikerjakan, dalam urutan apa, dan siapa/sistem mana yang terdampak.
+Turns a PRD into a task list ready for a tracker (Notion/Jira/Trello/GitHub Issues) or for direct work. Unlike `prd-writer` (requirement document), this skill focuses on **execution**: what to do, in what order, and which people/systems are affected.
 
-## Langkah 1: Pahami Konteks Project
+## Step 1: Understand the Project Context
 
-**Sebelum membuat task, tentukan dulu:**
+**Before creating tasks, determine:**
 
-1. **Project baru murni (greenfield)** atau **integrasi/penambahan ke project existing**? Cek bagian Architecture di PRD — kalau ada penyebutan sistem lain yang sudah berjalan (repo existing, stack yang harus disamakan, endpoint yang sudah ada), ini kasus integrasi.
-2. Kalau **integrasi ke existing project**, task **wajib mengikuti struktur folder, pola kode, dan konvensi yang sudah disebutkan PRD-nya sebagai existing** — bukan membuat task "setup project baru dari nol". Kutip path/file konkret yang disebut PRD (contoh: `server/internal/delivery/handlers/canteen_proxy.handler.go`, pola `stores/attendance.js`) sebagai referensi langsung di task, bukan folder generik seperti `src/handlers/`.
-3. Kalau PRD tidak menyebutkan detail struktur existing secara spesifik tapi menyebut "terintegrasi ke sistem X", **tanyakan ke user** apakah ada akses ke codebase existing tersebut (path lokal, repo) supaya task-nya presisi — jangan menebak struktur folder yang tidak disebutkan.
-4. **Cek apakah sudah ada dokumen BRD (`erp-requirements` Bagian B)** (US-xxx, AC-xxx, TECH-xxx) untuk fitur ini. Kalau ada, dokumen itu jadi sumber utama breakdown — lihat aturan traceability di Langkah 4. Kalau tidak ada, sumbernya PRD saja.
-5. Identifikasi **berapa banyak sistem/codebase yang terdampak** (contoh: 2 — backend/frontend sistem Kantin baru, plus penambahan tipis di backend/frontend HRIS existing). Setiap sistem yang terdampak dapat kelompok task terpisah; kalau sistem itu repo terpisah, tiketnya diberi field `repo:` (lihat `feature-flow` bagian Multi-Repo).
+1. **Pure new project (greenfield)** or **integration/addition to an existing project**? Check the PRD's Architecture section — if it mentions other running systems (existing repo, stack that must match, existing endpoints), it's an integration case.
+2. If **integrating into an existing project**, tasks **must follow the folder structure, code patterns, and conventions the PRD names as existing** — not a "set up a new project from scratch" task. Quote the concrete paths/files the PRD names (e.g. `server/internal/delivery/handlers/canteen_proxy.handler.go`, the `stores/attendance.js` pattern) as direct references in the task, not generic folders like `src/handlers/`.
+3. If the PRD doesn't detail the existing structure but says "integrated with system X", **ask the user** whether there is access to that existing codebase (local path, repo) so tasks are precise — don't guess an unmentioned folder structure.
+4. **Check whether a BRD document (`erp-requirements` Part B) already exists** (US-xxx, AC-xxx, TECH-xxx) for this feature. If so, it is the primary source for the breakdown — see the traceability rules in Step 4. If not, the source is the PRD only.
+5. Identify **how many systems/codebases are affected** (e.g. 2 — backend/frontend of the new Kantin system, plus a thin addition to the existing HRIS backend/frontend). Each affected system gets a separate task group; if that system is a separate repo, its tickets get a `repo:` field (see `feature-flow` Multi-Repo section).
 
-## Aturan Tiket — Satu Tiket per Endpoint, per Fitur, atau per Bug
+## Ticket Rules (Aturan Tiket) — One Ticket per Endpoint, per Feature, or per Bug
 
-Aturannya sengaja sederhana supaya jumlah tiket bisa ditebak:
+The rule is deliberately simple so the ticket count is predictable:
 
-| Jenis perubahan | Satu tiket untuk | Isi tiket |
+| Change type | One ticket per | Ticket contents |
 |---|---|---|
-| **Backend (BE)** | satu endpoint baru atau endpoint yang berubah | migration/entity yang dibutuhkan endpoint itu, DTO, service, controller, validasi, test, Swagger, dan **Kontrak API** |
-| **Frontend (FE)** | satu fitur/halaman | komponen, state, pemanggilan API, test |
-| **Bug fix** | satu bug | perbaikan dan test yang membuktikan bug itu tidak muncul lagi. Kalau bug ada di BE dan FE, jadi dua tiket dengan aturan BE–FE di bawah |
-| **Fitur tanpa endpoint** (job, scheduler, perubahan logic internal) | satu fitur | logic dan test-nya |
+| **Backend (BE)** | one new or changed endpoint | the migration/entity that endpoint needs, DTO, service, controller, validation, test, Swagger, and the **API Contract (Kontrak API)** |
+| **Frontend (FE)** | one feature/page | components, state, API calls, test |
+| **Bug fix** | one bug | the fix and a test proving that bug doesn't come back. If the bug is in both BE and FE, make two tickets using the BE–FE rules below |
+| **Feature without an endpoint** (job, scheduler, internal logic change) | one feature | the logic and its test |
 
-- Tidak ada tiket per layer atau per file: migration, DTO, test, Swagger, atau seeder ikut ke tiket endpoint/fitur yang membutuhkannya. Migration yang dipakai beberapa endpoint ikut ke tiket endpoint pertama yang membutuhkannya; tiket lain `depends_on` ke sana.
-- Beberapa endpoint yang sangat kecil untuk resource yang sama (misal list + detail tanpa logic khusus) boleh jadi satu tiket fitur.
-- Jumlah tiket mengikuti jumlah endpoint, halaman, dan bug — tidak lebih. Kalau hasilnya lebih dari 8 untuk satu fitur, cek ulang apakah ada tiket per layer yang harus digabung.
+- No tickets per layer or per file: migration, DTO, test, Swagger, or seeder go into the endpoint/feature ticket that needs them. A migration used by several endpoints goes into the first endpoint ticket that needs it; other tickets `depends_on` it.
+- Several very small endpoints for the same resource (e.g. list + detail with no special logic) may be one feature ticket.
+- Ticket count follows the number of endpoints, pages, and bugs — no more. If the result is more than 8 for one feature, re-check for per-layer tickets that should be merged.
 
-### BE dan FE: kontrak dulu, kerja bareng, QA bareng
+### BE and FE: contract first, work together, QA together
 
-1. **Kontrak API ditulis saat tiket dibuat**, di bagian `## Kontrak API` tiket BE: method + path, request (body/query + aturan validasi), response sukses (status + bentuk JSON), dan response error (status + kode error). Kontrak ini satu-satunya acuan untuk kedua sisi.
-2. Tiket FE yang memakai endpoint itu mengisi `integrates_with: [<ID tiket BE>]` (bukan `depends_on`) dan merujuk kontraknya. Dengan begitu developer FE bisa mulai bersamaan dengan BE, memakai kontrak sebagai acuan (tipe/mock dari kontrak), tanpa menunggu BE selesai.
-3. Tiket BE tetap diambil lebih dulu. Tiket FE boleh jalan bersamaan (mode paralel) atau setelahnya (mode berurutan).
-4. **QA tiket FE menunggu semua tiket di `integrates_with` DONE**, lalu menguji FE dan BE bersama: FE memanggil BE sungguhan di branch kerja, termasuk skenario negatif dari kontrak (validasi gagal, data tidak ditemukan, tidak berhak).
-5. Kontrak tidak diubah diam-diam. Kalau saat mengerjakan ternyata kontrak harus berubah, developer melapor `BLOCKED` dan orkestrator mengubah kontrak di tiket BE serta mencatatnya di Riwayat kedua tiket.
+1. **The API Contract (Kontrak API) is written when the ticket is created**, in the BE ticket's `## Kontrak API` section: method + path, request (body/query + validation rules), success response (status + JSON shape), and error responses (status + error code). This contract is the single reference for both sides.
+2. An FE ticket that uses that endpoint fills `integrates_with: [<ID tiket BE>]` (not `depends_on`) and refers to the contract. This lets the FE developer start alongside BE, using the contract as reference (types/mocks from the contract), without waiting for BE to finish.
+3. The BE ticket is still picked up first. The FE ticket may run concurrently (parallel mode) or afterwards (sequential mode).
+4. **QA of the FE ticket waits until all tickets in `integrates_with` are DONE**, then tests FE and BE together: FE calls the real BE on the working branch, including the contract's negative scenarios (validation failure, not found, unauthorized).
+5. The contract is never changed silently. If during work the contract must change, the developer reports `BLOCKED` and the orchestrator updates the contract in the BE ticket and records it in both tickets' Riwayat.
 
-## Langkah 2: Ekstrak Task dari Tiap Section PRD
+## Step 2: Extract Tasks from Each PRD Section
 
-| Section PRD | Jadi task tipe |
+| PRD section | Becomes task type |
 |---|---|
-| Database Schema | Migration ikut tiket endpoint/fitur pertama yang memakai tabel itu, bukan tiket tersendiri |
-| Core Features | BE: satu tiket per endpoint (dengan Kontrak API). FE: satu tiket per fitur/halaman dengan `integrates_with` ke tiket BE-nya |
-| Architecture — proxy/integrasi | Task terpisah khusus integrasi (lihat Langkah 3) |
-| API Design | Sumber Kontrak API di tiket BE. Satu tiket per endpoint |
-| User Flow (percabangan kondisional) | Masuk sebagai AC di tiket fitur terkait. Tiket tersendiri hanya untuk proses yang berjalan terpisah (job scheduler, cut-off otomatis) — sering luput kalau cuma dipecah dari Core Features saja |
-| Design & Technical Constraints | Task setup awal (project scaffolding, CI/CD, environment config) — hanya untuk project baru, skip untuk project existing |
+| Database Schema | Migration goes into the first endpoint/feature ticket that uses that table, not its own ticket |
+| Core Features | BE: one ticket per endpoint (with Kontrak API). FE: one ticket per feature/page with `integrates_with` to its BE ticket |
+| Architecture — proxy/integration | Separate integration-specific task (see Step 3) |
+| API Design | Source of the Kontrak API in BE tickets. One ticket per endpoint |
+| User Flow (conditional branches) | Added as ACs in the related feature ticket. Own ticket only for processes that run separately (scheduler job, automatic cut-off) — often missed if you only break down Core Features |
+| Design & Technical Constraints | Initial setup tasks (project scaffolding, CI/CD, environment config) — only for new projects, skip for existing projects |
 
-## Langkah 3: Task Integrasi — Presisi, Jangan Generik
+## Step 3: Integration Tasks — Precise, Not Generic
 
-Ini bagian yang paling sering salah kalau dikerjakan asal: **task integrasi ke sistem existing harus dibatasi seketat yang ditulis di PRD**, tidak melebar jadi duplikasi business logic.
+This is the part most often done wrong: **integration tasks into an existing system must be scoped as tightly as the PRD states**, not widened into duplicated business logic.
 
-Prinsip (berlaku kalau PRD menyebut pola "proxy tipis" atau serupa):
-- Kalau PRD bilang sisi existing hanya menambah **proxy layer tipis** (auth + forward, tanpa business logic), task-nya juga cuma itu — jangan bikin task yang mengimplementasikan ulang logic yang sudah ada di sistem baru
-- Sebutkan **role/middleware yang sudah ada dan dipakai ulang** (contoh: "role `employee`/`hr`/`administrator` sudah ada di `models.UserRole`, tidak perlu role baru") sebagai catatan di task, supaya developer tidak menciptakan struktur baru yang tidak perlu
-- Kalau ada **mekanisme yang belum ada dan perlu dibuat baru** (contoh dari PRD: service-to-service auth belum ada di sistem existing), ini jadi task tersendiri yang ditandai jelas sebagai **penambahan baru ke sistem existing**, bukan bagian dari sistem baru
-- Task sinkronisasi data (kalau ada, misal cache identitas lintas sistem) dipisah dari task CRUD biasa, karena biasanya butuh pertimbangan khusus (jadwal sync, apa yang boleh/tidak boleh ditimpa — cek kolom "Keterangan" di Database Schema PRD untuk aturan semacam ini)
+Principles (apply when the PRD describes a "thin proxy" pattern or similar):
+- If the PRD says the existing side only adds a **thin proxy layer** (auth + forward, no business logic), the task is only that — don't create tasks that reimplement logic already in the new system
+- Name the **existing roles/middleware being reused** (e.g. "role `employee`/`hr`/`administrator` already exists in `models.UserRole`, no new role needed") as a note in the task, so the developer doesn't invent unnecessary new structures
+- If there is a **mechanism that doesn't exist yet and must be built** (PRD example: service-to-service auth doesn't exist in the existing system), it becomes its own task clearly marked as a **new addition to the existing system**, not part of the new system
+- Data sync tasks (if any, e.g. a cross-system identity cache) are separate from plain CRUD tasks, because they usually need special consideration (sync schedule, what may/may not be overwritten — check the "Keterangan" column in the PRD's Database Schema for such rules)
 
-## Langkah 4: Struktur Output
+## Step 4: Output Structure
 
-Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), lalu per **sistem/layer** di dalam fase itu. Format:
+Group tasks by **phase** (logical work order, not just per module), then by **system/layer** within that phase. Format:
 
 ```markdown
 ## Fase 1: [Nama Fase — misal "Database & Core Backend"]
@@ -86,13 +86,13 @@ Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), l
 - [ ] **[TASK-ID]** [...]
 ```
 
-**Aturan penomoran Task-ID:** prefix per sistem/modul supaya gampang dilacak, misal `KTN-BE-001` (Kantin Backend), `KTN-FE-001` (Kantin Frontend), `HR-INT-001` (integrasi di HRIS) — konsisten dan pendek.
+**Task-ID numbering rule:** prefix per system/module so it's easy to track, e.g. `KTN-BE-001` (Kantin Backend), `KTN-FE-001` (Kantin Frontend), `HR-INT-001` (integration in HRIS) — consistent and short.
 
-**Traceability ke dokumen BRD (`erp-requirements` Bagian B, kalau dokumennya ada):**
-- Setiap TECH-xxx tercakup **minimal satu** task; beberapa TECH kecil untuk perilaku yang sama boleh digabung dalam satu task (kolom Trace berisi semuanya). TECH yang terlalu besar boleh dipecah jadi beberapa task, tapi semuanya merujuk TECH yang sama di kolom **Trace** — jangan buat ulang task dari PRD untuk hal yang sudah tercakup TECH.
-- Acceptance Criteria task diambil dari AC-xxx yang dirujuk TECH tersebut (tulis ID-nya, misal `AC-002: qty > outstanding ditolak`), bukan ditulis ulang dengan kata-kata baru.
-- Task tambahan yang tidak berasal dari TECH mana pun (setup, CI/CD, integrasi existing) tetap boleh, tapi kolom Trace diisi `—` dan alasannya di Deskripsi.
-- Setelah task list jadi, sertakan tabel ringkas di akhir supaya rantai BR→…→TECH→Task tidak putus:
+**Traceability to the BRD document (`erp-requirements` Part B, if the document exists):**
+- Every TECH-xxx is covered by **at least one** task; several small TECHs for the same behavior may be merged into one task (the Trace column lists all of them). A TECH that is too large may be split into several tasks, but all refer to the same TECH in the **Trace** column — don't recreate tasks from the PRD for things already covered by a TECH.
+- Task Acceptance Criteria come from the AC-xxx referenced by that TECH (write the ID, e.g. `AC-002: qty > outstanding ditolak`), not rewritten in new words.
+- Extra tasks not derived from any TECH (setup, CI/CD, existing integration) are still allowed, but the Trace column is `—` with the reason in Deskripsi.
+- After the task list is done, include a short table at the end so the BR→…→TECH→Task chain isn't broken:
 
 ```markdown
 | TECH | Task-ID | AC yang dipenuhi | Test Case |
@@ -100,37 +100,37 @@ Kelompokkan task per **fase** (urutan pengerjaan logis, bukan cuma per modul), l
 | US-INV-001 / TECH-003 | WMS-BE-004 | AC-002 | TC-INV-002 |
 ```
 
-Cek ulang sebelum selesai: setiap TECH punya ≥1 task, dan setiap AC muncul di minimal satu task. Kalau ada yang bolong, sebutkan ke user.
+Re-check before finishing: every TECH has ≥1 task, and every AC appears in at least one task. If anything is missing, tell the user.
 
-## Langkah 5: Urutan Fase yang Wajar
+## Step 5: Sensible Phase Order
 
-Default urutan (sesuaikan kalau PRD punya kebutuhan berbeda):
-1. **Database & migration** — fondasi, semua task lain bergantung ke sini
-2. **Backend core** — business logic utama sebelum endpoint
-3. **API endpoints** — setelah logic ada
-4. **Integrasi ke sistem existing** (proxy, sync endpoint) — setelah API utama stabil, supaya tidak integrasi ke API yang masih berubah-ubah
-5. **Frontend** — bisa paralel dengan integrasi kalau tim beda orang, tapi urutkan setelah API dasar ada
-6. **Fitur pendukung** (notifikasi, analitik, export laporan) — biasanya bisa belakangan, tidak blocking fitur inti
-7. **QA/testing & dokumentasi** — termasuk `user-guide` kalau perlu (dokumentasi Swagger ikut di tiket endpoint-nya, bukan task terpisah)
+Default order (adjust if the PRD has different needs):
+1. **Database & migration** — the foundation, all other tasks depend on it
+2. **Backend core** — main business logic before endpoints
+3. **API endpoints** — after the logic exists
+4. **Integration with existing systems** (proxy, sync endpoint) — after the main API is stable, so you don't integrate against a still-changing API
+5. **Frontend** — can run parallel with integration if different people, but order it after the basic API exists
+6. **Supporting features** (notifications, analytics, report export) — usually can come later, not blocking core features
+7. **QA/testing & documentation** — including `user-guide` if needed (Swagger docs go in the endpoint's ticket, not a separate task)
 
-Tandai task mana yang **bisa dikerjakan paralel** vs yang **strictly sequential** lewat kolom Dependency, supaya kalau dikerjakan tim/beberapa orang jelas mana yang boleh mulai bersamaan.
+Mark which tasks **can run in parallel** vs which are **strictly sequential** via the Dependency column, so when a team/several people work on it it's clear what can start at the same time.
 
-## Langkah 6: Setelah Task List Jadi
+## Step 6: After the Task List Is Done
 
-- Tawarkan push ke tracker kalau relevan (misal user pakai Notion untuk project management) — cek dulu apakah ada konektor yang tersedia sebelum menyarankan, jangan asumsikan tool tertentu tanpa konfirmasi
-- Task list disimpan sebagai file Markdown lewat tool pembuat file yang tersedia di environment ini, supaya bisa disimpan/di-share, kecuali user memang mau langsung didorong ke tool lain
+- Offer to push to a tracker if relevant (e.g. the user uses Notion for project management) — first check whether a connector is available before suggesting it; don't assume a specific tool without confirmation
+- Save the task list as a Markdown file via the file-creation tool available in this environment, so it can be stored/shared, unless the user wants it pushed straight to another tool
 
-## Prinsip
+## Principles
 
-1. **Satu tiket per endpoint, per fitur, atau per bug** — lihat bagian Aturan Tiket di atas.
-2. **Setiap task bisa ditelusuri balik ke PRD.** Kolom "Acuan PRD" bukan formalitas — kalau ada task yang tidak bisa dikaitkan ke bagian PRD manapun, pertanyakan apakah task itu memang perlu atau scope creep.
-3. **Jangan buat task duplikat logic antar sistem.** Kalau sistem A (baru) dan sistem B (existing) sama-sama tersentuh oleh satu fitur, business logic hanya ada di satu tempat (sesuai keputusan Architecture di PRD) — sistem satunya cuma task integrasi/proxy.
-4. **Realistis dengan apa yang sudah ada.** Jangan sarankan "buat ulang struktur folder" atau "refactor besar" kalau PRD tidak memintanya — task integrasi menyesuaikan diri ke existing project, bukan sebaliknya, kecuali user secara eksplisit minta refactor.
-5. **"Selesai" dibuktikan lewat Cara Verifikasi, bukan diklaim.** Task dicentang selesai setelah langkah di kolom "Cara Verifikasi" benar-benar dijalankan dan hasilnya sesuai — bukan karena kodenya "kelihatannya sudah benar".
-6. **Task refactor butuh rencana sebelum jadi task-list biasa.** Kalau di antara task ada yang tipenya refactor besar (bukan sekadar tambah fitur baru), jangan langsung dipecah seperti task fitur biasa — task pertamanya adalah "susun rencana refactor" (lihat `coding-standards` bagian 1, prinsip 6) sebagai deliverable tersendiri, baru task-task eksekusinya mengikuti rencana itu setelah direview.
+1. **One ticket per endpoint, per feature, or per bug** — see the Ticket Rules (Aturan Tiket) section above.
+2. **Every task traces back to the PRD.** The "Acuan PRD" field isn't a formality — if a task can't be linked to any PRD section, question whether it's needed or is scope creep.
+3. **Don't create tasks that duplicate logic across systems.** If system A (new) and system B (existing) are both touched by one feature, business logic lives in only one place (per the PRD's Architecture decision) — the other system gets only an integration/proxy task.
+4. **Be realistic about what already exists.** Don't suggest "rebuild the folder structure" or a "big refactor" unless the PRD asks for it — integration tasks adapt to the existing project, not the other way around, unless the user explicitly asks for a refactor.
+5. **"Done" is proven via Cara Verifikasi, not claimed.** A task is checked off only after the steps in "Cara Verifikasi" are actually run and the result matches — not because the code "looks right".
+6. **Refactor tasks need a plan before becoming a normal task list.** If any task is a big refactor (not just adding a feature), don't break it down like a normal feature task — its first task is "draft the refactor plan" (see `coding-standards` section 1, principle 6) as its own deliverable; the execution tasks follow that plan after it's reviewed.
 
-## Referensi Skill Terkait
-- `prd-writer` — sumber PRD yang jadi acuan breakdown
-- `erp-requirements` — kalau ada dokumen BRD (Bagian B), sumber US/AC/TECH yang wajib dirujuk di kolom Trace
-- `coding-standards` — dipakai untuk struktur folder/konvensi task backend/frontend kalau project baru (tidak ada existing pattern untuk diikuti)
-- `standup-update` — setelah task dikerjakan, progress-nya bisa dirangkum pakai skill ini
+## Related Skills
+- `prd-writer` — source PRD for the breakdown
+- `erp-requirements` — if a BRD document (Part B) exists, the source of US/AC/TECH that must be referenced in the Trace column
+- `coding-standards` — used for backend/frontend folder structure/conventions in new projects (no existing pattern to follow)
+- `standup-update` — after tasks are worked on, progress can be summarized with this skill

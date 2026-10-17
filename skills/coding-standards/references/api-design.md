@@ -1,31 +1,31 @@
 # Coding Standards — API Design
 
-> Bagian dari skill `coding-standards`. Nomor bagian dipertahankan supaya rujukan seperti "bagian 6.2" tetap valid.
+> Part of the `coding-standards` skill. Section numbers are kept so references like "section 6.2" stay valid.
 
 ## 6. API Design Standard
 
 ### 6.1 URL Prefix & Versioning
 
-**Wajib** semua endpoint pakai prefix `/api` + versi eksplisit:
+**Required**: every endpoint uses the `/api` prefix + an explicit version:
 ```
 /api/v1/orders
 /api/v1/orders/:orderId/items
-/api/v2/orders          ← breaking change, versi baru
+/api/v2/orders          ← breaking change, new version
 ```
 
-Aturan:
-- Prefix `/api/v{n}` di depan **semua** route, tanpa terkecuali — jangan ada endpoint tanpa versi (`/orders` polos tidak boleh)
-- Mulai dari `v1`, naikkan versi (`v2`, `v3`, ...) **hanya** kalau ada breaking change (ubah struktur response, hapus/ubah field wajib, ubah perilaku endpoint yang sudah dipakai konsumen)
-- Penambahan field baru yang backward-compatible atau endpoint baru **tidak** perlu naikkan versi
-- Endpoint versi lama tetap jalan selama masih ada konsumen aktif — jangan langsung hapus, deprecate dulu dan beri jangka waktu migrasi
-- Tandai endpoint yang sudah deprecated di dokumentasi Swagger/OpenAPI (`@ApiOperation({ deprecated: true })` di NestJS)
+Rules:
+- Prefix `/api/v{n}` in front of **every** route, no exceptions — no unversioned endpoints (plain `/orders` is not allowed)
+- Start at `v1`; bump the version (`v2`, `v3`, ...) **only** for a breaking change (changed response structure, removed/changed required field, changed behavior of an endpoint consumers already use)
+- Adding backward-compatible fields or new endpoints does **not** need a version bump
+- Old-version endpoints keep running while there are active consumers — don't delete immediately; deprecate first and give a migration window
+- Mark deprecated endpoints in the Swagger/OpenAPI docs (`@ApiOperation({ deprecated: true })` in NestJS)
 
-**Setup di NestJS** (global prefix + versioning):
+**NestJS setup** (global prefix + versioning):
 ```typescript
 // main.ts
 app.setGlobalPrefix('api');
 app.enableVersioning({
-  type: VersioningType.URI,   // hasil: /api/v1/...
+  type: VersioningType.URI,   // result: /api/v1/...
   defaultVersion: '1',
 });
 ```
@@ -34,7 +34,7 @@ app.enableVersioning({
 export class OrderController { }
 ```
 
-**Setup di Laravel** (route prefix + group per versi):
+**Laravel setup** (route prefix + group per version):
 ```php
 // routes/api.php
 Route::prefix('v1')->group(function () {
@@ -45,13 +45,13 @@ Route::prefix('v2')->group(function () {
     Route::apiResource('orders', OrderV2Controller::class);
 });
 ```
-Base URL Laravel otomatis dapat prefix `/api` dari `RouteServiceProvider`, tinggal tambahkan prefix versi di atas.
+Laravel's base URL gets the `/api` prefix automatically from `RouteServiceProvider`; just add the version prefix above.
 
-### 6.2 Response Format (konsisten di semua endpoint & semua versi)
+### 6.2 Response Format (consistent across all endpoints & all versions)
 
-**Field di dalam `data` wajib snake_case, sama persis dengan nama kolom database/entity (bagian 2.2)** — tidak ada transformasi ke camelCase di response API.
+**Fields inside `data` must be snake_case, exactly matching the database/entity column names (section 2.2)** — no camelCase transformation in API responses.
 
-**Response untuk single object/create/update:**
+**Response for single object/create/update:**
 ```json
 {
   "success": true,
@@ -71,7 +71,7 @@ Base URL Laravel otomatis dapat prefix `/api` dari `RouteServiceProvider`, tingg
 }
 ```
 
-**Response untuk list dengan pagination — struktur `meta.pagination` wajib persis seperti ini:**
+**Response for a paginated list — the `meta.pagination` structure must be exactly this:**
 ```json
 {
   "success": true,
@@ -104,17 +104,17 @@ Base URL Laravel otomatis dapat prefix `/api` dari `RouteServiceProvider`, tingg
 }
 ```
 
-**Field `meta.pagination` wajib lengkap 6 field ini, jangan sebagian:**
-| Field | Arti |
+**`meta.pagination` must contain all 6 fields, never a subset:**
+| Field | Meaning |
 |---|---|
-| `total` | Total keseluruhan row yang match filter (bukan cuma yang di halaman ini) |
-| `per_page` | Jumlah item per halaman (dari query param `limit`/`per_page`) |
-| `current_page` | Halaman yang sedang ditampilkan |
-| `last_page` | Halaman terakhir yang tersedia (`ceil(total / per_page)`) |
-| `from` | Nomor urut item pertama di halaman ini (untuk halaman kosong, `null`) |
-| `to` | Nomor urut item terakhir di halaman ini (untuk halaman kosong, `null`) |
+| `total` | Total rows matching the filter (not just this page) |
+| `per_page` | Items per page (from query param `limit`/`per_page`) |
+| `current_page` | Page currently shown |
+| `last_page` | Last available page (`ceil(total / per_page)`) |
+| `from` | Sequence number of the first item on this page (`null` for an empty page) |
+| `to` | Sequence number of the last item on this page (`null` for an empty page) |
 
-**Relasi nested (`customer`, dsb) di dalam item list** — sertakan hanya field yang relevan untuk ditampilkan di list (`id`, `name`, `code`), bukan seluruh object relasi. Detail lengkap relasi diambil lewat endpoint detail (`GET /api/v1/orders/:id`), bukan digelembungkan di response list.
+**Nested relations (`customer`, etc.) inside list items** — include only fields relevant for list display (`id`, `name`, `code`), not the whole relation object. Full relation details come from the detail endpoint (`GET /api/v1/orders/:id`), not bloated into the list response.
 
 **Error:**
 ```json
@@ -126,15 +126,15 @@ Base URL Laravel otomatis dapat prefix `/api` dari `RouteServiceProvider`, tingg
 }
 ```
 
-**Aturan:**
-- `statusCode` di body **selalu sama** dengan HTTP status code response-nya (jangan sampai `statusCode: 200` di body tapi HTTP status-nya sebenarnya 400) — field ini redundan secara teknis tapi memudahkan konsumen yang baca body tanpa cek header
-- `message` untuk sukses boleh generik (`"success"`) untuk `GET`, tapi sebaiknya deskriptif untuk aksi yang mengubah data (`"Order created successfully"`) — konsumen sering pakai ini langsung sebagai notifikasi ke user
-- `meta` **hanya muncul kalau relevan** (list/pagination) — endpoint single object/create/update tidak perlu `meta` kosong
-- Semua field response (termasuk di dalam `meta.pagination`) tetap snake_case, konsisten dengan bagian 2.2
+**Rules:**
+- `statusCode` in the body **always equals** the response's HTTP status code (never `statusCode: 200` in the body while the actual HTTP status is 400) — technically redundant, but helps consumers who read the body without checking headers
+- Success `message` may be generic (`"success"`) for `GET`, but should be descriptive for data-changing actions (`"Order created successfully"`) — consumers often show it directly as a user notification
+- `meta` **appears only when relevant** (list/pagination) — single object/create/update endpoints don't need an empty `meta`
+- All response fields (including inside `meta.pagination`) stay snake_case, consistent with section 2.2
 
-#### Implementasi Golang/Gin — Wajib Sama Persis
+#### Golang/Gin Implementation — Must Be Identical
 
-Format response ini **wajib sama di semua stack, termasuk Golang** — bukan cuma standar untuk NestJS/Laravel. Buat response helper terpusat di `internal/delivery/response/`, jangan susun `gin.H{...}` manual berulang di tiap handler:
+This response format is **required on every stack, including Golang** — not just a NestJS/Laravel standard. Create a central response helper in `internal/delivery/response/`; don't build `gin.H{...}` manually in every handler:
 
 ```go
 // internal/delivery/response/response.go
@@ -192,9 +192,9 @@ func Error(c *gin.Context, statusCode int, message string, errors interface{}) {
 }
 ```
 
-**Pemakaian di handler:**
+**Usage in a handler:**
 ```go
-// GET /api/v1/orders (list dengan pagination)
+// GET /api/v1/orders (paginated list)
 func (h *OrderHandler) GetOrders(c *gin.Context) {
     orders, total, err := h.service.GetOrders(c.Request.Context(), filters)
     if err != nil {
@@ -224,37 +224,37 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 }
 ```
 
-**Aturan:**
-- Handler **tidak boleh** susun `gin.H{}` manual — selalu lewat helper `response.Success`/`response.SuccessWithPagination`/`response.Error`, supaya struktur response tidak pernah menyimpang antar endpoint/antar developer
-- `Data`, `Meta`, `Errors` pakai `omitempty` supaya field yang tidak relevan tidak muncul kosong di response
-- Struct `Order`/DTO yang di-pass ke `Data` sudah punya json tag snake_case sesuai bagian 2.4, jadi tidak perlu transformasi tambahan di response layer
-- `from`/`to` pakai pointer (`*int`) supaya bisa `null` di JSON saat total data 0 (halaman kosong), bukan `0` yang ambigu (lihat bagian 5.4 soal idiom nullable Golang)
+**Rules:**
+- Handlers **must not** build `gin.H{}` manually — always go through `response.Success`/`response.SuccessWithPagination`/`response.Error`, so the response structure never drifts between endpoints/developers
+- `Data`, `Meta`, `Errors` use `omitempty` so irrelevant fields don't appear empty in the response
+- The `Order` struct/DTO passed to `Data` already has snake_case json tags per section 2.4, so no extra transformation is needed in the response layer
+- `from`/`to` use pointers (`*int`) so they can be `null` in JSON when total is 0 (empty page), not an ambiguous `0` (see section 5.4 on the Golang nullable idiom)
 
 ### 6.3 Endpoint Naming
 
-Noun, plural, kebab-case: `GET /api/v1/orders`, `POST /api/v1/order-items`. Hindari verb di URL. Nested resource: `GET /api/v1/orders/:orderId/items`.
+Noun, plural, kebab-case: `GET /api/v1/orders`, `POST /api/v1/order-items`. Avoid verbs in URLs. Nested resource: `GET /api/v1/orders/:orderId/items`.
 
 ### 6.4 HTTP Status Code
 
-200 (sukses GET/PUT/PATCH), 201 (create), 204 (delete tanpa body), 400/422 (validasi salah), 401 (belum login), 403 (tidak punya akses), 404 (tidak ditemukan), 500 (server error).
+200 (successful GET/PUT/PATCH), 201 (create), 204 (delete with no body), 400/422 (validation error), 401 (not logged in), 403 (no access), 404 (not found), 500 (server error).
 
-### 6.5 Query Parameter untuk Multi-Field Filtering
+### 6.5 Query Parameters for Multi-Field Filtering
 
-Karena field API sama persis dengan field entity/database, **query parameter filter juga wajib pakai nama field snake_case yang sama** — supaya bisa langsung diteruskan ke `where` clause ORM tanpa mapping.
+Since API fields exactly match entity/database fields, **filter query parameters must also use the same snake_case field names** — so they can be passed straight into the ORM `where` clause without mapping.
 
 ```
 GET /api/v1/orders?status=pending&user_id=usr-uuid-456&total_amount_gte=100000
-GET /api/v1/orders?items.product_id=prod-001          ← filter lewat relasi, dot notation
+GET /api/v1/orders?items.product_id=prod-001          ← filter via relation, dot notation
 GET /api/v1/orders?sort=-created_at&page=1&limit=20    ← sorting & pagination
 ```
 
-Konvensi operator untuk filter selain exact-match (opsional, sesuaikan kebutuhan endpoint):
-| Suffix | Arti | Contoh |
+Operator convention for non-exact-match filters (optional, adapt to the endpoint's needs):
+| Suffix | Meaning | Example |
 |---|---|---|
-| `_gte` / `_lte` | lebih besar/kecil sama dengan | `total_amount_gte=100000` |
-| `_gt` / `_lt` | lebih besar/kecil dari | `created_at_gt=2026-01-01` |
+| `_gte` / `_lte` | greater/less than or equal | `total_amount_gte=100000` |
+| `_gt` / `_lt` | greater/less than | `created_at_gt=2026-01-01` |
 | `_like` | partial match/search | `order_code_like=ORD-2026` |
-| `_in` | daftar nilai (comma-separated) | `status_in=pending,paid` |
-| `relation.field` | filter lewat relasi (dot notation) | `items.product_id=prod-001` |
+| `_in` | list of values (comma-separated) | `status_in=pending,paid` |
+| `relation.field` | filter via relation (dot notation) | `items.product_id=prod-001` |
 
-Endpoint yang mendukung filter kompleks **wajib didokumentasikan** di Swagger/OpenAPI (lihat `references/api-doc.md`) — sebutkan field mana saja yang bisa difilter dan operator apa yang didukung, supaya konsumen API (termasuk frontend kamu sendiri) tahu tanpa buka kode backend.
+Endpoints supporting complex filters **must be documented** in Swagger/OpenAPI (see `references/api-doc.md`) — list which fields are filterable and which operators are supported, so API consumers (including your own frontend) know without opening the backend code.

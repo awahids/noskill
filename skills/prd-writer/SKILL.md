@@ -1,64 +1,66 @@
 ---
 name: prd-writer
 description: >-
-  Menyusun PRD baku (overview, requirements/RBAC, fitur, user flow, arsitektur, database, API) dengan diagram Mermaid wajib; selalu ajukan minimal 5 pertanyaan klarifikasi dulu. Juga mode Reverse-PRD dari kode yang sudah ada. Gunakan saat user minta PRD, dokumen requirement, atau scoping sistem baru.
+  Writes a standard PRD (requirements/RBAC, features, flow, architecture, DB, API) with required Mermaid diagrams; asks ≥5 clarifying questions first. Also Reverse-PRD from code. Use for "buatkan PRD", "dokumen requirement", or new-system scoping.
 ---
 
 # PRD Writer
 
-Susun PRD dengan struktur baku di bawah ini. **Setiap PRD wajib punya diagram** — minimal satu flowchart/sequence diagram untuk alur utama (User Flow atau Architecture) dan satu ERD untuk Database Schema, keduanya dalam format Mermaid supaya bisa dirender langsung di Markdown/Notion/GitHub.
+Write the document in Bahasa Indonesia unless the user asks otherwise.
 
-Contoh acuan lengkap ada di bagian akhir skill ini (PRD Kantin Karyawan) — pakai sebagai referensi pola penulisan, tingkat kedetailan, dan gaya bahasa.
+Write the PRD using the standard structure below. **Every PRD must have diagrams** — at least one flowchart/sequence diagram for the main flow (User Flow or Architecture) and one ERD for the Database Schema, both in Mermaid so they render directly in Markdown/Notion/GitHub.
 
-## Langkah 0: Deskripsi Singkat → Pertanyaan Klarifikasi → Baru Generate PRD
+A full reference example is at the end of this skill (PRD Kantin Karyawan) — use it as the reference for writing patterns, level of detail, and language style.
 
-**Ini alur wajib, bukan opsional.** Jangan langsung menulis PRD lengkap dari deskripsi singkat di awal — meskipun deskripsinya terlihat cukup jelas. Selalu lewat tahap tanya-jawab dulu sebelum drafting.
+## Step 0: Short Description → Clarifying Questions → Then Generate the PRD
 
-**Alur:**
+**This flow is mandatory, not optional.** Do not write the full PRD straight from the initial short description — even if it looks clear enough. Always go through a Q&A stage before drafting.
 
-1. User kasih deskripsi singkat (contoh: "bikinin PRD buat sistem approval cuti" atau beberapa kalimat tentang sistem yang mau dibuat).
+**Flow:**
 
-2. **Analisis deskripsi itu, lalu susun pertanyaan klarifikasi yang disesuaikan dengan konteksnya** — **minimal 5 pertanyaan**, jumlah di atas itu bervariasi tergantung kompleksitas (sistem sederhana cukup di kisaran 5, sistem yang menyinggung integrasi, aturan finansial, atau multi-role bisa 6-8 atau lebih). Kalau deskripsi user sudah cukup detail sehingga sebagian area sudah terjawab, tetap cari minimal 5 titik yang perlu diklarifikasi/dikonfirmasi — turunkan ke detail yang lebih spesifik (bukan mengulang hal yang sudah jelas dari deskripsi) daripada mengurangi jumlah pertanyaan. Pertanyaan digali dari apa yang **belum disebutkan** di deskripsi tapi dibutuhkan untuk menyusun PRD lengkap, arahnya seputar:
-   - Role/pengguna dan perbedaan akses tiap role
-   - Sistem berdiri sendiri atau terintegrasi ke sistem lain (kalau iya: sistem apa, lewat cara apa, siapa yang mengelola)
-   - Aturan bisnis/kalkulasi/logic otomatisasi spesifik yang jadi inti sistem
-   - Batasan teknis yang sudah pasti (stack wajib, database existing, constraint infra)
-   - Notifikasi/alert yang dibutuhkan (kapan, ke siapa, lewat channel apa)
-   - Skala/volume pemakaian yang diperkirakan (relevan untuk keputusan arsitektur — sistem internal skala kecil vs yang perlu dipikirkan performa sejak awal)
-   - Hal spesifik yang tersirat dari deskripsi tapi perlu dikonfirmasi (misal deskripsi bilang "approval cuti" — perlu tahu berapa level approval, siapa approver, ada eskalasi atau tidak)
+1. The user gives a short description (e.g. "bikinin PRD buat sistem approval cuti" or a few sentences about the system they want to build).
 
-   Jangan pakai daftar pertanyaan template yang sama persis di semua PRD — pertanyaannya harus terasa seperti benar-benar merespons deskripsi yang diberikan, bukan checklist generik.
+2. **Analyze that description, then write clarifying questions tailored to its context** — **at least 5 questions**; beyond that the number varies with complexity (a simple system needs around 5; a system touching integrations, financial rules, or multiple roles may need 6-8 or more). If the description is already detailed enough that some areas are answered, still find at least 5 points to clarify/confirm — drill into more specific details (not repeating what the description already makes clear) rather than asking fewer questions. Draw questions from what is **not yet mentioned** in the description but is needed for a complete PRD, around:
+   - Roles/users and how access differs per role
+   - Standalone or integrated with other systems (if integrated: which system, how, who manages it)
+   - Specific business rules/calculations/automation logic at the core of the system
+   - Fixed technical constraints (mandatory stack, existing database, infra constraints)
+   - Required notifications/alerts (when, to whom, via which channel)
+   - Expected usage scale/volume (relevant to architecture decisions — small internal system vs. one that needs performance thinking from the start)
+   - Specific things implied by the description that need confirming (e.g. the description says "approval cuti" — need to know how many approval levels, who approves, whether there is escalation)
 
-3. **Presentasikan semua pertanyaan sekaligus** dalam satu balasan, sebelum drafting apa pun:
-   - Pertanyaan yang jawabannya jelas berupa pilihan diskrit (misal "berdiri sendiri atau terintegrasi?") → kalau environment ini punya tool tanya-jawab interaktif (pilihan tap/klik), pakai itu
-   - Pertanyaan yang butuh jawaban naratif/bebas (misal "jelaskan aturan approval-nya") → tulis sebagai daftar bernomor dalam prosa di pesan yang sama
-   - Kalau jumlah pertanyaan pilihan lebih dari kapasitas satu kali panggil tool tanya-jawab tersebut, pilih yang paling penting untuk lewat tool itu, sisanya gabung ke daftar pertanyaan prosa. Kalau tool semacam itu tidak tersedia di environment ini, semua pertanyaan cukup ditulis sebagai daftar bernomor dalam prosa
-   - Boleh dikelompokkan per topik (misal "Soal Role & Akses", "Soal Integrasi", "Soal Aturan Bisnis") kalau jumlahnya banyak, supaya user tidak menghadapi wall of text tak terstruktur
+   Do not use the exact same template question list for every PRD — the questions must feel like they genuinely respond to the given description, not a generic checklist.
 
-4. **Tunggu jawaban user.** Jangan mulai drafting PRD di respons yang sama dengan pertanyaan.
+3. **Present all questions at once** in a single reply, before any drafting:
+   - Questions whose answer is clearly a discrete choice (e.g. "berdiri sendiri atau terintegrasi?") → if this environment has an interactive question tool (tap/click choices), use it
+   - Questions needing a narrative/free answer (e.g. "jelaskan aturan approval-nya") → write them as a numbered prose list in the same message
+   - If there are more choice questions than that tool can take in one call, send the most important ones through the tool and merge the rest into the prose list. If no such tool exists in this environment, write all questions as a numbered prose list
+   - You may group them by topic (e.g. "Soal Role & Akses", "Soal Integrasi", "Soal Aturan Bisnis") when there are many, so the user isn't faced with an unstructured wall of text
 
-5. Setelah dijawab, **susun draft PRD lengkap sekaligus** — jangan pecah lagi jadi konfirmasi per section. Kalau jawaban user masih menyisakan detail kecil yang belum tercakup (bukan hal besar yang menentukan struktur PRD), isi dengan asumsi wajar dan tandai eksplisit di draft (misal catatan `[asumsi: ...]`) untuk direview, tidak perlu putaran tanya-jawab lagi.
+4. **Wait for the user's answers.** Do not start drafting the PRD in the same response as the questions.
 
-**Pengecualian:** kalau user secara eksplisit minta "langsung buat PRD-nya tanpa tanya-tanya" atau semacamnya, ikuti permintaan itu dan drafting langsung dengan asumsi yang ditandai jelas di draft — jangan paksakan tahap pertanyaan kalau user sudah bilang tidak perlu.
+5. Once answered, **write the full PRD draft in one go** — do not split it again into per-section confirmations. If the answers still leave small details uncovered (not big things that determine the PRD structure), fill them with reasonable assumptions and mark them explicitly in the draft (e.g. a `[asumsi: ...]` note) for review; no further Q&A round needed.
 
-## Mode Alternatif: Reverse-PRD (dari Kode Existing yang Belum Terdokumentasi)
+**Exception:** if the user explicitly asks "langsung buat PRD-nya tanpa tanya-tanya" or similar, follow that and draft directly with assumptions clearly marked in the draft — do not force the question stage when the user said it isn't needed.
 
-Kalau user minta **"buatkan PRD dari project/kode yang sudah ada"** (bukan sistem baru) — situasi umum di kerjaan freelance/legacy project yang tidak pernah ada dokumen requirement-nya — alurnya terbalik dari biasanya: gali requirement **dari kode**, bukan dari brief user.
+## Alternative Mode: Reverse-PRD (from Existing Undocumented Code)
 
-**Langkah:**
-1. **Eksplorasi codebase dulu** sebelum menulis apa pun — baca struktur folder, model/entity database, endpoint yang ada, dan komponen frontend utama. Tujuannya memahami apa yang sistem **benar-benar lakukan**, bukan menebak dari nama file saja.
-2. **Susun ulang tiap section PRD dari bukti di kode:**
-   - Core Features — dari endpoint dan komponen UI yang ada, kelompokkan jadi fitur (bukan daftar teknis "controller X, komponen Y")
-   - Database Schema — generate ERD dari migration/schema aktual, bukan ditulis ulang manual (kalau ada akses langsung ke database, lebih akurat lagi dibanding cuma baca file migration yang mungkin sudah tidak sinkron)
-   - API Design — dari route yang benar-benar terdaftar di router, bukan asumsi
-   - Requirements/RBAC — dari middleware/guard yang ada di kode (role apa yang di-cek di mana) — **ini bagian paling rawan salah** kalau cuma ditebak, karena aturan akses sering tersebar dan implisit di kode lama
-3. **Tandai eksplisit bagian yang tidak bisa dipastikan dari kode** — kalau ada logic yang ambigu (kenapa kondisi ini ada, apa yang terjadi kalau kasus X), jangan mengarang penjelasan bisnisnya. Tulis sebagai catatan terbuka ("Tidak jelas dari kode: alasan bisnis di balik kondisi ini — perlu konfirmasi user") alih-alih diam-diam mengisi dengan tebakan yang terdengar meyakinkan.
-4. User Flow dan Architecture tetap butuh diagram (flowchart/sequence) seperti biasa, disusun dari alur yang benar-benar terjadi di kode (trace request dari route sampai response), bukan alur ideal yang seharusnya.
-5. Setelah draft jadi, **user perlu mereview lebih ketat dibanding PRD sistem baru** — karena PRD ini merepresentasikan sistem yang sudah berjalan, kesalahan interpretasi kode bisa terbawa jadi "dokumentasi resmi" yang salah. Ingatkan user untuk cross-check terutama bagian yang ditandai di poin 3.
+If the user asks **"buatkan PRD dari project/kode yang sudah ada"** (not a new system) — common in freelance/legacy projects that never had a requirements document — the flow is reversed: derive requirements **from the code**, not from the user's brief.
 
-Reverse-PRD berguna untuk: onboarding developer baru ke project lama, dasar sebelum melakukan refactor besar (dokumentasikan dulu apa yang ada sebelum diubah), atau syarat client yang minta dokumentasi retroaktif untuk project yang sudah jalan.
+**Steps:**
+1. **Explore the codebase first** before writing anything — read the folder structure, database models/entities, existing endpoints, and main frontend components. The goal is to understand what the system **actually does**, not guess from file names.
+2. **Rebuild each PRD section from evidence in the code:**
+   - Core Features — from existing endpoints and UI components, grouped into features (not a technical list of "controller X, component Y")
+   - Database Schema — generate the ERD from the actual migrations/schema, not rewritten by hand (direct database access is even more accurate than reading migration files that may be out of sync)
+   - API Design — from routes actually registered in the router, not assumptions
+   - Requirements/RBAC — from middleware/guards in the code (which role is checked where) — **this is the most error-prone part** if guessed, because access rules are often scattered and implicit in old code
+3. **Explicitly mark parts that cannot be confirmed from the code** — if some logic is ambiguous (why this condition exists, what happens in case X), do not invent its business explanation. Write it as an open note ("Tidak jelas dari kode: alasan bisnis di balik kondisi ini — perlu konfirmasi user") instead of quietly filling it with a convincing-sounding guess.
+4. User Flow and Architecture still need diagrams (flowchart/sequence) as usual, built from the flow that actually happens in the code (trace a request from route to response), not the ideal flow it should have.
+5. Once drafted, **the user must review more strictly than a new-system PRD** — because this PRD represents a running system, code misinterpretations can become wrong "official documentation". Remind the user to cross-check, especially the parts marked in point 3.
 
-## Struktur Wajib
+Reverse-PRD is useful for: onboarding new developers to an old project, a baseline before a major refactor (document what exists before changing it), or a client requirement for retroactive documentation of a running project.
+
+## Required Structure
 
 ### 1. Header
 ```
@@ -72,32 +74,32 @@ Reverse-PRD berguna untuk: onboarding developer baru ke project lama, dasar sebe
 ```
 
 ### 2. Overview
-- Definisikan sistem dalam 1 paragraf: apa itu, siapa yang punya/mengelola, bagaimana relasinya dengan sistem lain (standalone/terintegrasi)
-- **Masalah yang diselesaikan** — paragraf terpisah, spesifik dan konkret (bukan generik "meningkatkan efisiensi"). Sebutkan angka/dampak kalau ada data pendukung
-- **Tujuan sistem** — paragraf terpisah, turunan langsung dari masalah di atas, bukan daftar fitur
+- Define the system in 1 paragraph: what it is, who owns/manages it, how it relates to other systems (standalone/integrated)
+- **Masalah yang diselesaikan** — separate paragraph, specific and concrete (not a generic "meningkatkan efisiensi"). Cite numbers/impact if supporting data exists
+- **Tujuan sistem** — separate paragraph, derived directly from the problem above, not a feature list
 
 ### 3. Requirements
-Kelompokkan per kategori, format bullet bertingkat:
-- **Aksesibilitas Pengguna** — platform apa saja yang dipakai (web/mobile/kiosk), siapa pakai yang mana
-- **Peran & Hak Akses (RBAC)** — setiap role dijelaskan: cara akses (login sendiri vs lewat sistem lain), apa yang BISA dilakukan, dan **eksplisit apa yang TIDAK BISA dilakukan** (read-only, tidak bisa ubah X). Ambiguitas siapa boleh apa adalah sumber bug paling umum — jangan biarkan longgar
-- **Metode Input & Validasi** — cara data masuk ke sistem (form, scan, import, dll)
-- **Logika Otomatisasi** (kalau ada) — jelaskan aturan dan **pengecualiannya** secara eksplisit, termasuk kasus edge (libur, cuti, weekend, dll) dan apakah pengecualian ini absolut atau ada override manual
-- **Sistem Notifikasi & Alert** — kapan, ke siapa, lewat channel apa
-- **Aturan Finansial/Bisnis Spesifik** (kalau ada) — kalkulasi, subsidi, pemotongan, dll dengan aturan yang tidak ambigu
+Group by category, nested bullet format:
+- **Aksesibilitas Pengguna** — which platforms are used (web/mobile/kiosk), who uses which
+- **Peran & Hak Akses (RBAC)** — for each role: how it accesses (own login vs. via another system), what it CAN do, and **explicitly what it CANNOT do** (read-only, cannot change X). Ambiguity about who may do what is the most common source of bugs — do not leave it loose
+- **Metode Input & Validasi** — how data enters the system (form, scan, import, etc.)
+- **Logika Otomatisasi** (if any) — state the rules and **their exceptions** explicitly, including edge cases (holidays, leave, weekends, etc.) and whether these exceptions are absolute or allow manual override
+- **Sistem Notifikasi & Alert** — when, to whom, via which channel
+- **Aturan Finansial/Bisnis Spesifik** (if any) — calculations, subsidies, deductions, etc. with unambiguous rules
 
 ### 4. Core Features
-Numbered list per modul/kelompok fitur besar, tiap modul punya sub-bullet fitur detail dengan **bold** nama fitur di depan:
+Numbered list per module/major feature group; each module has detailed feature sub-bullets with the feature name in **bold** first:
 ```
 1. **[Nama Modul]**
    * **[Nama Fitur]:** [deskripsi 1-2 kalimat, jelas apa yang terjadi]
    * **[Nama Fitur]:** [deskripsi]
 ```
-Tulis fitur sebagai kapabilitas konkret ("Konfigurasi Jam Cut-Off (GA)"), bukan judul vague ("Manajemen Waktu").
+Write features as concrete capabilities ("Konfigurasi Jam Cut-Off (GA)"), not vague titles ("Manajemen Waktu").
 
 ### 5. User Flow
-Numbered list step-by-step, actor jelas di tiap langkah, termasuk **percabangan kondisional** (kalau X maka Y, kalau tidak maka Z) ditulis eksplisit dalam prosa. Flow harus bisa diikuti dari awal sampai akhir tanpa lompat asumsi.
+Numbered step-by-step list, with a clear actor at each step, including **conditional branches** (if X then Y, otherwise Z) written explicitly in prose. The flow must be followable from start to end without assumption leaps.
 
-**WAJIB: Flowchart (Mermaid)** mendampingi prosa di atas — terutama kalau ada percabangan kondisional (if/else, beberapa kemungkinan status, keputusan otomatis vs manual). Prosa menjelaskan detail tiap langkah, flowchart memvisualisasikan percabangannya supaya bisa dipindai cepat tanpa membaca semua teks:
+**REQUIRED: Flowchart (Mermaid)** alongside the prose above — especially when there are conditional branches (if/else, several possible statuses, automatic vs. manual decisions). The prose explains each step in detail; the flowchart visualizes the branches so they can be scanned quickly without reading all the text:
 
 ```mermaid
 flowchart TD
@@ -110,9 +112,9 @@ flowchart TD
     F --> G
 ```
 
-Gunakan `flowchart TD` (top-down) untuk alur linear dengan sedikit percabangan, atau `flowchart LR` (left-right) kalau lebih cocok mendatar (misal tahapan proses lintas beberapa sistem). Node keputusan pakai bentuk `{...}`, node aksi/hasil pakai `[...]`. Setiap panah dari node keputusan wajib diberi label kondisinya (`-->|Ya|`, `-->|Tidak|`, atau label kondisi spesifik seperti `-->|Status: Cuti|`).
+Use `flowchart TD` (top-down) for linear flows with few branches, or `flowchart LR` (left-right) when horizontal fits better (e.g. process stages across several systems). Decision nodes use `{...}`, action/result nodes use `[...]`. Every arrow from a decision node must be labeled with its condition (`-->|Ya|`, `-->|Tidak|`, or a specific condition label like `-->|Status: Cuti|`).
 
-Kalau User Flow melibatkan lebih dari satu role dengan jalur terpisah (misal Karyawan vs Admin HR vs Vendor), pertimbangkan flowchart terpisah per role, atau satu flowchart besar dengan subgraph per role:
+If the User Flow involves more than one role with separate paths (e.g. Karyawan vs Admin HR vs Vendor), consider separate flowcharts per role, or one large flowchart with a subgraph per role:
 ```mermaid
 flowchart TD
     subgraph Karyawan
@@ -126,13 +128,13 @@ flowchart TD
 
 ### 6. Architecture
 
-Ini bagian paling teknis — wajib menjelaskan:
-- **Keputusan stack dan alasannya** — jangan cuma sebut teknologi, jelaskan *rasional* memilihnya (reuse existing stack, tim yang sama merawat, dst). Kalau ada keputusan yang menyimpang dari default/preferensi umum, jelaskan trade-off yang dipertimbangkan
-- **Pola integrasi** kalau sistem ini terhubung ke sistem lain — siapa manggil siapa, lewat proxy atau direct, kenapa
-- **Struktur folder/layer backend** — konkret, sesuai stack yang dipilih (rujuk `coding-standards` bagian struktur folder & ORM sesuai stack)
-- **Konvensi ORM & response format** — tegaskan sumber kebenaran konvensi (ikut existing codebase kalau terintegrasi ke sistem lama, atau `coding-standards` default kalau sistem baru murni)
-- **Frontend layering** — state management, service layer (rujuk `coding-standards` bagian frontend)
-- **WAJIB: Sequence diagram (Mermaid)** untuk alur utama end-to-end (minimal 1, lebih untuk sistem kompleks), termasuk semua actor/service yang terlibat:
+This is the most technical section — it must explain:
+- **Stack decisions and their reasons** — don't just name technologies, explain the *rationale* for choosing them (reuse existing stack, same team maintains it, etc.). If a decision deviates from the usual default/preference, explain the trade-offs considered
+- **Integration pattern** if the system connects to other systems — who calls whom, via proxy or direct, and why
+- **Backend folder/layer structure** — concrete, matching the chosen stack (refer to the `coding-standards` folder structure & ORM sections for that stack)
+- **ORM & response format conventions** — state the source of truth for conventions (follow the existing codebase if integrating into an old system, or the `coding-standards` default for a purely new system)
+- **Frontend layering** — state management, service layer (refer to the `coding-standards` frontend section)
+- **REQUIRED: Sequence diagram (Mermaid)** for the main end-to-end flow (at least 1, more for complex systems), including all actors/services involved:
   ```mermaid
   sequenceDiagram
       autonumber
@@ -150,8 +152,8 @@ Ini bagian paling teknis — wajib menjelaskan:
 
 ### 7. Database Schema
 
-- Sebutkan konvensi naming yang diikuti (rujuk `coding-standards` bagian database)
-- **WAJIB: ERD (Mermaid)** untuk seluruh tabel dan relasinya:
+- State the naming convention followed (refer to the `coding-standards` database section)
+- **REQUIRED: ERD (Mermaid)** for all tables and their relations:
   ```mermaid
   erDiagram
       USERS ||--o{ ORDERS : places
@@ -166,48 +168,48 @@ Ini bagian paling teknis — wajib menjelaskan:
           timestamp created_at
       }
   ```
-- **Tabel rincian** setelah ERD — satu baris per tabel, kolom: Nama Tabel | Kolom Utama | Tipe Data | Keterangan. Keterangan wajib jelaskan hal yang **tidak terlihat dari nama kolom saja**: aturan bisnis, kolom mana yang tidak boleh ditimpa job tertentu, kenapa suatu data di-cache/duplikasi, dll — bukan sekadar mengulang nama kolom dalam kalimat.
+- **Detail table** after the ERD — one row per table, columns: Nama Tabel | Kolom Utama | Tipe Data | Keterangan. Keterangan must explain what is **not visible from the column name alone**: business rules, which columns a given job must not overwrite, why some data is cached/duplicated, etc. — not just restating the column name in a sentence.
 
 ### 8. API Design
 
-- Sebutkan prinsip yang diikuti (rujuk `coding-standards` bagian API — versioning, response format, query filter) dan tegaskan **bentuk konkret response** yang dipakai (envelope generik vs pola existing project — pilih sesuai konteks, jangan asal ikut default kalau project sudah punya pola sendiri)
-- List endpoint per grup, method + path + query param penting, dengan catatan role/auth yang berlaku kalau relevan
-- Kalau ada endpoint dengan aturan keamanan/privasi khusus (mis. anonimisasi data), sebutkan eksplisit di tingkat DTO/response — bukan cuma prosa umum
+- State the principles followed (refer to the `coding-standards` API section — versioning, response format, query filters) and state the **concrete response shape** used (generic envelope vs. the existing project's pattern — choose by context; don't blindly follow the default if the project already has its own pattern)
+- List endpoints per group, method + path + important query params, with applicable role/auth notes where relevant
+- If an endpoint has special security/privacy rules (e.g. data anonymization), state them explicitly at the DTO/response level — not just general prose
 
 ### 9. Design & Technical Constraints
 
-- **High-Level Technology** — breakdown per layer (frontend/backend/ORM/database/deployment) dengan **rasional** tiap pilihan, bukan cuma daftar nama teknologi
-- **Konvensi Kode** — tegaskan bagian mana dari standar (`coding-standards` atau skill lain) yang **berlaku penuh** dan bagian mana yang **tidak relevan** untuk stack di PRD ini (misal: bagian ORM Prisma tidak relevan kalau sistemnya pakai Golang) — supaya orang yang baca tidak salah terap standar Node.js ke project Golang
-- Baris terakhir: "Deviasi dari standar ini wajib didokumentasikan alasannya di komentar kode."
+- **High-Level Technology** — breakdown per layer (frontend/backend/ORM/database/deployment) with the **rationale** for each choice, not just a list of technology names
+- **Konvensi Kode** — state which parts of the standards (`coding-standards` or other skills) **apply fully** and which are **not relevant** to this PRD's stack (e.g. the Prisma ORM section is not relevant if the system uses Golang) — so readers don't wrongly apply Node.js standards to a Golang project
+- Last line: "Deviasi dari standar ini wajib didokumentasikan alasannya di komentar kode."
 
-## Prinsip Penulisan
+## Writing Principles
 
-1. **Spesifik, bukan generik.** Setiap requirement harus bisa diverifikasi — hindari kata seperti "user-friendly", "efisien", "modern" tanpa penjelasan konkret apa artinya secara teknis.
-2. **Eksplisit soal edge case.** Kalau ada aturan, sebutkan pengecualiannya. Kalau ada role, sebutkan batasannya. Ambiguitas di PRD jadi bug atau debat di tengah development.
-3. **Jelaskan alasan (rasional), bukan cuma keputusan.** "Pakai Golang" kurang berguna dibanding "Pakai Golang karena selaras dengan backend HRIS yang sudah ada, tim yang sama, hindari maintain dua stack."
-4. **Rujuk standar existing, jangan duplikasi.** Kalau ada `coding-standards` atau konvensi project lain yang relevan, kutip section-nya (`bagian 6.2 coding-standards`) alih-alih menuliskan ulang seluruh aturannya di PRD.
-5. **Diagram bukan pelengkap, tapi bagian dari spesifikasi.** Flowchart (User Flow), sequence diagram (Architecture), dan ERD (Database Schema) harus akurat mencerminkan isi prosa di atasnya — bukan ilustrasi generik.
+1. **Specific, not generic.** Every requirement must be verifiable — avoid words like "user-friendly", "efisien", "modern" without a concrete explanation of what they mean technically.
+2. **Explicit about edge cases.** If there is a rule, state its exceptions. If there is a role, state its limits. Ambiguity in a PRD becomes bugs or debates mid-development.
+3. **Explain the rationale, not just the decision.** "Pakai Golang" is less useful than "Pakai Golang karena selaras dengan backend HRIS yang sudah ada, tim yang sama, hindari maintain dua stack."
+4. **Refer to existing standards, don't duplicate.** If `coding-standards` or other relevant project conventions exist, cite the section (`bagian 6.2 coding-standards`) instead of rewriting all its rules in the PRD.
+5. **Diagrams are not decoration but part of the spec.** The flowchart (User Flow), sequence diagram (Architecture), and ERD (Database Schema) must accurately reflect the prose above them — not generic illustrations.
 
-## Format Output
+## Output Format
 
-PRD selalu dibuat sebagai **file Markdown** (bukan jawaban inline di chat) karena ini dokumen yang akan disimpan, di-share, dan jadi acuan development. Buat file-nya lewat tool pembuat file yang tersedia di environment ini, lalu sajikan/kirimkan ke user lewat tool untuk menampilkan file (nama tool bervariasi tergantung environment — Claude.ai, Claude Code, atau lainnya — sesuaikan dengan yang tersedia saat itu).
+The PRD is always created as a **Markdown file** (not an inline chat answer) because it is a document that will be saved, shared, and used as the development reference. Create the file with the file-creation tool available in this environment, then present/send it to the user with the file-display tool (tool names vary by environment — Claude.ai, Claude Code, or others — use whatever is available).
 
 ---
 
-## Contoh Acuan Lengkap
+## Full Reference Example
 
-Contoh di bawah (PRD Kantin Karyawan) menunjukkan tingkat kedetailan dan gaya penulisan yang diharapkan — perhatikan bagaimana requirement ditulis eksplisit dengan pengecualian, bagaimana rasional keputusan arsitektur dijelaskan, dan bagaimana sequence diagram + ERD melengkapi (bukan mengulang) prosa:
+The example below (PRD Kantin Karyawan) shows the expected level of detail and writing style — note how requirements are written explicitly with exceptions, how architecture decision rationale is explained, and how the sequence diagram + ERD complement (not repeat) the prose:
 
-> Overview membuka dengan definisi sistem + kepemilikan + pola integrasi dalam satu paragraf, diikuti paragraf masalah yang konkret (bukan "pemesanan tidak efisien" tapi "tingginya potensi pemborosan anggaran katering akibat ketidaksesuaian jumlah porsi dengan kehadiran aktual").
+> Overview opens with the system definition + ownership + integration pattern in one paragraph, followed by a concrete problem paragraph (not "pemesanan tidak efisien" but "tingginya potensi pemborosan anggaran katering akibat ketidaksesuaian jumlah porsi dengan kehadiran aktual").
 >
-> Requirements RBAC menulis tiap role dengan pola: cara akses → yang BISA dilakukan → yang TIDAK BISA dilakukan secara eksplisit (mis. "Admin HR ... read-only — tidak mengatur subsidi/vendor/menu").
+> Requirements RBAC writes each role with the pattern: access method → what it CAN do → what it CANNOT do, explicitly (e.g. "Admin HR ... read-only — tidak mengatur subsidi/vendor/menu").
 >
-> Logika Otomatisasi menulis aturan DAN pengecualiannya secara presisi: "kecuali tanggal tersebut hari libur nasional, karyawan berstatus cuti, atau akhir pekan ... Karyawan tetap boleh memesan manual di luar hari kerja tersebut kalau mereka mau — pengecualian ini hanya berlaku untuk auto-order, bukan pembatasan pemesanan manual."
+> Logika Otomatisasi writes the rule AND its exceptions precisely: "kecuali tanggal tersebut hari libur nasional, karyawan berstatus cuti, atau akhir pekan ... Karyawan tetap boleh memesan manual di luar hari kerja tersebut kalau mereka mau — pengecualian ini hanya berlaku untuk auto-order, bukan pembatasan pemesanan manual."
 >
-> Architecture menjelaskan rasional stack ("Golang + Gin, selaras dengan stack backend HRIS ... supaya tim yang sama tidak perlu belajar/maintain dua stack backend berbeda"), pola integrasi (proxy vs direct, dengan alasan JWT/CORS), dan diagram sequence lengkap dengan semua service yang terlibat (client → proxy → backend → database → sistem eksternal).
+> Architecture explains the stack rationale ("Golang + Gin, selaras dengan stack backend HRIS ... supaya tim yang sama tidak perlu belajar/maintain dua stack backend berbeda"), the integration pattern (proxy vs direct, with JWT/CORS reasons), and a full sequence diagram with all services involved (client → proxy → backend → database → external system).
 >
-> Database Schema menyertakan ERD Mermaid lengkap plus tabel rincian yang kolom "Keterangan"-nya menjelaskan aturan bisnis tersembunyi (mis. "`subsidy_amount` diatur manual oleh GA per karyawan dan tidak boleh ditimpa oleh job sync identitas — job sync hanya update `name`/`rfid_tag`").
+> Database Schema includes a full Mermaid ERD plus a detail table whose "Keterangan" column explains hidden business rules (e.g. "`subsidy_amount` diatur manual oleh GA per karyawan dan tidak boleh ditimpa oleh job sync identitas — job sync hanya update `name`/`rfid_tag`").
 >
-> Design & Technical Constraints menutup dengan penegasan bagian standar mana yang berlaku dan mana yang tidak relevan untuk stack yang dipilih di PRD ini — supaya tidak ada kebingungan menerapkan standar yang salah stack.
+> Design & Technical Constraints closes by stating which parts of the standards apply and which are irrelevant to the stack chosen in this PRD — so there is no confusion applying the wrong stack's standards.
 
-Gunakan pola-pola ini sebagai kalibrasi kualitas, sesuaikan struktur detail dengan kompleksitas sistem yang sedang di-PRD-kan (sistem kecil tidak perlu semua sub-section dipaksakan ada).
+Use these patterns as quality calibration; adapt the detailed structure to the complexity of the system being PRD'd (a small system doesn't need every sub-section forced in).

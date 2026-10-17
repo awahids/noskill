@@ -1,5 +1,5 @@
-<!-- Bagian dari skill coding-standards: Git, environment & secrets, changelog. -->
-# Coding Standards — Git, Secrets, dan Changelog
+<!-- Part of the coding-standards skill: Git, environment & secrets, changelog. -->
+# Coding Standards — Git, Secrets, and Changelog
 
 ## 8. Git & Commit Convention
 
@@ -7,21 +7,21 @@
 
 Branch: `feature/order-checkout-flow`, `fix/user-login-null-pointer`, `hotfix/payment-webhook-timeout`, `refactor/order-service-cleanup`
 
-Commit (Conventional Commits): `<type>: <deskripsi singkat, present tense>`
-Tipe: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `style`, `perf`
+Commit (Conventional Commits): `<type>: <short description, present tense>`
+Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `style`, `perf`
 
 ### 8.2 Environment & Secrets
 
-- **`.env` tidak pernah di-commit** — wajib ada di `.gitignore` sejak commit pertama project. Kalau project sudah terlanjur commit `.env`, hapus dari history (`git filter-repo`/BFG) dan **rotate semua secret yang sempat ke-expose**, jangan cuma dihapus dari commit terbaru (masih ada di history git).
-- **Selalu sertakan `.env.example`** di-commit ke repo — isinya nama variable yang dibutuhkan dengan value placeholder/dummy (`DATABASE_URL=postgres://user:pass@localhost:5432/dbname`), supaya orang lain (atau diri sendiri 6 bulan kemudian) tahu env var apa saja yang perlu diisi tanpa harus menebak dari kode.
-- **Secret di CI/CD dan production** disimpan di secret manager platform (GitHub Actions secrets, Vercel/Railway env vars, dll), bukan hardcoded di file config yang ikut ter-commit.
-- **Rotasi secret** setelah: ada anggota tim yang keluar dan sempat punya akses, ada indikasi kebocoran (log ke-expose, screenshot ke-share tidak sengaja), atau secara berkala untuk kredensial sensitif (payment gateway, service-to-service key) sesuai kebijakan yang wajar untuk skala project.
-- Untuk kredensial yang dipakai lintas sistem (contoh pola `X-Service-Key` di integrasi antar backend) — simpan di `.env` masing-masing sistem, jangan hardcode di kode meskipun "cuma internal".
+- **`.env` is never committed** — it must be in `.gitignore` from the project's first commit. If the project already committed `.env`, remove it from history (`git filter-repo`/BFG) and **rotate every secret that was exposed** — don't just remove it from the latest commit (it is still in git history).
+- **Always commit `.env.example`** to the repo — containing the required variable names with placeholder/dummy values (`DATABASE_URL=postgres://user:pass@localhost:5432/dbname`), so others (or yourself 6 months later) know which env vars to fill without guessing from the code.
+- **Secrets in CI/CD and production** are stored in the platform's secret manager (GitHub Actions secrets, Vercel/Railway env vars, etc.), not hardcoded in committed config files.
+- **Rotate secrets** when: a team member who had access leaves, there is a sign of a leak (exposed logs, accidentally shared screenshot), or periodically for sensitive credentials (payment gateway, service-to-service keys) per a policy reasonable for the project's scale.
+- For credentials used across systems (e.g. the `X-Service-Key` pattern in backend-to-backend integrations) — store them in each system's `.env`; don't hardcode them in code even if "it's only internal".
 
 ### 8.3 Changelog
 
-Untuk project yang punya rilis/versi yang perlu dikomunikasikan (dipakai user lain, dirilis ke production secara berkala, atau open source) — generate `CHANGELOG.md` dari histori commit, bukan ditulis manual dari ingatan:
+For projects with releases/versions that need communicating (used by other people, released to production regularly, or open source) — generate `CHANGELOG.md` from commit history, not written manually from memory:
 
-- Karena commit sudah mengikuti Conventional Commits (8.1), changelog bisa di-generate otomatis (`conventional-changelog`, `git-cliff`, atau built-in changelog generator dari platform seperti GitHub Releases) — kelompokkan otomatis per tipe (`feat` → "Features", `fix` → "Bug Fixes", dst)
-- Commit dengan `BREAKING CHANGE:` di footer atau `!` setelah tipe (`feat!:`) ditandai jelas di changelog sebagai breaking — selaras dengan checklist breaking change di `references/api-doc.md`
-- Untuk project kecil/internal yang tidak dirilis ke pihak luar, changelog opsional — tidak perlu dipaksakan kalau tidak ada yang membacanya
+- Since commits already follow Conventional Commits (8.1), the changelog can be generated automatically (`conventional-changelog`, `git-cliff`, or a platform's built-in changelog generator such as GitHub Releases) — grouped automatically by type (`feat` → "Features", `fix` → "Bug Fixes", etc.)
+- Commits with `BREAKING CHANGE:` in the footer or `!` after the type (`feat!:`) are clearly marked as breaking in the changelog — in line with the breaking change checklist in `references/api-doc.md`
+- For small/internal projects not released to outside parties, a changelog is optional — don't force it if nobody reads it

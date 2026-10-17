@@ -1,85 +1,87 @@
 ---
 name: mockup-prototype
 description: >-
-  Membuat mockup/prototype UI (HTML atau React) dari PRD, per layar dan per role, termasuk state loading/empty/error. Gunakan saat user minta mockup, prototype, wireframe, atau desain UI dari requirement.
+  Builds UI mockups/prototypes (HTML or React) from a PRD, per screen and per role, including loading/empty/error states. Use for "buatkan mockup", "prototype", "wireframe", or UI design from requirements.
 ---
 
 # Mockup & Prototype Builder
 
-Menerjemahkan PRD (dari skill `prd-writer` atau PRD yang sudah ada) menjadi mockup/prototype yang bisa langsung dilihat dan diklik-klik, sebelum masuk ke development sungguhan.
+Write the document in Bahasa Indonesia unless the user asks otherwise.
 
-## Alur Kerja
+Turns a PRD (from the `prd-writer` skill or an existing PRD) into a mockup/prototype that can be viewed and clicked through right away, before real development starts.
 
-### 1. Ekstrak Layar dari PRD
+## Workflow
 
-Sebelum mendesain, petakan dulu dari PRD:
-- **Dari "Aksesibilitas Pengguna" & "Peran & Hak Akses"** → daftar platform (web/mobile/kiosk) dan role apa saja yang butuh tampilan berbeda
-- **Dari "Core Features"** → tiap fitur biasanya = 1 layar atau 1 komponen signifikan
-- **Dari "User Flow"** → urutan layar yang dilalui user, termasuk state kondisional (loading, error, empty, sukses)
+### 1. Extract Screens from the PRD
 
-Susun daftar layar terlebih dahulu sebagai checklist sebelum mulai membangun, kelompokkan per role/platform:
+Before designing, map from the PRD:
+- **From "Aksesibilitas Pengguna" & "Peran & Hak Akses"** → list of platforms (web/mobile/kiosk) and which roles need different views
+- **From "Core Features"** → each feature is usually 1 screen or 1 significant component
+- **From "User Flow"** → the order of screens the user goes through, including conditional states (loading, error, empty, success)
+
+Write the screen list first as a checklist before building, grouped per role/platform:
 ```
 Role: [Nama Role] — Platform: [Web/Mobile]
 - [ ] Layar A — [fitur terkait dari Core Features]
 - [ ] Layar B — [fitur terkait]
 ```
 
-Kalau jumlah layar banyak (>5-6), konfirmasi ke user mana yang diprioritaskan dulu — jangan langsung generate semua sekaligus tanpa arahan kalau scope-nya besar.
+If there are many screens (>5-6), confirm with the user which to prioritize first — don't generate everything at once without direction when the scope is large.
 
-### 2. Tentukan Fidelity & Format
+### 2. Decide Fidelity & Format
 
-Tanyakan/tentukan sesuai konteks kalau belum jelas dari permintaan user:
-- **Wireframe (low-fidelity)** — struktur & layout saja, greyscale, fokus ke informasi hierarchy dan flow. Cocok untuk validasi flow sebelum invest ke visual detail
-- **Mockup (high-fidelity)** — sudah pakai warna, tipografi, komponen visual lengkap, tapi belum tentu interaktif penuh
-- **Prototype (interaktif)** — high-fidelity + bisa diklik berpindah antar layar, mensimulasikan flow yang sebenarnya
+Ask/decide based on context if not clear from the user's request:
+- **Wireframe (low-fidelity)** — structure & layout only, greyscale, focused on information hierarchy and flow. Good for validating flow before investing in visual detail
+- **Mockup (high-fidelity)** — full colors, typography, visual components, but not necessarily fully interactive
+- **Prototype (interactive)** — high-fidelity + clickable navigation between screens, simulating the real flow
 
-Default ke **high-fidelity mockup** kalau user tidak spesifik, karena paling berguna untuk didiskusikan dengan stakeholder/client.
+Default to a **high-fidelity mockup** if the user isn't specific, because it is most useful for discussion with stakeholders/clients.
 
-### 3. Cek Design System yang Sudah Ada
+### 3. Check for an Existing Design System
 
-**Sebelum membuat palet/tipografi baru, cek dulu apakah project ini punya design system existing** (relevan karena beberapa project user sudah punya identitas visual):
-- Kalau project ini kelanjutan dari sistem yang sudah ada (misal modul baru yang menempel ke aplikasi HR yang sudah dipakai) → **ikuti visual language aplikasi existing**, jangan bikin baru
-- Kalau project baru berdiri sendiri tanpa arahan visual → baca skill `frontend-design` untuk prinsip desain, dan tanyakan preferensi arah visual ke user kalau belum ada petunjuk dari PRD (industri/audience biasanya memberi sinyal: sistem internal HR/GA cenderung clean & functional, produk konsumen bisa lebih ekspresif)
+**Before creating a new palette/typography, check whether this project has an existing design system** (relevant because some of the user's projects already have a visual identity):
+- If this project continues an existing system (e.g. a new module attached to an HR app already in use) → **follow the existing app's visual language**, don't create a new one
+- If it's a new standalone project with no visual direction → read the `frontend-design` skill for design principles, and ask the user for visual direction preferences if the PRD gives no hints (industry/audience usually signals it: internal HR/GA systems tend to be clean & functional, consumer products can be more expressive)
 
-### 4. Build Mockup
+### 4. Build the Mockup
 
-**Selalu baca skill `frontend-design` sebelum membangun kalau skill itu tersedia di environment ini** (cek daftar skill yang tersedia — jangan asumsikan path tertentu) — ikuti prinsip desain di sana untuk tipografi, spacing, dan hierarki visual, jangan pakai default template generik. **Kalau skill itu tidak ada di environment yang sedang dipakai**, tetap terapkan prinsip dasarnya secara manual: hindari font/warna default yang terlalu umum (Inter polos, gradient ungu generik), pilih arah visual yang disengaja sesuai konteks project, dan perhatikan hierarki tipografi — jangan biarkan ketidaktersediaan skill itu jadi alasan menghasilkan mockup generik.
+**Always read the `frontend-design` skill before building if it is available in this environment** (check the available skill list — don't assume a particular path) — follow its design principles for typography, spacing, and visual hierarchy; don't use generic template defaults. **If that skill isn't in the current environment**, still apply its basic principles manually: avoid overly common default fonts/colors (plain Inter, generic purple gradients), choose a deliberate visual direction fitting the project context, and mind typographic hierarchy — don't let the skill's absence be an excuse for a generic mockup.
 
-**Format output:**
-- **Single screen / komponen** → React artifact (`.jsx`), pakai Tailwind + lucide-react sesuai batasan environment
-- **Multi-screen prototype dengan navigasi antar layar** → satu file HTML dengan simple client-side routing (tampilkan/sembunyikan section berdasarkan state), atau beberapa React artifact terpisah kalau lebih mudah dikelola per layar
-- **Flow dengan banyak role berbeda** → pisahkan file per role supaya tidak campur aduk (`mockup-employee.jsx`, `mockup-admin.jsx`, dst)
+**Output format:**
+- **Single screen / component** → React artifact (`.jsx`), using Tailwind + lucide-react per environment constraints
+- **Multi-screen prototype with navigation between screens** → one HTML file with simple client-side routing (show/hide sections by state), or several separate React artifacts if easier to manage per screen
+- **Flow with many different roles** → separate files per role so they don't get mixed (`mockup-employee.jsx`, `mockup-admin.jsx`, etc.)
 
-**Yang wajib direfleksikan dari PRD ke mockup:**
-- Field yang ditampilkan di layar sesuai kolom database/DTO yang disebut di PRD (jangan mengarang field yang tidak ada di schema)
-- State kosong/loading/error untuk data yang sifatnya async (sesuai catatan di PRD kalau ada)
-- Pembatasan akses role tercermin di UI — kalau PRD bilang suatu role "read-only", mockup untuk role itu tidak boleh menampilkan tombol edit/hapus
-- Alur kondisional dari User Flow (misal toggle RFID ON/OFF mengubah tampilan layar klaim) direpresentasikan sebagai state yang bisa di-switch di prototype, bukan cuma satu kondisi statis
+**What must be reflected from the PRD in the mockup:**
+- Fields shown on screen match the database columns/DTOs named in the PRD (don't invent fields not in the schema)
+- Empty/loading/error states for async data (per PRD notes if any)
+- Role access restrictions reflected in the UI — if the PRD says a role is "read-only", that role's mockup must not show edit/delete buttons
+- Conditional flows from the User Flow (e.g. an RFID ON/OFF toggle changing the claim screen) represented as switchable states in the prototype, not just one static condition
 
-### 5. Review Pass Akhir (sebelum dianggap selesai)
+### 5. Final Review Pass (before considering it done)
 
-Setelah mockup/prototype selesai dibangun, **lakukan satu pass review terhadap hasilnya sendiri** sebelum dipresentasikan ke user sebagai final — bukan langsung disajikan ke user begitu kode selesai dibuat:
+After the mockup/prototype is built, **do one review pass over your own output** before presenting it to the user as final — don't hand it to the user the moment the code is written:
 
-- **Konsistensi spacing & alignment** — elemen sejenis (card, list item, tombol) pakai spacing yang konsisten, tidak ada yang terlihat "hampir sejajar tapi tidak"
-- **Hierarki visual** — informasi paling penting di layar itu (harga, status, CTA utama) memang paling menonjol, bukan tenggelam sama elemen dekoratif
-- **Kontras & keterbacaan** — teks di atas background berwarna/gambar tetap kebaca jelas, ukuran font untuk teks penting tidak terlalu kecil
-- **Konsistensi lintas layar** — kalau ada beberapa layar/state dalam satu prototype, komponen yang sama (tombol, card, navigasi) terlihat konsisten di semua layar, bukan berubah gaya tiap layar
-- **Accessibility dasar** — target klik/tap cukup besar untuk elemen interaktif, tidak mengandalkan warna saja untuk menyampaikan informasi penting (misal status error cuma beda warna tanpa ikon/teks)
+- **Spacing & alignment consistency** — similar elements (cards, list items, buttons) use consistent spacing; nothing looks "almost aligned but not quite"
+- **Visual hierarchy** — the most important information on the screen (price, status, main CTA) is actually the most prominent, not drowned out by decorative elements
+- **Contrast & readability** — text over colored backgrounds/images stays clearly readable; font size for important text isn't too small
+- **Cross-screen consistency** — if a prototype has several screens/states, the same components (buttons, cards, navigation) look consistent across all screens, not restyled per screen
+- **Basic accessibility** — click/tap targets large enough for interactive elements; don't rely on color alone to convey important information (e.g. an error status distinguished only by color without an icon/text)
 
-Kalau ketemu masalah dari review ini, perbaiki dulu sebelum present ke user — jangan serahkan hasil yang sudah diketahui ada masalah kecil dengan asumsi "nanti user yang bilang". Untuk masalah yang butuh keputusan desain (bukan sekadar bug visual jelas), boleh disebutkan ke user sebagai catatan alih-alih diam-diam diputuskan sendiri.
+If this review finds problems, fix them before presenting to the user — don't hand over output with known small problems assuming "the user will point it out". For problems that need a design decision (not just an obvious visual bug), you may mention them to the user as notes instead of silently deciding yourself.
 
-### 6. Anotasi Singkat
+### 6. Brief Annotations
 
-Setelah mockup jadi, kalau ada keputusan desain yang perlu penjelasan (kenapa layout tertentu dipilih, komponen mana yang representasi dari fitur PRD yang mana), sampaikan singkat di chat — tidak perlu bikin dokumen anotasi terpisah kecuali diminta.
+Once the mockup is done, if some design decisions need explaining (why a layout was chosen, which component represents which PRD feature), state them briefly in chat — no separate annotation document unless requested.
 
-## Prinsip
+## Principles
 
-1. **Mockup mengikuti PRD, bukan sebaliknya.** Kalau ada kebutuhan visual yang tidak tercakup PRD (misal butuh state baru yang belum disebutkan), sebutkan itu ke user sebagai gap yang mungkin perlu ditambahkan ke PRD, jangan diam-diam mengarang requirement baru.
-2. **Realistis terhadap data.** Pakai contoh data yang masuk akal sesuai domain PRD (nama menu katering, nominal rupiah, dll), bukan "Lorem ipsum" atau "Item 1, Item 2".
-3. **Fidelity sesuai tujuan.** Prototype untuk internal review cukup functional; untuk dipresentasikan ke client/stakeholder eksternal, tingkatkan polish visualnya.
-4. **Jangan over-build di awal.** Kalau PRD besar dengan banyak role dan layar, mulai dari 1-2 layar paling representatif dulu untuk divalidasi arahnya, baru lanjut ke sisanya — sesuai preferensi "lazy/minimal" yang efisien (selaras dengan skill `ponytail` kalau user memakainya untuk kode, prinsip serupa berlaku untuk scope mockup: jangan bangun semua layar sebelum arah desain dikonfirmasi).
+1. **The mockup follows the PRD, not the other way around.** If there is a visual need not covered by the PRD (e.g. a new state not yet mentioned), tell the user it's a gap that may need adding to the PRD; don't silently invent new requirements.
+2. **Realistic data.** Use sensible sample data for the PRD's domain (catering menu names, rupiah amounts, etc.), not "Lorem ipsum" or "Item 1, Item 2".
+3. **Fidelity fits the purpose.** A prototype for internal review only needs to be functional; for presenting to external clients/stakeholders, raise the visual polish.
+4. **Don't over-build early.** For a large PRD with many roles and screens, start with the 1-2 most representative screens to validate direction, then continue with the rest — per the efficient "lazy/minimal" preference (in line with the `ponytail` skill if the user uses it for code; the same principle applies to mockup scope: don't build every screen before the design direction is confirmed).
 
-## Referensi Skill Terkait
-- `prd-writer` — sumber PRD yang jadi acuan
-- `frontend-design` (built-in) — prinsip visual, tipografi, dan styling
-- `coding-standards` — kalau mockup ini nantinya dilanjutkan jadi kode production, pastikan struktur komponen/naming yang dipakai di mockup sudah selaras supaya transisinya mulus
+## Related Skills
+- `prd-writer` — source PRD used as the reference
+- `frontend-design` (built-in) — visual principles, typography, and styling
+- `coding-standards` — if this mockup will later become production code, make sure the component structure/naming used in the mockup is already aligned so the transition is smooth

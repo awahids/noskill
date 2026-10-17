@@ -1,30 +1,30 @@
 ---
 name: project-profile
 description: >-
-  Scan repo sekali lalu tulis project-profile.md di folder dokumen noskill — stack, command test/lint/typecheck/build, struktur folder, helper yang sering dipakai ulang, dan aturan dari CLAUDE.md/README — supaya agent tidak menjelajah ulang codebase di setiap tiket. Gunakan saat mulai bekerja di project baru, saat feature-flow tidak menemukan profil, atau user minta "profil project", "scan project", "refresh profil".
+  Scans the repo once and writes project-profile.md (stack, test/lint/typecheck commands, folders, helpers, rules) so agents don't re-explore per ticket. Use on new projects, when feature-flow finds no profile, or for "profil project", "scan project".
 ---
 
 # Project Profile
 
-Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
+noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
 
-Tujuan: satu file ringkas yang dibaca semua agent sebelum bekerja, jadi command test, pola folder, dan helper tidak dicari ulang di setiap tiket.
+Goal: one compact file every agent reads before working, so test commands, folder patterns, and helpers aren't searched again on every ticket. Use when starting work on a new project, when feature-flow finds no profile, or when the user asks.
 
-## Cara scan (hemat token)
+## How to scan (token-efficient)
 
-1. Baca file manifest dan konfigurasi saja, jangan seluruh source: `package.json`, `composer.json`, `go.mod`, `pyproject.toml`, `Makefile`, `docker-compose*`, file CI (`.github/workflows/*`), `CLAUDE.md`, bagian awal `README`.
-2. Struktur folder: `ls` dua level teratas (abaikan `node_modules`, `vendor`, `.git`, folder build).
-3. Helper umum: grep nama fungsi yang di-export di folder utilitas (`lib/`, `utils/`, `helpers/`, `pkg/`, `internal/*/util*`, `app/Helpers`). Ambil nama dan satu baris kegunaannya, jangan baca isinya penuh.
-4. **Verifikasi command**: jalankan command test (dan typecheck/lint kalau ada) sekali dengan output dibatasi (`| tail -n 5`). Catat apakah lulus, berapa lama, dan cara menjalankan satu file test saja.
-5. **Versi cepat** untuk dipakai per tiket, dengan cache di `.noskill-cache/` (tambahkan `.noskill-cache/` ke `.git/info/exclude`, bukan ke `.gitignore`, supaya tidak ikut ter-commit). Cek sekali bahwa versinya jalan, lalu catat:
-   - TypeScript: `npx tsc --noEmit --incremental --tsBuildInfoFile .noskill-cache/tsc.tsbuildinfo` (run kedua dan seterusnya hanya mengecek ulang file yang berubah)
+1. Read only manifest and config files, not all source: `package.json`, `composer.json`, `go.mod`, `pyproject.toml`, `Makefile`, `docker-compose*`, CI files (`.github/workflows/*`), `CLAUDE.md`, the top of `README`.
+2. Folder structure: `ls` the top two levels (ignore `node_modules`, `vendor`, `.git`, build folders).
+3. Common helpers: grep exported function names in utility folders (`lib/`, `utils/`, `helpers/`, `pkg/`, `internal/*/util*`, `app/Helpers`). Record the name and a one-line purpose; don't read them in full.
+4. **Verify commands**: run the test command (and typecheck/lint if present) once with limited output (`| tail -n 5`). Record whether it passes, how long it takes, and how to run a single test file.
+5. **Fast versions** for per-ticket use, with cache in `.noskill-cache/` (add `.noskill-cache/` to `.git/info/exclude`, not `.gitignore`, so it isn't committed). Check once that the fast version works, then record:
+   - TypeScript: `npx tsc --noEmit --incremental --tsBuildInfoFile .noskill-cache/tsc.tsbuildinfo` (second and later runs only recheck changed files)
    - ESLint: `npx eslint --cache --cache-location .noskill-cache/eslint <file>`
    - Jest: `npx jest --findRelatedTests <file>`; Vitest: `npx vitest related <file> --run`
-   - Go: `go vet ./<paket>/...` dan `go test ./<paket>/...` (Go sudah memakai cache sendiri)
-   - PHP: PHPStan dan Pest/PHPUnit dengan filter file atau test terkait
-   Kalau versi cepat gagal atau tidak didukung versi tool-nya, tulis `belum dicek` dan pakai versi biasa.
+   - Go: `go vet ./<paket>/...` and `go test ./<paket>/...` (Go already uses its own cache)
+   - PHP: PHPStan and Pest/PHPUnit with a file filter or related tests
+   If the fast version fails or the tool version doesn't support it, write `belum dicek` and use the normal version.
 
-## Format `<docs>/project-profile.md` (maksimal ±80 baris)
+## `<docs>/project-profile.md` format (max ±80 lines)
 
 ```markdown
 # Project Profile — <nama>
@@ -70,10 +70,11 @@ _Dibuat: <tanggal> · sumber: <commit hash pendek>_
 - notion_database: —       # URL/ID database Notion kalau tracker: notion
 ```
 
-## Aturan
+## Rules
 
-- Hanya fakta yang terverifikasi dari file atau hasil command. Yang tidak yakin ditulis `belum dicek`, jangan ditebak.
-- **Refresh** kalau file manifest/lockfile berubah sejak commit di header, kalau command di profil gagal dijalankan, atau user minta. Ganti bagian yang berubah saja.
-- Field `tracker` diisi sesuai jawaban user (default `none`). Jangan tanyakan lagi kalau sudah terisi.
-- **Repo lain (multi-repo):** scan repo itu dengan cara yang sama (path dari bagian Repo), tapi simpan hasilnya di repo dokumen sebagai `<docs>/project-profile-<nama>.md` tanpa bagian Repo dan Integrasi. Repo lain tidak diberi folder noskill.
-- Kalau repo itu git, sarankan user meng-commit file ini supaya sesi berikutnya langsung memakainya.
+- Only facts verified from files or command output. Anything uncertain is written `belum dicek`, never guessed.
+- **Refresh** if a manifest/lockfile changed since the commit in the header, if a command in the profile fails, or if the user asks. Replace only the changed parts, and add rows from the current format that the profile lacks (e.g. `Jalankan environment`, `Health check`, fast per-ticket commands) — an old profile may predate them. Keep everything else, including lines the user wrote by hand.
+- **Environment row:** find the command in `docker-compose*`, package scripts, `Makefile`, or README. Verify it once if it can run here (start, `Health check` succeeds, stop); otherwise write the command with `belum dicek`.
+- The `tracker` field is filled from the user's answer (default `none`). Don't ask again once it's filled.
+- **Other repos (multi-repo):** scan that repo the same way (path from the Repo section), but save the result in the docs repo as `<docs>/project-profile-<nama>.md` without the Repo and Integrasi sections. Other repos get no noskill folder.
+- If the repo is git, suggest the user commit this file so the next session uses it directly.
