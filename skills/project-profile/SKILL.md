@@ -73,7 +73,8 @@ _Dibuat: <tanggal> · sumber: <commit hash pendek>_
 ## Rules
 
 - Only facts verified from files or command output. Anything uncertain is written `belum dicek`, never guessed.
-- **Refresh** if a manifest/lockfile changed since the commit in the header, if a command in the profile fails, or if the user asks. Replace only the changed parts.
+- **Refresh** if a manifest/lockfile changed since the commit in the header, if a command in the profile fails, or if the user asks. Replace only the changed parts, and add rows from the current format that the profile lacks (e.g. `Jalankan environment`, `Health check`, fast per-ticket commands) — an old profile may predate them. Keep everything else, including lines the user wrote by hand.
+- **Environment row:** find the command in `docker-compose*`, package scripts, `Makefile`, or README. Verify it once if it can run here (start, `Health check` succeeds, stop); otherwise write the command with `belum dicek`.
 - The `tracker` field is filled from the user's answer (default `none`). Don't ask again once it's filled.
 - **Other repos (multi-repo):** scan that repo the same way (path from the Repo section), but save the result in the docs repo as `<docs>/project-profile-<nama>.md` without the Repo and Integrasi sections. Other repos get no noskill folder.
 - If the repo is git, suggest the user commit this file so the next session uses it directly.
