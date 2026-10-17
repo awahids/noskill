@@ -2,6 +2,7 @@
 name: task-breakdown
 description: >-
   Breaks a PRD or BRD into actionable tasks per phase with dependencies, acceptance criteria, verification steps, and a Trace column to US/AC/TECH, fitted to the existing codebase. Use for "pecah jadi task", "breakdown PRD", or a backlog from a PRD.
+user-invocable: false
 ---
 
 # PRD to Task Breakdown
@@ -111,7 +112,7 @@ Default order (adjust if the PRD has different needs):
 4. **Integration with existing systems** (proxy, sync endpoint) — after the main API is stable, so you don't integrate against a still-changing API
 5. **Frontend** — can run parallel with integration if different people, but order it after the basic API exists
 6. **Supporting features** (notifications, analytics, report export) — usually can come later, not blocking core features
-7. **QA/testing & documentation** — including `user-guide` if needed (Swagger docs go in the endpoint's ticket, not a separate task)
+7. **QA/testing & documentation** — including `user-guide` (plugin `noskill-extras`) if needed (Swagger docs go in the endpoint's ticket, not a separate task)
 
 Mark which tasks **can run in parallel** vs which are **strictly sequential** via the Dependency column, so when a team/several people work on it it's clear what can start at the same time.
 
@@ -133,4 +134,4 @@ Mark which tasks **can run in parallel** vs which are **strictly sequential** vi
 - `prd-writer` — source PRD for the breakdown
 - `erp-requirements` — if a BRD document (Part B) exists, the source of US/AC/TECH that must be referenced in the Trace column
 - `coding-standards` — used for backend/frontend folder structure/conventions in new projects (no existing pattern to follow)
-- `standup-update` — after tasks are worked on, progress can be summarized with this skill
+- `standup-update` (plugin `noskill-extras`) — after tasks are worked on, progress can be summarized with this skill

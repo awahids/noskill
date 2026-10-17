@@ -2,6 +2,7 @@
 name: erp-requirements
 description: >-
   ERP/WMS requirements: (A) domain design checklist before schema/ERD — master data, stock ledger, workflow, RBAC, audit, numbering, MVP; (B) traceable BRD: BR→PROC→US→AC→TECH→TC→UAT. Use for "desain ERD inventory", "buatkan BRD", "user story + AC".
+user-invocable: false
 ---
 
 # ERP Requirements
@@ -317,6 +318,6 @@ If the user asks for requirements/BRD/user stories for an ERP feature:
 ## Position in the noskill flow
 
 ```
-Bagian A (desain domain) → prd-writer → Bagian B (BRD) → task-breakdown → coding-standards → debug-assistant → user-guide
+Bagian A (desain domain) → prd-writer → Bagian B (BRD) → task-breakdown → coding-standards → debug-assistant → user-guide (noskill-extras)
 ```
 To run the whole flow until tickets are DONE (develop → review → QA), use the `feature-flow` skill — Part B is done by the `brd-tracer` agent, which loads this skill.

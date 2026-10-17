@@ -1,12 +1,6 @@
----
-name: rapikan
-description: Shortcut — tidy tickets to current rules (merge per-layer tickets, add Kontrak API, integrates_with, complexity, negative AC, real File/Lokasi) or re-review a DONE ticket. Use as /noskill:rapikan [ID tiket] or /noskill:rapikan review <ID>.
-disable-model-invocation: true
----
+# rapikan — tidy tickets or re-review a DONE ticket
 
-noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
-
-Arguments: $ARGUMENTS
+Arguments are the words after `rapikan`:
 
 - Empty or a ticket ID → **Tidy backlog** (all eligible tickets, or only that ID).
 - Starts with `review` followed by a ticket ID → **Re-review DONE ticket**.
@@ -50,4 +44,4 @@ Only tickets with status `TODO` and `HOLD` are processed. `IN_PROGRESS`, `REVIEW
    - `APPROVED` → add Riwayat `- <YYYY-MM-DD HH:MM> DONE — review ulang: APPROVED`.
    - `CHANGES_REQUESTED` → the original ticket stays DONE with Riwayat `- <YYYY-MM-DD HH:MM> DONE — review ulang: ada temuan, lihat <BUG-ID>`. Create a new `BUG-NNN` ticket (`type: bug`, `status: BUG`, `related: [<ID>]`, `complexity` per the findings) with the reviewer's findings as AC and File/Lokasi from that commit.
    - `BLOCKED` → show the reviewer's questions to the user.
-5. Show the result. New BUG tickets are worked via `/noskill:lanjut` or `feature-flow`.
+5. Show the result. New BUG tickets are worked via `/noskill:tiket lanjut` or `feature-flow`.

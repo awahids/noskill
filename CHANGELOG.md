@@ -2,6 +2,14 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.7.0 — 2026-10-17
+
+### Diubah — skill lebih sedikit
+- **Shortcut tiket digabung jadi `/noskill:tiket`.** `/noskill:board`, `/noskill:fix`, `/noskill:lanjut`, dan `/noskill:rapikan` menjadi `/noskill:tiket [board]`, `/noskill:tiket fix <deskripsi>`, `/noskill:tiket lanjut [catatan]`, dan `/noskill:tiket rapikan [review] [ID]`. Hanya file aksi yang dipilih (`skills/tiket/references/`) yang dibaca. `/noskill:lazy` tetap terpisah.
+- **Skill internal disembunyikan dari menu `/`:** `ticket-workflow`, `task-breakdown`, `erp-requirements`, dan `coding-standards` (`user-invocable: false`). Skill ini tetap dimuat agent dan dipanggil Claude otomatis saat relevan.
+- **Skill tambahan pindah ke plugin `noskill-extras`:** `user-guide`, `mockup-prototype`, `standup-update`, dan `freelance-proposal` (folder `extras/`, satu marketplace). Pasang dengan `/plugin install noskill-extras@noskill` kalau perlu. `standup-update` mencari folder tiket sendiri (default `docs/noskill`) karena plugin ini tidak punya pengaturan folder.
+- Hasilnya, plugin inti punya 10 skill (sebelumnya 17), dan yang muncul di menu `/` tinggal 6: `feature-flow`, `tiket`, `lazy`, `project-profile`, `prd-writer`, `debug-assistant`.
+
 ## 1.6.0 — 2026-10-17
 
 ### Diubah — hemat token

@@ -133,6 +133,8 @@ html { scroll-behavior: smooth; }
     <div class="cmd"><pre>git clone https://github.com/awahids/noskill
 claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button></div>
     <p class="side">Update plugin dengan <code>/plugin update noskill</code>. Semua skill dipanggil dengan awalan <code>/noskill:</code>.</p>
+    <p>Skill tambahan (user guide, mockup, standup, proposal) ada di plugin terpisah <code>noskill-extras</code>. Pasang hanya kalau perlu:</p>
+    <div class="cmd"><pre>/plugin install noskill-extras@noskill</pre><button type="button" data-copy>Salin</button></div>
 
     <h3>Lewat akun Claude (claude.ai, desktop, Cowork)</h3>
     <p>Pasang sekali di akun, lalu plugin tersinkron ke chat, Cowork, dan setiap sesi Claude Code yang login dengan akun yang sama, termasuk sesi cloud.</p>
@@ -142,7 +144,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     </ol>
     <div class="cmd"><pre>awahids/noskill</pre><button type="button" data-copy>Salin</button></div>
     <ol class="steps" start="3">
-      <li>Pilih plugin <strong>noskill</strong>, lalu <strong>Add</strong>. Aktifkan <strong>Sync automatically</strong> supaya update dari GitHub langsung masuk.</li>
+      <li>Pilih plugin <strong>noskill</strong> (dan <strong>noskill-extras</strong> kalau perlu), lalu <strong>Add</strong>. Aktifkan <strong>Sync automatically</strong> supaya update dari GitHub langsung masuk.</li>
       <li>Di sesi Claude Code yang sudah terbuka, jalankan <code>/reload-plugins</code>.</li>
     </ol>
     <p class="side">Di chat claude.ai hanya skill yang aktif. Agent dan hook berjalan di Claude Code dan Cowork. Pada plan Team/Enterprise, menu Add marketplace bisa dibatasi oleh Owner organisasi.</p>
@@ -150,9 +152,9 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <h2 id="mulai">Mulai cepat</h2>
     <ol class="steps">
       <li><strong>Buat profil project</strong> sekali di setiap repo: <code>/noskill:project-profile</code>. Hasilnya <code>docs/noskill/project-profile.md</code> berisi stack, command test yang sudah dicoba, struktur folder, dan helper yang bisa dipakai ulang.</li>
-      <li><strong>Perbaiki bug atau tambah fitur kecil:</strong> <code>/noskill:fix tombol simpan tidak validasi email</code>. Claude menulis satu tiket, kamu setujui, lalu tiket berjalan sampai DONE.</li>
+      <li><strong>Perbaiki bug atau tambah fitur kecil:</strong> <code>/noskill:tiket fix tombol simpan tidak validasi email</code>. Claude menulis satu tiket, kamu setujui, lalu tiket berjalan sampai DONE.</li>
       <li><strong>Fitur besar:</strong> <code>/noskill:feature-flow</code> lalu ceritakan fiturnya. Alurnya dimulai dari PRD, dengan pertanyaan klarifikasi lebih dulu.</li>
-      <li><strong>Cek progres</strong> kapan saja dengan <code>/noskill:board</code>. Kalau sesi terputus, lanjutkan dengan <code>/noskill:lanjut</code>.</li>
+      <li><strong>Cek progres</strong> kapan saja dengan <code>/noskill:tiket</code>. Kalau sesi terputus, lanjutkan dengan <code>/noskill:tiket lanjut</code>.</li>
     </ol>
 
     <h2 id="cara-kerja">Cara kerja</h2>
@@ -207,7 +209,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <li>Database dan server dinyalakan sekali per sesi lalu dipakai bersama oleh semua QA.</li>
       <li>Typecheck dan lint per tiket memakai versi cepat dengan cache (<code>tsc --incremental</code>, <code>eslint --cache</code>), dicatat di profil project.</li>
       <li>Laporan lengkap agent disimpan di <code>docs/noskill/reports/</code>. Sesi utama hanya menerima verdict dan ringkasan beberapa baris, jadi tetap ringan di fitur dengan banyak tiket.</li>
-      <li>Riwayat tiket mencatat jam, dan <code>/noskill:board</code> menampilkan berapa lama tiap tiket di tahap developer, review, dan QA.</li>
+      <li>Riwayat tiket mencatat jam, dan <code>/noskill:tiket board</code> menampilkan berapa lama tiap tiket di tahap developer, review, dan QA.</li>
     </ul>
 
     <h3>Multi-repo</h3>
@@ -227,26 +229,27 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
 
     <h2 id="skill">Semua skill</h2>
     <p>Penjelasan lengkap tiap skill — kapan dipakai, langkah kerja, hasil, dan aturan penting — ada di halaman <a href="skills.html">Detail skill</a>.</p>
+    <p>Yang muncul di menu <code>/</code> hanya <code>feature-flow</code>, <code>tiket</code>, <code>lazy</code>, <code>project-profile</code>, <code>prd-writer</code>, dan <code>debug-assistant</code>. Skill bertanda <em>internal</em> dipakai otomatis oleh agent dan orkestrator, jadi tidak ditampilkan di menu.</p>
     <h3>Alur kerja</h3>
     <div class="tbl"><table><tbody>
       <tr><td><code>feature-flow</code></td><td>Orkestrator mode cepat, lengkap, dan paralel: tiket → developer → reviewer → QA → DONE, termasuk branch dan PR.</td></tr>
-      <tr><td><code>ticket-workflow</code></td><td>Format file tiket, alur status, verdict agent, dan board.</td></tr>
+      <tr><td><code>ticket-workflow</code> <em>internal</em></td><td>Format file tiket, alur status, verdict agent, dan board.</td></tr>
       <tr><td><code>project-profile</code></td><td>Men-scan repo sekali menjadi profil yang dibaca semua agent: command, struktur, helper, aturan project, dan tracker.</td></tr>
     </tbody></table></div>
     <h3>Requirement &amp; desain</h3>
     <div class="tbl"><table><tbody>
       <tr><td><code>prd-writer</code></td><td>PRD baku dengan diagram Mermaid, didahului minimal 5 pertanyaan klarifikasi. Ada juga mode Reverse-PRD dari kode yang sudah ada.</td></tr>
-      <tr><td><code>erp-requirements</code></td><td>ERP/WMS dalam dua bagian: checklist desain domain (master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP) dan rantai requirement BR → PROC → US → AC → TECH → TC → UAT dengan ID yang bisa ditelusuri.</td></tr>
-      <tr><td><code>task-breakdown</code></td><td>Memecah PRD/BRD menjadi task yang punya dependency, cara verifikasi, dan kolom Trace.</td></tr>
-      <tr><td><code>mockup-prototype</code></td><td>Mockup atau prototype UI dari PRD, per layar dan per role.</td></tr>
+      <tr><td><code>erp-requirements</code> <em>internal</em></td><td>ERP/WMS dalam dua bagian: checklist desain domain (master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP) dan rantai requirement BR → PROC → US → AC → TECH → TC → UAT dengan ID yang bisa ditelusuri.</td></tr>
+      <tr><td><code>task-breakdown</code> <em>internal</em></td><td>Memecah PRD/BRD menjadi task yang punya dependency, cara verifikasi, dan kolom Trace.</td></tr>
     </tbody></table></div>
     <h3>Standar &amp; kualitas</h3>
     <div class="tbl"><table><tbody>
-      <tr><td><code>coding-standards</code></td><td>Naming, struktur folder, ORM dan migration, format response API, dokumentasi Swagger/OpenAPI, TDD, quality gate, dan checklist review untuk NestJS, Laravel, Golang, Vue, dan Next.js. Detail per stack dibaca saat dibutuhkan saja.</td></tr>
+      <tr><td><code>coding-standards</code> <em>internal</em></td><td>Naming, struktur folder, ORM dan migration, format response API, dokumentasi Swagger/OpenAPI, TDD, quality gate, dan checklist review untuk NestJS, Laravel, Golang, Vue, dan Next.js. Detail per stack dibaca saat dibutuhkan saja.</td></tr>
       <tr><td><code>debug-assistant</code></td><td>Debugging terstruktur: reproduce → isolasi → root cause → verifikasi dengan bukti.</td></tr>
     </tbody></table></div>
-    <h3>Dokumen &amp; laporan</h3>
+    <h3>Tambahan — plugin <code>noskill-extras</code> (opsional)</h3>
     <div class="tbl"><table><tbody>
+      <tr><td><code>mockup-prototype</code></td><td>Mockup atau prototype UI dari PRD, per layar dan per role.</td></tr>
       <tr><td><code>user-guide</code></td><td>Panduan untuk pengguna non-teknis, dengan langkah per fitur dan flowchart dalam bahasa sehari-hari.</td></tr>
       <tr><td><code>standup-update</code></td><td>Standup atau status report, dibaca langsung dari Riwayat tiket.</td></tr>
       <tr><td><code>freelance-proposal</code></td><td>Proposal project per fase dengan harga Rupiah dan syarat pembayaran.</td></tr>
@@ -256,11 +259,11 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <div class="tbl"><table>
       <thead><tr><th>Perintah</th><th>Fungsi</th></tr></thead>
       <tbody>
-        <tr><td><code>/noskill:rapikan [ID]</code></td><td>Rapikan tiket lama agar sesuai aturan tiket terbaru. Usulan ditampilkan dulu, diterapkan setelah kamu setujui. <code>/noskill:rapikan review &lt;ID&gt;</code> mereview ulang kode tiket DONE.</td></tr>
+        <tr><td><code>/noskill:tiket</code> atau <code>/noskill:tiket board</code></td><td>Status semua tiket, pertanyaan dari tiket HOLD, dan durasi tiap tahap per tiket.</td></tr>
+        <tr><td><code>/noskill:tiket fix &lt;deskripsi&gt;</code></td><td>Bug fix atau perubahan kecil lewat mode cepat.</td></tr>
+        <tr><td><code>/noskill:tiket lanjut [jawaban]</code></td><td>Melanjutkan tiket yang tertunda dari sesi sebelumnya.</td></tr>
+        <tr><td><code>/noskill:tiket rapikan [ID]</code></td><td>Rapikan tiket lama agar sesuai aturan tiket terbaru. Usulan ditampilkan dulu, diterapkan setelah kamu setujui. <code>/noskill:tiket rapikan review &lt;ID&gt;</code> mereview ulang kode tiket DONE.</td></tr>
         <tr><td><code>/noskill:lazy &lt;permintaan&gt;</code></td><td>Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan, tanpa tiket, review, atau QA.</td></tr>
-        <tr><td><code>/noskill:fix &lt;deskripsi&gt;</code></td><td>Bug fix atau perubahan kecil lewat mode cepat.</td></tr>
-        <tr><td><code>/noskill:board</code></td><td>Status semua tiket, pertanyaan dari tiket HOLD, dan durasi tiap tahap per tiket.</td></tr>
-        <tr><td><code>/noskill:lanjut [jawaban]</code></td><td>Melanjutkan tiket yang tertunda dari sesi sebelumnya.</td></tr>
         <tr><td><code>/noskill:feature-flow</code></td><td>Alur kerja lengkap, mode cepat atau dari PRD.</td></tr>
         <tr><td><code>/noskill:project-profile</code></td><td>Membuat atau me-refresh profil project.</td></tr>
       </tbody>
@@ -298,8 +301,8 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <li>fitur lintas repo dipecah jadi tiket per repo</li>
       <li>developer bekerja di worktree tiket (mode paralel)</li>
       <li><code>/noskill:lazy</code> memakai helper yang ada, tanpa tiket atau abstraksi baru</li>
-      <li><code>/noskill:rapikan</code> mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui, lalu menerapkannya setelah disetujui</li>
-      <li><code>/noskill:rapikan review</code> membuat tiket BUG dari temuan review ulang tiket DONE</li>
+      <li><code>/noskill:tiket rapikan</code> mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui, lalu menerapkannya setelah disetujui</li>
+      <li><code>/noskill:tiket rapikan review</code> membuat tiket BUG dari temuan review ulang tiket DONE</li>
       <li>QA menolak implementasi yang AC negatifnya gagal, dan meloloskan implementasi yang benar</li>
       <li>QA langsung BLOCKED tanpa menyalakan DB/server sendiri kalau URL environment tidak diberikan</li>
       <li><code>brd-tracer</code> menurunkan PRD jadi dokumen BRD ringkas dengan ID traceable</li>

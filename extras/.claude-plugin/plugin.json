@@ -1,0 +1,13 @@
+{
+  "name": "noskill-extras",
+  "version": "1.0.0",
+  "description": "Skill tambahan noskill di luar alur tiket: user guide untuk pengguna non-teknis, mockup/prototype UI, update standup dari Riwayat tiket, dan proposal freelance.",
+  "author": {
+    "name": "Wahid",
+    "url": "https://awahids.my.id"
+  },
+  "repository": "https://github.com/awahids/noskill",
+  "homepage": "https://github.com/awahids/noskill",
+  "license": "MIT",
+  "keywords": ["user-guide", "mockup", "standup", "proposal"]
+}

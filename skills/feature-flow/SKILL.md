@@ -34,7 +34,7 @@ Before starting, make sure you know the following (ask all at once if unclear). 
 - New project (greenfield) or adding to an existing codebase (where is its path/repo)
 - **One repo or several.** If the feature touches more than one repo (e.g. backend + web + mobile), see the Multi-Repo section.
 - BRD level: **lengkap** (BR→UAT, for cross-division features or ones needing formal sign-off/UAT), **ringkas** (US→AC→TECH + TC), or **tanpa BRD** (PRD is detailed enough; tickets are created directly from the PRD)
-- Which stage to start from. If `<docs>/prd.md`, BRD documents, or `<docs>/tickets/` already exist, continue from the next stage — don't rewrite. If old tickets were made under different rules (e.g. split per layer), suggest `/noskill:rapikan` first.
+- Which stage to start from. If `<docs>/prd.md`, BRD documents, or `<docs>/tickets/` already exist, continue from the next stage — don't rewrite. If old tickets were made under different rules (e.g. split per layer), suggest `/noskill:tiket rapikan` first.
 - **Project profile.** Full mode: if `<docs>/project-profile.md` doesn't exist, run skill `project-profile` first (once per project). Quick mode: use it if present; if not, just continue and offer to create it at the end. If it exists, just use it; refresh only if a manifest/lockfile changed since the commit in its header or a command in the profile fails.
 - **Working branch.** If the project is a git repo, create a new branch from the current branch before the first code is written: `feat/<prefix-atau-slug>` for features, `fix/<slug>` for bugs. All ticket commits go to this branch. Multi-repo: same branch name in every repo that has tickets. If the working tree isn't clean, ask the user first (commit, stash, or continue on the current branch). Add `.noskill-cache/` to `.git/info/exclude` (cache for fast typecheck/lint).
 
@@ -98,7 +98,7 @@ For one ticket:
    - If QA reports a bug outside this ticket, create a new `BUG-NNN` ticket per `ticket-workflow`
 4. **`rounds` = 3** → set `HOLD` with a summary of why it keeps failing.
 
-On every status change: update `status` in the frontmatter and add one line to `## Riwayat` with date **and time** (`date '+%Y-%m-%d %H:%M'`), so `board` can compute each stage's duration. Report to the user one line per change (`WMS-BE-004: REVIEW → QA`), not long narration. When calling an agent, send the ticket path and the paths that stage needs: latest review/QA report path for the developer, latest developer report path for the reviewer. Don't send file or report contents — agents read files themselves.
+On every status change: update `status` in the frontmatter and add one line to `## Riwayat` with date **and time** (`date '+%Y-%m-%d %H:%M'`), so `/noskill:tiket board` can compute each stage's duration. Report to the user one line per change (`WMS-BE-004: REVIEW → QA`), not long narration. When calling an agent, send the ticket path and the paths that stage needs: latest review/QA report path for the developer, latest developer report path for the reviewer. Don't send file or report contents — agents read files themselves.
 
 ### Parallel Mode (pipeline)
 
@@ -153,7 +153,7 @@ When all tickets are DONE (or the rest are HOLD awaiting the user):
   ```
   If no GitHub tool is available, show that PR description so the user can paste it.
   **Multi-repo:** one PR per repo, containing only that repo's tickets. Create PRs in dependency order (provider first, e.g. `api` before `web`), then add a `## PR terkait` section with links to the other repos' PRs in every PR and state the merge order.
-- Offer `user-guide` (end-user documentation) and `standup-update` (progress summary from ticket Riwayat).
+- Offer `user-guide` (end-user documentation) and `standup-update` (progress summary from ticket Riwayat) — both in plugin `noskill-extras`, if installed.
 
 ## Tracker Sync (optional)
 
