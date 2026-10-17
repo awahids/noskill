@@ -1,16 +1,16 @@
 ---
 name: ticket-workflow
 description: >-
-  Format file tiket noskill dan alur statusnya (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG dan HOLD), verdict agent, dan board. Gunakan saat membuat, memindahkan, atau melaporkan tiket, atau user tanya status/board tiket.
+  noskill ticket file format and status flow (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG and HOLD), agent verdicts, and the board. Use when creating, moving, or reporting tickets, or when the user asks "status tiket" or "board tiket".
 ---
 
 # Ticket Workflow
 
-Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
+noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
 
-Kontrak bersama untuk semua tiket di `<docs>/tickets/`. Semua skill dan agent yang menyentuh tiket mengikuti aturan di sini, supaya status tiket punya satu arti yang sama di semua tahap.
+Shared contract for all tickets in `<docs>/tickets/`. Every skill and agent that touches tickets follows these rules, so ticket status means the same thing at every stage.
 
-## Alur Status
+## Status Flow
 
 ```
 TODO ──► IN_PROGRESS ──► REVIEW ──► QA ──► DONE
@@ -23,46 +23,46 @@ Status apa pun ──► HOLD  (butuh keputusan user / blocker eksternal)
 HOLD ──► status sebelum HOLD, setelah blocker selesai
 ```
 
-| Status | Arti | Siapa yang memproses | Keluar ke |
+| Status | Meaning | Processed by | Exits to |
 |---|---|---|---|
-| `TODO` | Siap dikerjakan, semua `depends_on` sudah DONE | developer | IN_PROGRESS |
-| `IN_PROGRESS` | Sedang dikerjakan / direvisi | developer | REVIEW, HOLD |
-| `REVIEW` | Kode selesai, dicek kesesuaian dengan tiket | ticket-reviewer | QA, IN_PROGRESS, HOLD |
-| `QA` | Lolos review, dites terhadap AC & Test Case. Tiket dengan `integrates_with` menunggu di sini sampai tiket pasangannya DONE | qa-tester | DONE, BUG, HOLD |
-| `BUG` | Gagal QA — ada bug report di Riwayat | developer (pakai `debug-assistant`) | IN_PROGRESS |
-| `HOLD` | Berhenti: requirement ambigu, butuh keputusan user, environment/akses tidak tersedia, atau sudah 3 putaran gagal | user | status sebelumnya |
-| `DONE` | Lolos QA, perubahan sudah di-commit | — | — |
+| `TODO` | Ready to work, all `depends_on` are DONE | developer | IN_PROGRESS |
+| `IN_PROGRESS` | Being worked / revised | developer | REVIEW, HOLD |
+| `REVIEW` | Code done, checked against the ticket | ticket-reviewer | QA, IN_PROGRESS, HOLD |
+| `QA` | Passed review, tested against AC & Test Cases. Tickets with `integrates_with` wait here until their paired ticket is DONE | qa-tester | DONE, BUG, HOLD |
+| `BUG` | Failed QA — bug report in Riwayat | developer (using `debug-assistant`) | IN_PROGRESS |
+| `HOLD` | Stopped: ambiguous requirement, needs user decision, environment/access unavailable, or 3 failed rounds | user | previous status |
+| `DONE` | Passed QA, changes committed | — | — |
 
-## Aturan Transisi
+## Transition Rules
 
-1. **Hanya orkestrator (`feature-flow`) yang mengubah field `status`, `rounds`, dan menulis `## Riwayat`.** Agent lain mengembalikan verdict; orkestrator yang memindahkan tiket. Satu penulis = tidak ada status yang saling timpa.
-2. **Satu tiket per direktori kerja**, supaya `git diff` saat review/QA hanya berisi perubahan tiket itu. Mode berurutan: semua tiket bergantian di branch kerja. Mode paralel: tiap tiket aktif punya git worktree sendiri. Multi-repo: tiket dikerjakan di repo yang ditulis di field `repo` (lihat `feature-flow`).
-3. **Urutan ambil tiket:** `BUG` dulu, lalu `TODO` yang semua `depends_on`-nya sudah DONE, tiket BE sebelum tiket FE, urut ID. Tiket yang depend ke tiket HOLD tidak diambil. `integrates_with` tidak menahan pengerjaan — hanya menahan QA (aturan 7).
-4. **`rounds` naik 1** setiap tiket kembali ke developer (REVIEW → IN_PROGRESS atau QA → BUG). Kalau `rounds` mencapai 3, tiket pindah ke **HOLD** — tiga putaran gagal berarti masalahnya di requirement/desain, bukan di kode, dan butuh keputusan user.
-5. **Tidak ada status yang dilompati.** Tidak ada tiket langsung dari IN_PROGRESS ke QA, atau dari REVIEW ke DONE.
-6. **DONE butuh bukti.** QA hanya boleh PASS kalau setiap AC dan TC tiket benar-benar dijalankan dan hasilnya terlihat (output test/command), bukan "seharusnya benar".
-7. **QA bareng BE–FE.** Tiket yang punya `integrates_with` baru diuji QA setelah semua tiket di daftar itu DONE, lalu diuji bersama tiket tersebut (FE memanggil BE sungguhan). Kontrak API hanya diubah oleh orkestrator, dicatat di Riwayat kedua tiket.
+1. **Only the orchestrator (`feature-flow`) changes the `status` and `rounds` fields and writes `## Riwayat`.** Other agents return a verdict; the orchestrator moves the ticket. One writer = no overwritten statuses.
+2. **One ticket per working directory**, so `git diff` during review/QA contains only that ticket's changes. Sequential mode: tickets take turns on the working branch. Parallel mode: each active ticket has its own git worktree. Multi-repo: the ticket is worked in the repo named in its `repo` field (see `feature-flow`).
+3. **Pick order:** `BUG` first, then `TODO` whose `depends_on` are all DONE, BE tickets before FE tickets, by ID. Tickets depending on a HOLD ticket are not picked. `integrates_with` doesn't block work — only QA (rule 7).
+4. **`rounds` increases by 1** each time a ticket returns to the developer (REVIEW → IN_PROGRESS or QA → BUG). When `rounds` reaches 3, the ticket moves to **HOLD** — three failed rounds mean the problem is in the requirement/design, not the code, and needs a user decision.
+5. **No status is skipped.** No ticket goes directly from IN_PROGRESS to QA, or from REVIEW to DONE.
+6. **DONE needs evidence.** QA may PASS only if every AC and TC of the ticket was actually run and the result is visible (test/command output), not "should be correct".
+7. **BE–FE joint QA.** A ticket with `integrates_with` is QA'd only after all tickets in that list are DONE, then tested together with them (FE calls the real BE). The Kontrak API is changed only by the orchestrator, recorded in both tickets' Riwayat.
 
-## Verdict Agent
+## Agent Verdicts
 
-Agent mengembalikan verdict di baris pertama jawabannya, lalu detail:
+Agents return the verdict on the first line of their answer, then details:
 
-| Agent | Verdict | Status berikutnya |
+| Agent | Verdict | Next status |
 |---|---|---|
 | developer | `READY_FOR_REVIEW` | REVIEW |
 | developer | `BLOCKED: <alasan>` | HOLD |
 | ticket-reviewer | `APPROVED` | QA |
-| ticket-reviewer | `CHANGES_REQUESTED` + daftar perubahan | IN_PROGRESS |
+| ticket-reviewer | `CHANGES_REQUESTED` + list of changes | IN_PROGRESS |
 | ticket-reviewer | `BLOCKED: <alasan>` | HOLD |
-| qa-tester | `PASS` + bukti per AC/TC | DONE |
+| qa-tester | `PASS` + evidence per AC/TC | DONE |
 | qa-tester | `FAIL` + bug report | BUG |
 | qa-tester | `BLOCKED: <alasan>` | HOLD |
 
-`BLOCKED` hanya untuk hal yang tidak bisa diselesaikan agent sendiri (requirement bertentangan/ambigu, akses/env tidak ada, keputusan bisnis). Kode yang salah bukan BLOCKED — itu CHANGES_REQUESTED atau FAIL.
+`BLOCKED` is only for things the agent can't resolve itself (conflicting/ambiguous requirement, missing access/env, business decision). Wrong code is not BLOCKED — it's CHANGES_REQUESTED or FAIL.
 
-## Format File Tiket
+## Ticket File Format
 
-Satu file per tiket: `<docs>/tickets/<ID>.md`. ID mengikuti aturan penomoran `task-breakdown` (misal `WMS-BE-004`); bug baru dari QA pakai `BUG-NNN`. Satu tiket hanya mengubah satu repo.
+One file per ticket: `<docs>/tickets/<ID>.md`. IDs follow the `task-breakdown` numbering rules (e.g. `WMS-BE-004`); new bugs from QA use `BUG-NNN`. One ticket changes only one repo.
 
 ```markdown
 ---
@@ -115,13 +115,13 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
 - 2026-10-14 09:12 TODO — dibuat oleh task-planner
 ```
 
-**complexity** diisi saat tiket dibuat:
-- `simple` — bug dengan penyebab jelas, endpoint CRUD tanpa aturan bisnis khusus, perubahan UI tanpa logic state yang rumit, kira-kira ≤ 4 file.
-- `complex` — aturan bisnis (stok, uang, approval/workflow status), transaksi atau konkurensi, banyak tabel, atau penyebab bug belum diketahui. Kalau ragu, isi `complex`.
+**complexity** is set when the ticket is created:
+- `simple` — bug with a clear cause, CRUD endpoint without special business rules, UI change without complex state logic, roughly ≤ 4 files.
+- `complex` — business rules (stock, money, approval/workflow status), transactions or concurrency, many tables, or bug cause still unknown. If unsure, use `complex`.
 
-**Riwayat** ditulis append-only, satu baris per perpindahan status: `- <YYYY-MM-DD HH:MM> <STATUS> — <ringkasan alasan>` (jam dari `date '+%Y-%m-%d %H:%M'`, dipakai `board` untuk menghitung durasi tiap tahap). Untuk perpindahan ke BUG/HOLD/IN_PROGRESS (revisi), tambahkan ringkasan 1–3 baris di bawahnya (indent) beserta path laporan agent, atau pertanyaan untuk user.
+**Riwayat** is append-only, one line per status change: `- <YYYY-MM-DD HH:MM> <STATUS> — <ringkasan alasan>` (time from `date '+%Y-%m-%d %H:%M'`, used by `board` to compute each stage's duration). For changes to BUG/HOLD/IN_PROGRESS (revision), add a 1–3 line summary beneath it (indented) with the agent report path, or the question for the user.
 
-**Laporan agent** disimpan di `<docs>/reports/<ID>/` — `dev-<n>.md`, `review-<n>.md`, `qa-<n>.md` (n = putaran). Riwayat cukup merujuk path-nya, tidak menyalin isinya.
+**Agent reports** are stored in `<docs>/reports/<ID>/` — `dev-<n>.md`, `review-<n>.md`, `qa-<n>.md` (n = round). Riwayat only references the path, it doesn't copy the contents.
 
 ## Bug Report (QA → BUG)
 
@@ -133,8 +133,8 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
   - **Bukti:** [output command/test]
 ```
 
-Kalau QA menemukan bug **di luar AC tiket ini** (regresi di fitur lain), jangan gagalkan tiket ini karenanya — buat tiket baru `type: bug`, `status: BUG`, `related: [<tiket asal>]`. Kalau perilaku yang benar untuk bug itu belum ditentukan di requirement (tidak ada AC yang bisa jadi Expected), status awalnya `HOLD` dengan pertanyaan ke user, bukan `BUG` — developer tidak bisa memperbaiki tanpa spesifikasi.
+If QA finds a bug **outside this ticket's AC** (regression in another feature), don't fail this ticket for it — create a new ticket `type: bug`, `status: BUG`, `related: [<tiket asal>]`. If the correct behavior for that bug isn't defined in the requirements (no AC that can serve as Expected), its initial status is `HOLD` with a question to the user, not `BUG` — the developer can't fix it without a spec.
 
 ## Board
 
-Tampilkan board dari field `status` semua file tiket (`grep -H "^status:" <docs>/tickets/*.md`), dikelompokkan per kolom: TODO · IN_PROGRESS · REVIEW · QA · BUG · HOLD · DONE. Multi-repo: tulis repo di samping ID (`WMS-FE-002 [web]`). Board tidak disimpan sebagai file terpisah — file tiket adalah satu-satunya sumber kebenaran.
+Show the board from the `status` field of all ticket files (`grep -H "^status:" <docs>/tickets/*.md`), grouped by column: TODO · IN_PROGRESS · REVIEW · QA · BUG · HOLD · DONE. Multi-repo: write the repo next to the ID (`WMS-FE-002 [web]`). The board is not saved as a separate file — ticket files are the only source of truth.

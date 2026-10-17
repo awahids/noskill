@@ -1,16 +1,16 @@
 ---
 name: board
-description: Shortcut — tampilkan board tiket per status, pertanyaan yang menunggu jawaban di tiket HOLD, dan durasi tiap tahap (developer, review, QA) per tiket. Pakai sebagai /noskill:board.
+description: Shortcut — show the ticket board by status, pending questions on HOLD tickets, and per-ticket stage durations (developer, review, QA). Use as /noskill:board.
 disable-model-invocation: true
 ---
 
-Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
-Tampilkan board dari `<docs>/tickets/` tanpa mengubah file apa pun:
+noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
+Show the board from `<docs>/tickets/` without changing any file:
 
-1. Ambil status semua tiket sekaligus: `grep -H "^status:\|^title:\|^rounds:\|^repo:" <docs>/tickets/*.md`. Jangan membaca file tiket satu per satu kecuali untuk tiket HOLD.
-2. Tampilkan satu tabel berurutan TODO · IN_PROGRESS · REVIEW · QA · BUG · HOLD · DONE, dengan kolom ID, judul, dan rounds (plus kolom repo kalau ada tiket yang punya field `repo`).
-3. Untuk tiket HOLD, baca baris terakhir `## Riwayat`-nya dan tampilkan pertanyaan yang menunggu jawaban user.
-4. **Durasi per tahap.** Hitung dengan command, jangan di kepala:
+1. Get all ticket statuses at once: `grep -H "^status:\|^title:\|^rounds:\|^repo:" <docs>/tickets/*.md`. Don't read ticket files one by one except for HOLD tickets.
+2. Show one table ordered TODO · IN_PROGRESS · REVIEW · QA · BUG · HOLD · DONE, with columns ID, title, and rounds (plus a repo column if any ticket has a `repo` field).
+3. For HOLD tickets, read the last line of `## Riwayat` and show the question awaiting the user's answer.
+4. **Duration per stage.** Compute with a command, not in your head:
    ```bash
    python3 - <docs>/tickets <<'PY'
    import sys, re, glob, os
@@ -24,8 +24,8 @@ Tampilkan board dari `<docs>/tickets/` tanpa mengubah file apa pun:
        if ev: print(os.path.basename(f)[:-3], ev[-1][1], *(round(m[k]) for k in ("dev", "review", "qa")), sep="\t")
    PY
    ```
-   Hasilnya menit per tiket untuk tahap developer (termasuk revisi/BUG), review, dan QA. Waktu tunggu di TODO dan HOLD tidak dihitung; waktu tiket FE menunggu tiket BE-nya ikut terhitung di QA. Tiket lama yang Riwayat-nya tanpa jam tidak muncul. Kalau `python3` tidak ada, lewati langkah ini dan sebutkan.
-   Tampilkan tabel durasi untuk tiket DONE (dev · review · QA · total), rata-rata per tahap, dan tahap yang paling lama — itu kandidat optimasi berikutnya.
-5. Tutup dengan satu baris: jumlah per status dan tiket berikutnya yang akan diambil sesuai urutan di skill `ticket-workflow`.
+   Output is minutes per ticket for the developer stage (including revision/BUG), review, and QA. Waiting time in TODO and HOLD isn't counted; time an FE ticket waits for its BE ticket counts toward QA. Old tickets whose Riwayat has no time don't appear. If `python3` isn't available, skip this step and say so.
+   Show a duration table for DONE tickets (dev · review · QA · total), the average per stage, and the slowest stage — that's the next optimization candidate.
+5. Close with one line: count per status and the next ticket to be picked per the order in skill `ticket-workflow`.
 
-Kalau `<docs>/tickets/` tidak ada, katakan belum ada tiket dan sarankan `/noskill:fix` atau `/noskill:feature-flow`.
+If `<docs>/tickets/` doesn't exist, say there are no tickets yet and suggest `/noskill:fix` or `/noskill:feature-flow`.
