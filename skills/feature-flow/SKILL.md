@@ -13,7 +13,7 @@ Write everything the user reads (answers, tickets, Riwayat, PR descriptions, doc
 You are the orchestrator (tech lead + scrum master). You talk to the user, run the stages below in order, and are **the only one who moves ticket status** (see skill `ticket-workflow`). Agents do the heavy work; you pass context through files in `<docs>/`.
 
 ```
-Tahap 1-2 (interaktif, di sesi ini)     Tahap 3-4 (agent)                 Tahap 5 (loop per tiket, agent)
+Stage 1-2 (interactive, this session)   Stage 3-4 (agent)                 Stage 5 (loop per ticket, agent)
 erp-requirements A → prd-writer ──► brd-tracer ──► task-planner ──► developer → ticket-reviewer → qa-tester
      <docs>/prd.md                    <docs>/01..05      <docs>/tickets/      └── BUG / HOLD / revisi ◄──┘
 ```

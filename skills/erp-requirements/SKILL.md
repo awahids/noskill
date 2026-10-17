@@ -9,8 +9,8 @@ description: >-
 noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
 
 Two parts, used in order:
-- **Part A (Bagian A) — Domain design:** checklist before writing schema/ERD. Used in `feature-flow` Tahap 1, in the main session.
-- **Part B (Bagian B) — BRD traceability:** formal requirement document with traceable IDs. Used in `feature-flow` Tahap 3 by the `brd-tracer` agent.
+- **Part A (Bagian A) — Domain design:** checklist before writing schema/ERD. Used in `feature-flow` Stage 1, in the main session.
+- **Part B (Bagian B) — BRD traceability:** formal requirement document with traceable IDs. Used in `feature-flow` Stage 3 by the `brd-tracer` agent.
 
 If the request covers only one (e.g. "desain ERD inventory" or "buatkan user story + AC"), use only that part.
 
