@@ -1,7 +1,7 @@
 ---
 name: feature-flow
 description: >-
-  Orchestrates work like an engineering team: ticket → developer → reviewer → QA → DONE, with BUG/HOLD paths and a branch per feature. Quick mode for bug fixes/small features; full mode PRD → BRD → tickets. Use for "kerjakan sampai done", "lewat review dan QA", "dari PRD sampai selesai", or resuming a ticket board.
+  Engineering-team workflow: ticket → developer → reviewer → QA → DONE, with BUG/HOLD and a branch per feature. Quick mode for small fixes; full mode PRD → BRD → tickets. Use for "kerjakan sampai done", "lewat review dan QA", or resuming a board.
 ---
 
 # Feature Flow

@@ -1,7 +1,7 @@
 ---
 name: project-profile
 description: >-
-  Scans the repo once and writes project-profile.md in the noskill docs folder — stack, test/lint/typecheck/build commands, folders, reused helpers, CLAUDE.md/README rules — so agents don't re-explore per ticket. Use for "profil project", "scan project", "refresh profil".
+  Scans the repo once and writes project-profile.md (stack, test/lint/typecheck commands, folders, helpers, rules) so agents don't re-explore per ticket. Use on new projects, when feature-flow finds no profile, or for "profil project", "scan project".
 ---
 
 # Project Profile

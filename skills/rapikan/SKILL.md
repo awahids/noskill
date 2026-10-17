@@ -1,6 +1,6 @@
 ---
 name: rapikan
-description: Shortcut — tidy existing tickets to current ticket rules (merge per-layer tickets, fill Kontrak API, integrates_with, complexity, negative AC, real File/Lokasi), or re-review a DONE ticket's code. Use as /noskill:rapikan [ID tiket] or /noskill:rapikan review <ID>.
+description: Shortcut — tidy tickets to current rules (merge per-layer tickets, add Kontrak API, integrates_with, complexity, negative AC, real File/Lokasi) or re-review a DONE ticket. Use as /noskill:rapikan [ID tiket] or /noskill:rapikan review <ID>.
 disable-model-invocation: true
 ---
 

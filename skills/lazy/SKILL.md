@@ -1,6 +1,6 @@
 ---
 name: lazy
-description: Shortcut — lazy senior dev mode. Do it directly with the simplest, shortest solution that actually works (YAGNI, stdlib first, no unrequested abstractions), without ticket, review, or QA. Use as /noskill:lazy <permintaan>.
+description: Shortcut — lazy senior dev mode: do it directly with the simplest working solution (YAGNI, stdlib first, no unrequested abstractions), no ticket/review/QA. Use as /noskill:lazy <permintaan>.
 disable-model-invocation: true
 ---
 

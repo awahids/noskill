@@ -1,7 +1,7 @@
 ---
 name: erp-requirements
 description: >-
-  ERP/WMS requirements in two parts: (A) domain design checklist before schema/ERD — master data, stock ledger, workflow status, RBAC, audit, numbering, MVP; (B) traceable BRD chain BR → PROC → US → AC → TECH → TC → UAT. Use for "desain ERD inventory", "buatkan BRD", "user story + AC".
+  ERP/WMS requirements: (A) domain design checklist before schema/ERD — master data, stock ledger, workflow, RBAC, audit, numbering, MVP; (B) traceable BRD: BR→PROC→US→AC→TECH→TC→UAT. Use for "desain ERD inventory", "buatkan BRD", "user story + AC".
 ---
 
 # ERP Requirements
