@@ -288,7 +288,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
     <p>Isi <code>tracker: github</code> atau <code>tracker: notion</code> di profil project supaya board tercermin di GitHub Issues atau database Notion. Sinkronnya satu arah dari file ke tracker, dan hanya terjadi saat tiket dibuat, DONE, BUG, atau HOLD.</p>
 
     <h2 id="eval">Eval</h2>
-    <p>Repo ini menyertakan 14 case uji perilaku:</p>
+    <p>Repo ini menyertakan 15 case uji perilaku:</p>
     <ul>
       <li>developer memakai helper yang ada dan menulis test negatif/batas</li>
       <li>reviewer menolak duplikasi</li>
@@ -301,6 +301,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <li><code>/noskill:rapikan</code> mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui, lalu menerapkannya setelah disetujui</li>
       <li><code>/noskill:rapikan review</code> membuat tiket BUG dari temuan review ulang tiket DONE</li>
       <li>QA menolak implementasi yang AC negatifnya gagal, dan meloloskan implementasi yang benar</li>
+      <li>QA langsung BLOCKED tanpa menyalakan DB/server sendiri kalau URL environment tidak diberikan</li>
       <li><code>brd-tracer</code> menurunkan PRD jadi dokumen BRD ringkas dengan ID traceable</li>
     </ul>
     <p>Jalankan setelah mengubah skill atau agent:</p>

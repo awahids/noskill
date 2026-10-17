@@ -87,7 +87,7 @@ Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket.
 
 **Mode paralel** (opsional): selagi tiket A di-review/QA, developer sudah mengerjakan tiket B di git worktree terpisah. Maksimal 2 tiket aktif, atau 3 kalau tiketnya di repo berbeda.
 
-**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (DB + server) dinyalakan sekali per sesi untuk semua QA; typecheck dan lint memakai versi cepat dengan cache (`tsc --incremental`, `eslint --cache`); laporan lengkap agent disimpan di `docs/noskill/reports/` sehingga sesi utama hanya menerima verdict singkat; Riwayat tiket mencatat jam, dan `/noskill:board` menampilkan durasi developer/review/QA per tiket.
+**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (DB + server) dinyalakan sekali per sesi oleh orkestrator untuk semua QA — QA tidak pernah menyiapkan environment sendiri, hanya menguji tiketnya, dan E2E browser hanya dijalankan kalau project sudah punya (suite E2E penuh sekali di akhir); typecheck dan lint memakai versi cepat dengan cache (`tsc --incremental`, `eslint --cache`); laporan lengkap agent disimpan di `docs/noskill/reports/` sehingga sesi utama hanya menerima verdict singkat; Riwayat tiket mencatat jam, dan `/noskill:board` menampilkan durasi developer/review/QA per tiket.
 
 **Multi-repo:** satu fitur bisa menyentuh beberapa repo (misal api NestJS + web Vue + mobile Flutter). Daftarkan repo di bagian `## Repo` pada `project-profile.md`; PRD, BRD, dan tiket tetap di satu repo (repo tempat sesi berjalan). Setiap tiket punya field `repo:`, branch kerja bernama sama dibuat di tiap repo, commit di repo masing-masing, dan di akhir dibuat satu PR per repo yang saling menautkan.
 
@@ -114,13 +114,13 @@ Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-
 
 ## Eval
 
-`evals/` berisi 14 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, aturan inti dari hook berlaku tanpa skill, task-planner membuat tiket langsung dari PRD (tanpa BRD), task-planner memecah fitur lintas repo jadi tiket per repo, developer bekerja di worktree tiket tanpa menyentuh checkout utama (mode paralel), `/noskill:lazy` memakai helper yang ada tanpa membuat tiket atau abstraksi baru, `/noskill:rapikan` mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui lalu menerapkannya setelah disetujui, `/noskill:rapikan review` membuat tiket BUG dari temuan review ulang, QA menolak (FAIL) implementasi yang AC negatifnya gagal dan meloloskan (PASS) yang benar, dan `brd-tracer` menurunkan PRD jadi dokumen BRD ringkas dengan ID traceable. Jalankan setelah mengubah skill atau agent:
+`evals/` berisi 15 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, aturan inti dari hook berlaku tanpa skill, task-planner membuat tiket langsung dari PRD (tanpa BRD), task-planner memecah fitur lintas repo jadi tiket per repo, developer bekerja di worktree tiket tanpa menyentuh checkout utama (mode paralel), `/noskill:lazy` memakai helper yang ada tanpa membuat tiket atau abstraksi baru, `/noskill:rapikan` mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui lalu menerapkannya setelah disetujui, `/noskill:rapikan review` membuat tiket BUG dari temuan review ulang, QA menolak (FAIL) implementasi yang AC negatifnya gagal dan meloloskan (PASS) yang benar, QA langsung BLOCKED tanpa menyalakan environment sendiri kalau URL-nya tidak diberikan, dan `brd-tracer` menurunkan PRD jadi dokumen BRD ringkas dengan ID traceable. Jalankan setelah mengubah skill atau agent:
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
 ```
 
-Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $2–3 (14 case).
+Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $2–3 (15 case).
 
 ## Cara install
 

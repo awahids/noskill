@@ -76,7 +76,7 @@ Call agent `task-planner` with: PRD path, BRD folder (or the note "tanpa BRD"), 
 
 Pick tickets in the order given in `ticket-workflow` (BUG first, then TODO whose dependencies are DONE).
 
-**Environment once per session.** If any ticket needs a running server/database for QA (especially FE tickets with `integrates_with`), before the first QA start the environment once with the profile's `Jalankan environment` command (multi-repo: from the BE repo's working branch) as a background process, then wait until the `Health check` command succeeds. Give its URL to every QA; QA does not start or stop the server itself. If the server doesn't use watch mode, restart it after a BE ticket is merged into the working branch. Stop it at the end of Stage 6. If the profile doesn't record those commands yet, let QA start it itself and add the commands to the profile afterwards.
+**Environment once per session.** If any ticket needs a running server/database for QA (especially FE tickets with `integrates_with`), before the first QA start the environment once with the profile's `Jalankan environment` command (multi-repo: from the BE repo's working branch) as a background process, then wait until the `Health check` command succeeds. Give its URL to every QA; QA does not start or stop the server itself. If the server doesn't use watch mode, restart it after a BE ticket is merged into the working branch. Stop it at the end of Stage 6. If the profile doesn't record those commands yet, find them yourself (README, docker-compose, package scripts) or ask the user, start the environment, and record the commands in the profile. Never hand environment setup to QA.
 
 For one ticket:
 
@@ -91,10 +91,10 @@ For one ticket:
    - `APPROVED` → set `QA`
    - `CHANGES_REQUESTED` → set `IN_PROGRESS`, `rounds + 1`, write a findings summary (1–3 lines) and the review report path in Riwayat, back to step 1
    - `BLOCKED` → set `HOLD`
-3. **QA** — call agent `qa-tester` with the ticket path, QA report path, and folder `<docs>/05-testing/` (absent if tanpa BRD — QA tests directly against the ticket's AC). Tickets with `integrates_with` (FE) go to QA only after all BE tickets in that list are DONE; until then the ticket stays `QA` with Riwayat "menunggu <ID BE>", and QA tests it together with the BE (FE calls the real BE).
+3. **QA** — call agent `qa-tester` with the ticket path, QA report path, and folder `<docs>/05-testing/` (absent if tanpa BRD — QA tests directly against the ticket's AC). Tickets with `integrates_with` (FE) go to QA only after all BE tickets in that list are DONE; until then the ticket stays `QA` with Riwayat "menunggu <ID BE>", and QA tests it together with the BE (FE calls the real BE). Pass the environment URL to QA whenever the ticket needs a running server.
    - `PASS` → set `DONE`, tick the AC in the ticket file, then `git commit` the changes on the working branch with message `<ID>: <title>` (local commit, no push; skip if not a git repo or the user said not to commit)
    - `FAIL` → set `BUG`, `rounds + 1`, write a bug summary (1–3 lines) and the QA report path in Riwayat, back to step 1
-   - `BLOCKED` → set `HOLD`
+   - `BLOCKED` → set `HOLD` — except `BLOCKED: environment belum jalan`: start or fix the environment yourself once, then re-run QA (not counted as a round)
    - If QA reports a bug outside this ticket, create a new `BUG-NNN` ticket per `ticket-workflow`
 4. **`rounds` = 3** → set `HOLD` with a summary of why it keeps failing.
 
@@ -122,7 +122,7 @@ For one feature touching several repos (e.g. `api` NestJS, `web` Vue, `mobile` F
 4. **Working branch** with the same name is created in every repo that has tickets, before the first ticket in that repo is worked.
 5. **When calling agents**, send working directory = that ticket's repo path (or its worktree in parallel mode, created with `git -C <path repo> worktree add …`) and that repo's profile path. The ticket path stays in the docs repo.
 6. **Commit code** in the ticket's repo (`<ID>: <title>`). Ticket file updates are committed in the docs repo.
-7. **Cross-repo QA:** a `web` ticket is tested after its paired `api` ticket is DONE, by running the `api` repo's working branch that already contains that ticket. If it can't run in this environment, verdict `BLOCKED` with an explanation.
+7. **Cross-repo QA:** a `web` ticket is tested after its paired `api` ticket is DONE, against the environment you started from the `api` repo's working branch that already contains that ticket. If it can't run here, set `HOLD` with an explanation.
 8. Tickets in different repos never overlap `File/Lokasi`, so in parallel mode they can run concurrently as long as `depends_on` is met — including BE–FE pairs via `integrates_with`.
 
 **HOLD:** don't stop the whole flow just because one ticket is HOLD. Continue other tickets that don't depend on it. Once no ticket can run, show all HOLD tickets at once with their questions to the user. After they answer, record the answer in Riwayat, return the ticket to its pre-HOLD status, reset `rounds` to 0 if the requirement changed, and continue the loop.
@@ -132,7 +132,7 @@ For one feature touching several repos (e.g. `api` NestJS, `web` Vue, `mobile` F
 When all tickets are DONE (or the rest are HOLD awaiting the user):
 - Show the final board.
 - Stop the environment started in Stage 5 after the checks below finish.
-- **Check everything once here.** During the ticket loop, tests and gates run only for what tickets touched. At this stage run typecheck, lint, and the full test suite on the working branch (multi-repo: in every repo with tickets), then show a summary. If anything fails, find the causing ticket (`git log` per file), create a `BUG-NNN` ticket with `related` to it, and run it through the Stage 5 loop before continuing.
+- **Check everything once here.** During the ticket loop, tests and gates run only for what tickets touched. At this stage run typecheck, lint, the full test suite, and the E2E suite if the project has one, on the working branch (multi-repo: in every repo with tickets), then show a summary. If anything fails, find the causing ticket (`git log` per file), create a `BUG-NNN` ticket with `related` to it, and run it through the Stage 5 loop before continuing.
 - Ask the user what to do with the working branch: **push + create PR**, **merge into the source branch locally**, or **leave it for now**. Don't push or merge without the user's answer.
 - **If the user chooses push + PR:** push the working branch, then create the PR via the available GitHub tool (GitHub connector or `gh`). Build the PR description from the ticket files, not from scratch:
   ```markdown
