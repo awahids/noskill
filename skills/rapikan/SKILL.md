@@ -1,53 +1,53 @@
 ---
 name: rapikan
-description: Shortcut — rapikan tiket yang sudah dibuat supaya sesuai aturan tiket terbaru (gabung tiket per layer, lengkapi Kontrak API, integrates_with, complexity, AC negatif, File/Lokasi nyata), atau review ulang kode tiket yang sudah DONE. Pakai sebagai /noskill:rapikan [ID tiket] atau /noskill:rapikan review <ID>.
+description: Shortcut — tidy existing tickets to current ticket rules (merge per-layer tickets, fill Kontrak API, integrates_with, complexity, negative AC, real File/Lokasi), or re-review a DONE ticket's code. Use as /noskill:rapikan [ID tiket] or /noskill:rapikan review <ID>.
 disable-model-invocation: true
 ---
 
-Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
+noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
 
-Argumen: $ARGUMENTS
+Arguments: $ARGUMENTS
 
-- Kosong atau berisi ID tiket → **Rapikan backlog** (semua tiket yang memenuhi syarat, atau hanya ID itu).
-- Diawali `review` lalu ID tiket → **Review ulang tiket DONE**.
+- Empty or a ticket ID → **Tidy backlog** (all eligible tickets, or only that ID).
+- Starts with `review` followed by a ticket ID → **Re-review DONE ticket**.
 
-Kamu bertindak sebagai orkestrator (`feature-flow`), jadi boleh mengubah file tiket — tapi hanya setelah user menyetujui usulan.
+You act as the orchestrator (`feature-flow`), so you may change ticket files — but only after the user approves the proposal.
 
-## Rapikan backlog
+## Tidy backlog
 
-Yang diproses hanya tiket berstatus `TODO` dan `HOLD`. Tiket `IN_PROGRESS`, `REVIEW`, `QA`, `BUG`, dan `DONE` tidak diubah; kalau ada masalah di sana, cukup disebut di laporan.
+Only tickets with status `TODO` and `HOLD` are processed. `IN_PROGRESS`, `REVIEW`, `QA`, `BUG`, and `DONE` tickets are not changed; if they have problems, just mention them in the report.
 
-1. Ambil gambaran board sekaligus: `grep -H "^status:\|^title:\|^depends_on:\|^integrates_with:\|^complexity:\|^repo:" <docs>/tickets/*.md`. Baca penuh hanya tiket yang diproses, ditambah PRD/BRD dan kode yang perlu untuk mengecek.
-2. Cek setiap tiket terhadap bagian Aturan Tiket di `task-breakdown` dan format `ticket-workflow`:
-   - **Per layer atau per file** (migration, DTO, service, controller, test, Swagger sendiri-sendiri) → gabung ke tiket endpoint/fitur yang membutuhkannya.
-   - **Terlalu besar** (beberapa endpoint yang bukan CRUD kecil, atau beberapa repo dalam satu tiket) → pecah.
-   - **Tiket BE untuk endpoint tanpa `## Kontrak API`** → lengkapi dari PRD/BRD atau kode yang ada. Yang tidak tertulis di sumber mana pun jadi pertanyaan, bukan dikarang.
-   - **Tiket FE yang memakai endpoint tiket BE lewat `depends_on`** → ganti jadi `integrates_with`.
-   - **`complexity` kosong** → isi sesuai kriteria `ticket-workflow` (ragu → `complex`).
-   - **File/Lokasi generik atau path yang tidak ada** → ganti dengan path nyata (cek dengan glob/grep).
-   - **AC tanpa sisi negatif** → tambahkan dari aturan atau pengecualian di PRD/BRD; kalau tidak ada dasarnya, jadikan pertanyaan.
-   - **Duplikat, atau sudah tercakup tiket DONE** → usulkan dihapus.
-3. **Tampilkan usulan, jangan ubah file dulu:**
-   - Tabel: ID lama → aksi (gabung / pecah / lengkapi / hapus / tetap) → ID hasil → alasan singkat
-   - Board sesudah dirapikan, dan jumlah tiket sebelum → sesudah
-   - Pertanyaan terbuka
-   Lalu minta persetujuan user.
-4. **Setelah disetujui:**
-   - Gabung: tiket hasil memakai ID tiket pertama dalam kelompok itu; AC, File/Lokasi, `trace`, `depends_on` digabung tanpa duplikat. File tiket lain dihapus. Riwayat tiket hasil ditambah `- <YYYY-MM-DD HH:MM> <STATUS> — dirapikan: gabungan dari <ID>, <ID>`.
-   - Pecah: tiket baru memakai nomor lanjutan terakhir, Riwayat `- <YYYY-MM-DD HH:MM> TODO — dirapikan: dipecah dari <ID>`.
-   - Lengkapi: ubah bagian yang kurang saja, Riwayat `- <YYYY-MM-DD HH:MM> <STATUS> — dirapikan: <apa yang dilengkapi>`.
-   - Perbarui `depends_on` dan `integrates_with` di semua tiket (termasuk yang tidak diproses) yang merujuk ID yang hilang.
-   - Kalau tracker aktif dan tiket punya `tracker_ref`, tutup issue/baris tiket yang dihapus dengan catatan "digabung ke <ID>", dan perbarui yang berubah.
-   - Kalau repo git, commit file tiket: `chore(tickets): rapikan backlog`.
-5. Laporan akhir: jumlah tiket sebelum → sesudah, board terbaru, dan tiket berikutnya yang akan diambil.
+1. Get the board overview at once: `grep -H "^status:\|^title:\|^depends_on:\|^integrates_with:\|^complexity:\|^repo:" <docs>/tickets/*.md`. Fully read only the tickets being processed, plus the PRD/BRD and code needed to check them.
+2. Check each ticket against the Ticket Rules (Aturan Tiket) section in `task-breakdown` and the `ticket-workflow` format:
+   - **Per layer or per file** (separate migration, DTO, service, controller, test, Swagger) → merge into the endpoint/feature ticket that needs it.
+   - **Too large** (several endpoints that aren't small CRUD, or several repos in one ticket) → split.
+   - **BE ticket for an endpoint without `## Kontrak API`** → fill it from the PRD/BRD or existing code. Anything not written in any source becomes a question, not invented.
+   - **FE ticket using a BE ticket's endpoint via `depends_on`** → change to `integrates_with`.
+   - **Empty `complexity`** → fill per `ticket-workflow` criteria (unsure → `complex`).
+   - **Generic File/Lokasi or nonexistent paths** → replace with real paths (check with glob/grep).
+   - **AC without a negative side** → add from rules or exceptions in the PRD/BRD; if there's no basis, make it a question.
+   - **Duplicate, or already covered by a DONE ticket** → propose deletion.
+3. **Show the proposal; don't change files yet:**
+   - Table: old ID → action (gabung / pecah / lengkapi / hapus / tetap) → resulting ID → short reason
+   - Board after tidying, and ticket count before → after
+   - Open questions
+   Then ask for user approval.
+4. **After approval:**
+   - Merge: the resulting ticket uses the ID of the first ticket in the group; AC, File/Lokasi, `trace`, `depends_on` are merged without duplicates. Other ticket files are deleted. Add to the resulting ticket's Riwayat `- <YYYY-MM-DD HH:MM> <STATUS> — dirapikan: gabungan dari <ID>, <ID>`.
+   - Split: new tickets use the next number after the last one, Riwayat `- <YYYY-MM-DD HH:MM> TODO — dirapikan: dipecah dari <ID>`.
+   - Fill: change only the missing parts, Riwayat `- <YYYY-MM-DD HH:MM> <STATUS> — dirapikan: <apa yang dilengkapi>`.
+   - Update `depends_on` and `integrates_with` in all tickets (including unprocessed ones) that reference removed IDs.
+   - If a tracker is active and the ticket has `tracker_ref`, close the deleted ticket's issue/row with the note "digabung ke <ID>", and update the changed ones.
+   - If a git repo, commit the ticket files: `chore(tickets): rapikan backlog`.
+5. Final report: ticket count before → after, the latest board, and the next ticket to be picked.
 
-## Review ulang tiket DONE
+## Re-review DONE ticket
 
-1. Pastikan tiket berstatus `DONE`. Kalau belum DONE, katakan bahwa tiket itu masih di alur biasa dan berhenti.
-2. Cari commit tiket: `git log --grep "^<ID>:" --format="%h %s"` (multi-repo: di repo yang tertulis di field `repo`). Kalau tidak ketemu, tanya user commit atau range-nya.
-3. Panggil agent `ticket-reviewer` dengan path tiket, direktori kerja repo tiket, path laporan `<docs>/reports/<ID>/rereview-<n>.md`, dan instruksi: "Nilai perubahan di commit <hash> (`git show --stat <hash>` dan `git show <hash>`), bukan working tree. Ini review ulang tiket yang sudah DONE."
-4. Hasil:
-   - `APPROVED` → tambah Riwayat `- <YYYY-MM-DD HH:MM> DONE — review ulang: APPROVED`.
-   - `CHANGES_REQUESTED` → tiket asal tetap DONE dengan Riwayat `- <YYYY-MM-DD HH:MM> DONE — review ulang: ada temuan, lihat <BUG-ID>`. Buat tiket `BUG-NNN` baru (`type: bug`, `status: BUG`, `related: [<ID>]`, `complexity` sesuai temuan) dengan temuan reviewer sebagai AC dan File/Lokasi dari commit itu.
-   - `BLOCKED` → tampilkan pertanyaan reviewer ke user.
-5. Tampilkan hasilnya. Tiket BUG baru dikerjakan lewat `/noskill:lanjut` atau `feature-flow`.
+1. Make sure the ticket is `DONE`. If not, say the ticket is still in the normal flow and stop.
+2. Find the ticket's commit: `git log --grep "^<ID>:" --format="%h %s"` (multi-repo: in the repo named in the `repo` field). If not found, ask the user for the commit or range.
+3. Call agent `ticket-reviewer` with the ticket path, the ticket repo's working directory, report path `<docs>/reports/<ID>/rereview-<n>.md`, and the instruction: "Nilai perubahan di commit <hash> (`git show --stat <hash>` dan `git show <hash>`), bukan working tree. Ini review ulang tiket yang sudah DONE."
+4. Results:
+   - `APPROVED` → add Riwayat `- <YYYY-MM-DD HH:MM> DONE — review ulang: APPROVED`.
+   - `CHANGES_REQUESTED` → the original ticket stays DONE with Riwayat `- <YYYY-MM-DD HH:MM> DONE — review ulang: ada temuan, lihat <BUG-ID>`. Create a new `BUG-NNN` ticket (`type: bug`, `status: BUG`, `related: [<ID>]`, `complexity` per the findings) with the reviewer's findings as AC and File/Lokasi from that commit.
+   - `BLOCKED` → show the reviewer's questions to the user.
+5. Show the result. New BUG tickets are worked via `/noskill:lanjut` or `feature-flow`.

@@ -1,16 +1,18 @@
 ---
 name: standup-update
 description: >-
-  Merangkum commit, task, atau catatan kerja jadi update standup (Yesterday/Today/Blockers) atau status report mingguan. Gunakan saat user minta standup, update harian, status report, atau progress report.
+  Summarizes commits, tasks, or work notes into a standup update (Yesterday/Today/Blockers) or a weekly status report. Use for "standup", "update harian", "status report", or "progress report".
 ---
 
 # Standup & Status Update Generator
 
-Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
+Write the output in Bahasa Indonesia unless the user asks otherwise.
 
-Gunakan skill ini untuk mengubah catatan kerja mentah (commit message, daftar task, progress notes) menjadi update yang rapi dan mudah dibaca tim, tanpa perlu user menulis ulang dari nol.
+noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
 
-## Format Standard: Daily Standup
+Use this skill to turn raw work notes (commit messages, task lists, progress notes) into a tidy update the team can read easily, without the user rewriting it from scratch.
+
+## Standard Format: Daily Standup
 
 ```
 **Yesterday**
@@ -23,9 +25,9 @@ Gunakan skill ini untuk mengubah catatan kerja mentah (commit message, daftar ta
 - [Kalau ada, sebutkan spesifik apa yang menghambat dan siapa/apa yang dibutuhkan untuk resolve. Kalau tidak ada, tulis "Tidak ada" — jangan dikosongkan]
 ```
 
-## Format Alternatif: Weekly/Project Status (Notion-friendly)
+## Alternative Format: Weekly/Project Status (Notion-friendly)
 
-Untuk update mingguan atau laporan project (format ini juga rapi kalau ditempel ke Notion):
+For weekly updates or project reports (this format also pastes cleanly into Notion):
 
 ```
 ## [Nama Project] — Update Minggu [tanggal]
@@ -43,18 +45,18 @@ Untuk update mingguan atau laporan project (format ini juga rapi kalau ditempel 
 - [Kalau ada risiko timeline atau dependency yang belum jelas]
 ```
 
-## Cara Kerja
+## How It Works
 
-0. **Kalau project memakai alur tiket noskill** (`<docs>/tickets/` ada), jadikan itu sumber utama, tanpa minta user menulis ulang:
-   - Tiket yang pindah ke DONE sejak update terakhir (baris `## Riwayat` bertanggal kemarin/hari ini) → **Yesterday**
-   - Tiket berstatus IN_PROGRESS, REVIEW, QA, atau BUG → **Today**
-   - Tiket HOLD beserta pertanyaannya → **Blockers**
-   - Lengkapi dengan `git log --since=<tanggal> --oneline` kalau perlu, tapi tulis dalam bahasa hasil, bukan daftar commit.
+0. **If the project uses the noskill ticket flow** (`<docs>/tickets/` exists), make it the primary source, without asking the user to rewrite anything:
+   - Tickets moved to DONE since the last update (`## Riwayat` lines dated yesterday/today) → **Yesterday**
+   - Tickets with status IN_PROGRESS, REVIEW, QA, or BUG → **Today**
+   - HOLD tickets with their questions → **Blockers**
+   - Supplement with `git log --since=<tanggal> --oneline` if needed, but write in outcome language, not a commit list.
 
-1. Kalau user kasih raw input (commit log, list task, atau cerita bebas tentang apa yang dikerjakan), ekstrak jadi poin-poin hasil kerja — bukan sekadar copy-paste commit message mentah
-2. Ubah bahasa proses jadi bahasa hasil: commit message teknis seperti `fix: null pointer in order service` → di update jadi "Perbaiki bug null pointer di order service yang menyebabkan [dampak, kalau diketahui]"
-3. Kelompokkan berdasarkan project/area kalau user kerja di beberapa hal sekaligus (misal: project kantor dan project freelance di hari yang sama) — pisahkan biar jelas
-4. Kalau ada blocker yang disebutkan secara implisit (user cerita "masih nunggu API key dari client"), angkat eksplisit ke bagian Blockers, jangan terkubur di narasi Today
+1. If the user gives raw input (commit log, task list, or a free-form account of what they did), extract it into outcome points — don't just copy-paste raw commit messages
+2. Turn process language into outcome language: a technical commit message like `fix: null pointer in order service` → in the update becomes "Perbaiki bug null pointer di order service yang menyebabkan [dampak, kalau diketahui]"
+3. Group by project/area if the user works on several things at once (e.g. an office project and a freelance project on the same day) — keep them separate for clarity
+4. If a blocker is mentioned implicitly (user says "masih nunggu API key dari client"), lift it explicitly into the Blockers section; don't bury it in the Today narrative
 
-## Nada
-Ringkas, hasil-oriented, hindari kalimat panjang bertele-tele. Update standup dibaca cepat oleh tim, bukan laporan naratif.
+## Tone
+Concise, outcome-oriented, no long rambling sentences. Standups are read quickly by the team, not narrative reports.

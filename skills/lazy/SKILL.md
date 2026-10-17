@@ -1,37 +1,37 @@
 ---
 name: lazy
-description: Shortcut — lazy senior dev mode. Kerjakan langsung dengan solusi paling sederhana dan terpendek yang benar-benar jalan (YAGNI, stdlib dulu, tanpa abstraksi yang tidak diminta), tanpa tiket, review, atau QA. Pakai sebagai /noskill:lazy <permintaan>.
+description: Shortcut — lazy senior dev mode. Do it directly with the simplest, shortest solution that actually works (YAGNI, stdlib first, no unrequested abstractions), without ticket, review, or QA. Use as /noskill:lazy <permintaan>.
 disable-model-invocation: true
 ---
 
-Kerjakan permintaan berikut langsung di sesi ini — tanpa tiket, agent, review, atau QA:
+Do the following request directly in this session — without ticket, agents, review, or QA:
 
 $ARGUMENTS
 
-## Cara berpikir
+## How to think
 
-Berhenti di langkah pertama yang menyelesaikan masalah. **Langkah 2 tidak boleh dilewati**, meskipun solusinya cuma satu baris stdlib:
-1. **Perlu dibuat?** Kalau permintaan bisa dipenuhi tanpa kode baru (config yang sudah ada, perilaku yang sudah ada), lakukan itu.
-2. **Sudah ada di codebase?** Sebelum menulis apa pun, grep konsepnya (misal `clamp|limit|min|max` untuk pembatasan nilai, `format|currency` untuk format uang) di folder helper/lib/utils. Kalau ada helper yang melakukan hal yang sama, pakai itu — helper yang sudah ada selalu menang atas versi inline, karena satu sumber kebenaran lebih penting daripada menghemat satu import.
-3. **Standard library atau fitur framework?** Pakai.
-4. **Dependency yang sudah terpasang?** Pakai. Jangan tambah dependency baru.
-5. **Tulis kode minimal** yang benar.
+Stop at the first step that solves the problem. **Step 2 must never be skipped**, even if the solution is a single stdlib line:
+1. **Does it need building?** If the request can be met without new code (existing config, existing behavior), do that.
+2. **Already in the codebase?** Before writing anything, grep the concept (e.g. `clamp|limit|min|max` for value bounds, `format|currency` for money formatting) in helper/lib/utils folders. If a helper does the same thing, use it — an existing helper always beats an inline version, because one source of truth matters more than saving one import.
+3. **Standard library or framework feature?** Use it.
+4. **Dependency already installed?** Use it. Don't add new dependencies.
+5. **Write minimal code** that is correct.
 
-## Aturan
+## Rules
 
-- Diff sekecil mungkin: sentuh hanya file yang perlu. Tidak ada refactor, rename, reformat, atau "sekalian membenahi".
-- Tidak ada abstraksi, interface, factory, wrapper, config, opsi, parameter, atau kode "buat nanti" yang tidak diminta. Dua-tiga baris yang mirip lebih baik daripada helper baru yang dipakai sekali.
-- Yang **tidak** dipangkas: validasi input yang mencegah data rusak, error handling yang memang perlu, dan keamanan.
-- Bukti tetap wajib: jalankan test atau command yang relevan. Kalau ada logic bisnis yang belum punya test, tambahkan satu test kecil (positif dan negatif dalam satu file). Tanpa bukti, jangan klaim selesai.
+- Smallest possible diff: touch only files that need it. No refactor, rename, reformat, or "fixing things while I'm here".
+- No unrequested abstractions, interfaces, factories, wrappers, config, options, parameters, or "for later" code. Two or three similar lines beat a new helper used once.
+- **Not** cut: input validation that prevents corrupt data, error handling that's actually needed, and security.
+- Evidence is still required: run the relevant test or command. If business logic has no test, add one small test (positive and negative in one file). Without evidence, don't claim done.
 
-## Kapan berhenti
+## When to stop
 
-Kalau ternyata permintaan menyentuh aturan bisnis baru, skema database, lebih dari ±5 file, atau beberapa repo, jangan diteruskan diam-diam. Hentikan dan sarankan `/noskill:fix` (mode cepat dengan review dan QA) atau `/noskill:feature-flow`.
+If the request turns out to touch new business rules, database schema, more than ~5 files, or several repos, don't silently continue. Stop and suggest `/noskill:fix` (quick mode with review and QA) or `/noskill:feature-flow`.
 
-## Laporan (maksimal ±8 baris)
+## Report (max ~8 lines)
 
-- File yang diubah
-- Kata kunci yang di-grep dan helper yang dipakai ulang (atau "tidak ada")
-- Kenapa ini cara paling sederhana (satu kalimat)
-- Hasil test/command
-- Yang tidak dicek, kalau ada
+- Files changed
+- Keywords grepped and helpers reused (or "tidak ada")
+- Why this is the simplest way (one sentence)
+- Test/command result
+- What wasn't checked, if anything

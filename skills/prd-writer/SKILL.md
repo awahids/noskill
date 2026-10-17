@@ -1,7 +1,7 @@
 ---
 name: prd-writer
 description: >-
-  Writes a standard PRD (overview, requirements/RBAC, features, user flow, architecture, database, API) with required Mermaid diagrams; always asks ≥5 clarifying questions first. Also Reverse-PRD from existing code. Use for "buatkan PRD", "dokumen requirement", or scoping a new system.
+  Writes a standard PRD (requirements/RBAC, features, flow, architecture, DB, API) with required Mermaid diagrams; asks ≥5 clarifying questions first. Also Reverse-PRD from code. Use for "buatkan PRD", "dokumen requirement", or new-system scoping.
 ---
 
 # PRD Writer
