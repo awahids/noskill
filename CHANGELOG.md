@@ -2,6 +2,14 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.6.0 — 2026-10-17
+
+### Diubah — hemat token
+- **Instruksi internal dalam bahasa Inggris.** Isi semua skill, referensi, agent, dan hook diterjemahkan ke bahasa Inggris yang ringkas. Output untuk pengguna tetap berbahasa Indonesia: jawaban, PRD, BRD, tiket, laporan, dan template dokumen. Nama heading tiket, status, verdict, template Riwayat, path laporan, dan label baris profil project tidak berubah, jadi tiket dan profil lama tetap terbaca. Diukur dengan tokenizer model: total isi skill dan agent turun dari ±110k ke ±88k token (−20%).
+- **Deskripsi skill dan agent lebih ringkas** (±2,6k → ±1,9k token, −28%). Deskripsi dimuat di setiap sesi, dan frasa pemicu dalam bahasa Indonesia tetap ada.
+- **Hook aturan inti dipadatkan** (±925 → ±570 token, −39%), juga dimuat di setiap sesi. Isinya sama, ditambah aturan bahasa: tulis untuk pengguna dalam bahasa Indonesia kecuali pengguna memakai bahasa lain.
+- README skill (`skills/*/README.md`) dan contoh `example-goods-receipt.md` tetap berbahasa Indonesia karena dibaca manusia, bukan dimuat agent.
+
 ## 1.5.0 — 2026-10-16
 
 ### Diubah — agent lebih ringan

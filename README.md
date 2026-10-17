@@ -47,6 +47,10 @@ Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field 
 
 Plugin ini memasang hook `SessionStart` ([`hooks/core-rules.md`](hooks/core-rules.md)) yang memuat ±10 baris aturan kerja ke setiap sesi, juga saat tidak ada skill yang dipanggil: ubah hanya yang diminta, pikir dulu, solusi paling sederhana, reuse helper yang ada, test positif/negatif/batas dengan bukti RED, klaim selesai hanya dengan bukti. Detail lengkapnya tetap ada di `coding-standards`.
 
+### Bahasa
+
+Instruksi di dalam skill, agent, dan hook ditulis dalam bahasa Inggris karena lebih hemat token (±20–40% lebih sedikit dari versi bahasa Indonesia). Semua yang dibaca pengguna tetap berbahasa Indonesia: jawaban, PRD, BRD, tiket, laporan agent, dan dokumen lain. Kalau pengguna menulis dalam bahasa lain, jawaban mengikuti bahasa tersebut.
+
 ## Folder hasil
 
 Semua dokumen yang dihasilkan (PRD, BRD `01..05`, tiket, profil project) ditulis ke `docs/noskill/` secara default. Untuk mengganti, buka `/config` dan ubah opsi **Folder dokumen noskill** milik plugin noskill, atau isi di `~/.claude/settings.json`:
