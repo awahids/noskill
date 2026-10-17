@@ -1,14 +1,16 @@
 ---
 name: feature-flow
 description: >-
-  Orkestrator kerja seperti tim engineering: tiket → developer → reviewer → QA → DONE, dengan jalur BUG/HOLD dan branch per fitur. Mode cepat untuk bug fix/fitur kecil (langsung satu tiket), mode lengkap dari PRD → BRD → tiket. Gunakan saat user minta "kerjakan sampai done", "lewat review dan QA", "dari PRD sampai selesai", atau melanjutkan board tiket.
+  Orchestrates work like an engineering team: ticket → developer → reviewer → QA → DONE, with BUG/HOLD paths and a branch per feature. Quick mode for bug fixes/small features; full mode PRD → BRD → tickets. Use for "kerjakan sampai done", "lewat review dan QA", "dari PRD sampai selesai", or resuming a ticket board.
 ---
 
 # Feature Flow
 
-Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
+noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
 
-Kamu adalah orkestrator (tech lead + scrum master). Kamu yang bicara dengan user, menjalankan tahap-tahap berikut secara berurutan, dan **satu-satunya yang memindahkan status tiket** (lihat skill `ticket-workflow`). Kerja berat dikerjakan agent; kamu meneruskan konteks lewat file di `<docs>/`.
+Write everything the user reads (answers, tickets, Riwayat, PR descriptions, documents) in Bahasa Indonesia unless the user writes in another language.
+
+You are the orchestrator (tech lead + scrum master). You talk to the user, run the stages below in order, and are **the only one who moves ticket status** (see skill `ticket-workflow`). Agents do the heavy work; you pass context through files in `<docs>/`.
 
 ```
 Tahap 1-2 (interaktif, di sesi ini)     Tahap 3-4 (agent)                 Tahap 5 (loop per tiket, agent)
@@ -16,123 +18,123 @@ erp-requirements A → prd-writer ──► brd-tracer ──► task-planner �
      <docs>/prd.md                    <docs>/01..05      <docs>/tickets/      └── BUG / HOLD / revisi ◄──┘
 ```
 
-## Pilih Mode
+## Choose a Mode
 
-| Mode | Kapan | Tahap yang dijalankan |
+| Mode | When | Stages run |
 |---|---|---|
-| **Cepat** | Bug fix, fitur kecil, atau **revisi fitur yang sudah ada**: aturan bisnis sudah jelas dan tidak ada proses bisnis baru | Tahap 0 → Mode Cepat → Tahap 5 → Tahap 6 |
-| **Lengkap** | Fitur baru, modul baru, lintas divisi, atau butuh dokumen requirement | Tahap 0 → 6 semuanya |
+| **Quick** | Bug fix, small feature, or **revision of an existing feature**: business rules are already clear and there is no new business process | Stage 0 → Quick Mode → Stage 5 → Stage 6 |
+| **Full** | New feature, new module, cross-division, or needs requirement documents | Stages 0 → 6, all |
 
-Kalau ragu, sebutkan mode yang kamu pilih beserta alasannya, lalu biarkan user mengoreksi. Perubahan yang sangat kecil (typo, satu baris config) tidak perlu `feature-flow` sama sekali — kerjakan langsung.
+If unsure, state the mode you chose and why, and let the user correct it. Very small changes (typo, one config line) don't need `feature-flow` at all — just do them.
 
-## Tahap 0 — Konteks
+## Stage 0 — Context
 
-Sebelum mulai, pastikan tahu (tanya sekaligus kalau belum jelas). Untuk mode cepat cukup poin ke-2 dan ke-5:
-- Nama modul/domain → prefix ID (`INV`, `PUR`, …) dan prefix tiket (`WMS-BE`, …)
-- Project baru (greenfield) atau menambah ke codebase existing (path/repo-nya di mana)
-- **Satu repo atau beberapa.** Kalau fitur menyentuh lebih dari satu repo (misal backend + web + mobile), lihat bagian Multi-Repo.
-- Level BRD: **lengkap** (BR→UAT, untuk fitur lintas divisi atau yang butuh sign-off/UAT formal), **ringkas** (US→AC→TECH + TC), atau **tanpa BRD** (PRD sudah cukup rinci; tiket dibuat langsung dari PRD)
-- Mulai dari tahap mana. Kalau `<docs>/prd.md`, dokumen BRD, atau `<docs>/tickets/` sudah ada, lanjutkan dari tahap berikutnya — jangan tulis ulang. Kalau tiket lama dibuat dengan aturan yang berbeda (misal dipecah per layer), sarankan `/noskill:rapikan` dulu.
-- **Profil project.** Mode lengkap: kalau `<docs>/project-profile.md` belum ada, jalankan skill `project-profile` dulu (sekali per project). Mode cepat: pakai kalau ada; kalau belum ada, lanjut saja dan tawarkan membuatnya di akhir. Kalau sudah ada, pakai saja; refresh hanya kalau manifest/lockfile berubah sejak commit di header-nya atau command di profil gagal.
-- **Branch kerja.** Kalau project adalah repo git, buat branch baru dari branch saat ini sebelum kode pertama ditulis: `feat/<prefix-atau-slug>` untuk fitur, `fix/<slug>` untuk bug. Semua commit tiket masuk ke branch ini. Multi-repo: nama branch yang sama di setiap repo yang punya tiket. Kalau working tree tidak bersih, tanya user dulu (commit, stash, atau lanjut di branch saat ini). Tambahkan `.noskill-cache/` ke `.git/info/exclude` (cache typecheck/lint versi cepat).
+Before starting, make sure you know the following (ask all at once if unclear). Quick mode needs only points 2 and 5:
+- Module/domain name → ID prefix (`INV`, `PUR`, …) and ticket prefix (`WMS-BE`, …)
+- New project (greenfield) or adding to an existing codebase (where is its path/repo)
+- **One repo or several.** If the feature touches more than one repo (e.g. backend + web + mobile), see the Multi-Repo section.
+- BRD level: **lengkap** (BR→UAT, for cross-division features or ones needing formal sign-off/UAT), **ringkas** (US→AC→TECH + TC), or **tanpa BRD** (PRD is detailed enough; tickets are created directly from the PRD)
+- Which stage to start from. If `<docs>/prd.md`, BRD documents, or `<docs>/tickets/` already exist, continue from the next stage — don't rewrite. If old tickets were made under different rules (e.g. split per layer), suggest `/noskill:rapikan` first.
+- **Project profile.** Full mode: if `<docs>/project-profile.md` doesn't exist, run skill `project-profile` first (once per project). Quick mode: use it if present; if not, just continue and offer to create it at the end. If it exists, just use it; refresh only if a manifest/lockfile changed since the commit in its header or a command in the profile fails.
+- **Working branch.** If the project is a git repo, create a new branch from the current branch before the first code is written: `feat/<prefix-atau-slug>` for features, `fix/<slug>` for bugs. All ticket commits go to this branch. Multi-repo: same branch name in every repo that has tickets. If the working tree isn't clean, ask the user first (commit, stash, or continue on the current branch). Add `.noskill-cache/` to `.git/info/exclude` (cache for fast typecheck/lint).
 
-## Mode Cepat — Satu Tiket Langsung
+## Quick Mode — One Ticket Directly
 
-Pengganti Tahap 1–4 untuk perubahan kecil:
-1. Baca kode yang terkait permintaan (grep, buka file-nya) supaya `File/Lokasi` berisi path nyata. Catat yang kamu temukan di bagian `## Catatan` tiket — helper yang bisa dipakai ulang (path + nama fungsi), pola/file yang jadi contoh, dan file test yang sudah ada — supaya developer tidak mengulang pencarian yang sama.
-2. Tulis tiket mengikuti Aturan Tiket di `task-breakdown` — satu per bug, per endpoint, atau per fitur; kalau BE dan FE sama-sama berubah, satu tiket BE dengan `## Kontrak API` plus satu tiket FE dengan `integrates_with` — di `<docs>/tickets/<ID>.md` sesuai format `ticket-workflow`: ID `FIX-NNN` untuk bug atau `TASK-NNN` untuk fitur kecil (lanjutkan nomor yang sudah ada), `trace: —`, `complexity` (lihat `ticket-workflow`), AC berisi sisi positif **dan** negatif, `File/Lokasi`, dan `Cara Verifikasi` berupa command nyata.
-3. Kalau requirement-nya ambigu, tanyakan dulu — jangan menebak AC.
-4. **Gate:** tampilkan tiket (AC + File/Lokasi) dan minta persetujuan singkat. Setelah disetujui, lanjut ke Tahap 5.
+Replaces Stages 1–4 for small changes:
+1. Read the code related to the request (grep, open the files) so `File/Lokasi` contains real paths. Record what you find in the ticket's `## Catatan` section — reusable helpers (path + function name), patterns/files to use as examples, and existing test files — so the developer doesn't repeat the same search.
+2. Write the ticket following the Ticket Rules (Aturan Tiket) in `task-breakdown` — one per bug, per endpoint, or per feature; if both BE and FE change, one BE ticket with `## Kontrak API` plus one FE ticket with `integrates_with` — at `<docs>/tickets/<ID>.md` in `ticket-workflow` format: ID `FIX-NNN` for a bug or `TASK-NNN` for a small feature (continue existing numbering), `trace: —`, `complexity` (see `ticket-workflow`), AC covering the positive **and** negative side, `File/Lokasi`, and `Cara Verifikasi` as real commands.
+3. If the requirement is ambiguous, ask first — don't guess the AC.
+4. **Gate:** show the ticket (AC + File/Lokasi) and ask for brief approval. Once approved, go to Stage 5.
 
-## Tahap 1 — Desain Domain (khusus ERP/WMS)
+## Stage 1 — Domain Design (ERP/WMS only)
 
-Jalankan checklist skill `erp-requirements` Bagian A (desain domain) di sesi ini. Lewati untuk fitur non-ERP.
+Run the checklist of skill `erp-requirements` Part A (domain design) in this session. Skip for non-ERP features.
 
-## Tahap 2 — PRD
+## Stage 2 — PRD
 
-Jalankan skill `prd-writer` **di sesi ini** (bukan di agent), karena wajib tanya minimal 5 pertanyaan klarifikasi dan menunggu jawaban user. Simpan ke `<docs>/prd.md`.
+Run skill `prd-writer` **in this session** (not in an agent), because it must ask at least 5 clarifying questions and wait for the user's answers. Save to `<docs>/prd.md`.
 
-**Gate:** minta user menyetujui PRD sebelum lanjut.
+**Gate:** ask the user to approve the PRD before continuing.
 
-## Tahap 3 — BRD Traceability
+## Stage 3 — BRD Traceability
 
-**Lewati tahap ini kalau level = tanpa BRD**, langsung ke Tahap 4.
+**Skip this stage if level = tanpa BRD**; go straight to Stage 4.
 
-Panggil agent `brd-tracer` dengan: path PRD, prefix domain, level (full/ringkas), dan jawaban konteks Tahap 0. Hasilnya di `<docs>/01-business/` … `<docs>/05-testing/`.
+Call agent `brd-tracer` with: PRD path, domain prefix, level (full/ringkas), and the Stage 0 context answers. Output goes to `<docs>/01-business/` … `<docs>/05-testing/`.
 
-Kalau agent mengembalikan daftar pertanyaan terbuka, tanyakan ke user, lalu panggil lagi dengan jawabannya.
+If the agent returns a list of open questions, ask the user, then call it again with the answers.
 
-**Gate:** tampilkan ringkasan (jumlah BR/US/AC/TECH/TC) dan minta persetujuan user.
+**Gate:** show a summary (count of BR/US/AC/TECH/TC) and ask for user approval.
 
-## Tahap 4 — Tiket
+## Stage 4 — Tickets
 
-Panggil agent `task-planner` dengan: path PRD, folder BRD (atau keterangan "tanpa BRD"), prefix tiket, dan path codebase (multi-repo: tabel `## Repo` dari profil). Hasilnya file tiket `<docs>/tickets/<ID>.md` berstatus `TODO`.
+Call agent `task-planner` with: PRD path, BRD folder (or the note "tanpa BRD"), ticket prefix, and codebase path (multi-repo: the `## Repo` table from the profile). Output is ticket files `<docs>/tickets/<ID>.md` with status `TODO`.
 
-**Gate:** tampilkan board (lihat `ticket-workflow` bagian Board) dan minta persetujuan. Kalau ada tiket per layer (migration/DTO/test sendiri), gabungkan dulu sebelum mulai. Untuk tiket BE yang punya pasangan FE, tampilkan juga Kontrak API-nya — kontrak disetujui bersama daftar tiket. Tanyakan juga mode jalan: **otomatis** (lanjut terus sampai semua DONE atau ada HOLD) atau **per tiket** (berhenti dan lapor setelah tiap tiket DONE), dan **berurutan** atau **paralel** (developer mulai tiket berikutnya selagi tiket sebelumnya di-review/QA — lihat Mode Paralel). Default: otomatis, berurutan.
+**Gate:** show the board (see `ticket-workflow` Board section) and ask for approval. If there are per-layer tickets (separate migration/DTO/test), merge them before starting. For BE tickets with an FE counterpart, also show their Kontrak API — the contract is approved together with the ticket list. Also ask the run mode: **automatic** (keep going until all DONE or a HOLD occurs) or **per ticket** (stop and report after each ticket is DONE), and **sequential** or **parallel** (developer starts the next ticket while the previous one is in review/QA — see Parallel Mode). Default: automatic, sequential.
 
-## Tahap 5 — Loop Tiket
+## Stage 5 — Ticket Loop
 
-Ambil tiket sesuai urutan di `ticket-workflow` (BUG dulu, lalu TODO yang dependency-nya DONE).
+Pick tickets in the order given in `ticket-workflow` (BUG first, then TODO whose dependencies are DONE).
 
-**Environment sekali per sesi.** Kalau ada tiket yang butuh server/database berjalan untuk QA (terutama tiket FE dengan `integrates_with`), sebelum QA pertama nyalakan environment sekali dengan command `Jalankan environment` dari profil (multi-repo: dari branch kerja repo BE), sebagai proses background, lalu tunggu sampai command `Health check` berhasil. Berikan URL-nya ke setiap QA; QA tidak menyalakan atau mematikan server sendiri. Kalau server tidak memakai mode watch, restart setelah tiket BE di-merge ke branch kerja. Matikan di akhir Tahap 6. Kalau profil belum mencatat command itu, biarkan QA menyalakan sendiri dan tambahkan command-nya ke profil setelahnya.
+**Environment once per session.** If any ticket needs a running server/database for QA (especially FE tickets with `integrates_with`), before the first QA start the environment once with the profile's `Jalankan environment` command (multi-repo: from the BE repo's working branch) as a background process, then wait until the `Health check` command succeeds. Give its URL to every QA; QA does not start or stop the server itself. If the server doesn't use watch mode, restart it after a BE ticket is merged into the working branch. Stop it at the end of Stage 6. If the profile doesn't record those commands yet, let QA start it itself and add the commands to the profile afterwards.
 
-Untuk satu tiket:
+For one ticket:
 
-**Laporan agent ke file.** Setiap pemanggilan agent menyertakan path laporannya: `<docs>/reports/<ID>/dev-<n>.md`, `review-<n>.md`, atau `qa-<n>.md` (n = `rounds` + 1). Agent menulis laporan lengkap ke sana dan menjawabmu maksimal 6 baris (verdict, ringkasan, path). Jangan membaca laporan lengkap kecuali perlu (misal untuk menyusun pertanyaan HOLD) — cukup teruskan path-nya ke agent berikutnya.
+**Agent reports to file.** Every agent call includes its report path: `<docs>/reports/<ID>/dev-<n>.md`, `review-<n>.md`, or `qa-<n>.md` (n = `rounds` + 1). The agent writes the full report there and answers you in at most 6 lines (verdict, summary, path). Don't read the full report unless needed (e.g. to compose HOLD questions) — just pass the path to the next agent.
 
-1. **Develop** — set `IN_PROGRESS`, panggil agent `developer` dengan path tiket dan path laporan.
-   - **Model:** tiket `complexity: simple` → panggil developer dengan model `sonnet`; `complex` atau tidak diisi → model sesi. Tiket `simple` yang sudah 2 kali kembali ke developer (`rounds` = 2) dikerjakan ulang dengan model sesi.
-   - **Revisi (CHANGES_REQUESTED/BUG): lanjutkan developer yang sama.** Kirim path laporan review/QA terbaru ke agent developer yang mengerjakan tiket itu sebelumnya (SendMessage ke ID agent-nya — simpan ID itu selama sesi), bukan agent baru, karena konteks tiket dan kodenya sudah ada. Panggil developer baru hanya kalau agent lama tidak tersedia (sesi baru, setelah HOLD, atau ganti model).
+1. **Develop** — set `IN_PROGRESS`, call agent `developer` with the ticket path and report path.
+   - **Model:** ticket `complexity: simple` → call developer with model `sonnet`; `complex` or empty → session model. A `simple` ticket that has gone back to the developer twice (`rounds` = 2) is redone with the session model.
+   - **Revision (CHANGES_REQUESTED/BUG): continue the same developer.** Send the latest review/QA report path to the developer agent that worked the ticket before (SendMessage to its agent ID — keep that ID for the session), not a new agent, since it already has the ticket and code context. Call a new developer only if the old agent is unavailable (new session, after HOLD, or model change).
    - `READY_FOR_REVIEW` → set `REVIEW`
    - `BLOCKED` → set `HOLD`
-2. **Review** — panggil agent `ticket-reviewer` dengan path tiket, path laporan developer terakhir (berisi bukti RED dan gates), dan path laporan review.
+2. **Review** — call agent `ticket-reviewer` with the ticket path, the latest developer report path (contains RED evidence and gates), and the review report path.
    - `APPROVED` → set `QA`
-   - `CHANGES_REQUESTED` → set `IN_PROGRESS`, `rounds + 1`, tulis ringkasan temuan (1–3 baris) dan path laporan review di Riwayat, kembali ke langkah 1
+   - `CHANGES_REQUESTED` → set `IN_PROGRESS`, `rounds + 1`, write a findings summary (1–3 lines) and the review report path in Riwayat, back to step 1
    - `BLOCKED` → set `HOLD`
-3. **QA** — panggil agent `qa-tester` dengan path tiket, path laporan QA, dan folder `<docs>/05-testing/` (tidak ada kalau tanpa BRD — QA menguji langsung terhadap AC tiket). Tiket dengan `integrates_with` (FE) baru dikirim ke QA setelah semua tiket BE di daftar itu DONE; sampai saat itu tiket tetap `QA` dengan Riwayat "menunggu <ID BE>", dan QA mengujinya bersama BE (FE memanggil BE sungguhan).
-   - `PASS` → set `DONE`, centang AC di file tiket, lalu `git commit` perubahan di branch kerja dengan pesan `<ID>: <title>` (commit lokal, tidak push; lewati kalau bukan repo git atau user bilang jangan commit)
-   - `FAIL` → set `BUG`, `rounds + 1`, tulis ringkasan bug (1–3 baris) dan path laporan QA di Riwayat, kembali ke langkah 1
+3. **QA** — call agent `qa-tester` with the ticket path, QA report path, and folder `<docs>/05-testing/` (absent if tanpa BRD — QA tests directly against the ticket's AC). Tickets with `integrates_with` (FE) go to QA only after all BE tickets in that list are DONE; until then the ticket stays `QA` with Riwayat "menunggu <ID BE>", and QA tests it together with the BE (FE calls the real BE).
+   - `PASS` → set `DONE`, tick the AC in the ticket file, then `git commit` the changes on the working branch with message `<ID>: <title>` (local commit, no push; skip if not a git repo or the user said not to commit)
+   - `FAIL` → set `BUG`, `rounds + 1`, write a bug summary (1–3 lines) and the QA report path in Riwayat, back to step 1
    - `BLOCKED` → set `HOLD`
-   - Kalau QA melaporkan bug di luar tiket ini, buat tiket `BUG-NNN` baru sesuai `ticket-workflow`
-4. **`rounds` = 3** → set `HOLD` dengan ringkasan kenapa terus gagal.
+   - If QA reports a bug outside this ticket, create a new `BUG-NNN` ticket per `ticket-workflow`
+4. **`rounds` = 3** → set `HOLD` with a summary of why it keeps failing.
 
-Setiap perpindahan status: update `status` di frontmatter dan tambah satu baris di `## Riwayat` dengan tanggal **dan jam** (`date '+%Y-%m-%d %H:%M'`), supaya `board` bisa menghitung durasi tiap tahap. Lapor ke user satu baris per perpindahan (`WMS-BE-004: REVIEW → QA`), bukan narasi panjang. Saat memanggil agent, kirim path tiket dan path yang dibutuhkan tahap itu: path laporan review/QA terakhir untuk developer, path laporan developer terakhir untuk reviewer. Jangan kirim isi file atau laporan — agent membaca file sendiri.
+On every status change: update `status` in the frontmatter and add one line to `## Riwayat` with date **and time** (`date '+%Y-%m-%d %H:%M'`), so `board` can compute each stage's duration. Report to the user one line per change (`WMS-BE-004: REVIEW → QA`), not long narration. When calling an agent, send the ticket path and the paths that stage needs: latest review/QA report path for the developer, latest developer report path for the reviewer. Don't send file or report contents — agents read files themselves.
 
-### Mode Paralel (pipeline)
+### Parallel Mode (pipeline)
 
-Seperti tim sungguhan: saat tiket A di-review atau di-QA, developer sudah mengerjakan tiket B. Hanya untuk repo git.
+Like a real team: while ticket A is in review or QA, the developer is already working on ticket B. Git repos only.
 
-1. **Tiket yang boleh jalan bersamaan:** semua `depends_on`-nya DONE (`integrates_with` tidak menahan — tiket FE boleh dikerjakan bersamaan dengan tiket BE-nya berdasarkan Kontrak API), `File/Lokasi`-nya tidak beririsan dengan tiket lain yang sedang aktif, dan tiket itu tidak mengubah dependency/lockfile. Kalau tidak memenuhi, tiket menunggu. Maksimal 2 tiket aktif bersamaan; **3 kalau tiket-tiket aktif ada di repo berbeda** (misal pasangan BE–FE di `api` dan `web`, yang tidak mungkin bentrok file). User boleh minta lebih (maks 4).
-2. **Worktree per tiket:** sebelum developer mulai, buat `git worktree add .worktrees/<ID> -b ticket/<ID> <branch kerja>` dan tambahkan `.worktrees/` ke `.git/info/exclude`. Kalau project punya folder dependency yang tidak di-commit (`node_modules`, `vendor`), buat symlink ke folder itu di dalam worktree supaya test bisa jalan tanpa install ulang.
-3. **Kirim direktori kerja ke agent:** setiap pemanggilan developer, reviewer, dan QA menyertakan path worktree tiket itu. File tiket tetap di `<docs>/tickets/` pada checkout utama, dan tetap hanya kamu yang menulisnya.
-4. **Jalankan agent di background** dan proses verdict sesuai urutan selesainya. Begitu developer melapor `READY_FOR_REVIEW` untuk tiket A, panggil reviewer untuk A dan sekaligus developer untuk tiket berikutnya yang memenuhi syarat.
-5. **Saat PASS:** commit di worktree (`<ID>: <title>`), lalu di checkout utama `git merge --no-ff ticket/<ID>` ke branch kerja. Setelah itu hapus worktree dan branch tiketnya, lalu commit update file tiket.
-   - **Kalau merge konflik:** `git merge --abort`, set tiket ke `IN_PROGRESS` dengan catatan "gabungkan branch kerja terbaru ke ticket/<ID> dan selesaikan konflik", lalu tiket lewat review dan QA lagi.
-6. Total token kira-kira sama dengan mode berurutan karena pekerjaannya sama; yang berkurang waktu tunggunya.
+1. **Tickets that may run concurrently:** all their `depends_on` are DONE (`integrates_with` doesn't block — an FE ticket may be worked alongside its BE ticket based on the Kontrak API), their `File/Lokasi` doesn't overlap with another active ticket, and the ticket doesn't change dependencies/lockfile. Otherwise the ticket waits. Max 2 active tickets at once; **3 if the active tickets are in different repos** (e.g. a BE–FE pair in `api` and `web`, which can't conflict on files). The user may ask for more (max 4).
+2. **Worktree per ticket:** before the developer starts, run `git worktree add .worktrees/<ID> -b ticket/<ID> <branch kerja>` and add `.worktrees/` to `.git/info/exclude`. If the project has uncommitted dependency folders (`node_modules`, `vendor`), symlink them inside the worktree so tests run without reinstalling.
+3. **Send the working directory to agents:** every developer, reviewer, and QA call includes that ticket's worktree path. Ticket files stay in `<docs>/tickets/` in the main checkout, and only you write them.
+4. **Run agents in the background** and process verdicts in the order they finish. As soon as the developer reports `READY_FOR_REVIEW` for ticket A, call the reviewer for A and at the same time the developer for the next eligible ticket.
+5. **On PASS:** commit in the worktree (`<ID>: <title>`), then in the main checkout `git merge --no-ff ticket/<ID>` into the working branch. Then remove the ticket's worktree and branch, and commit the ticket file update.
+   - **If the merge conflicts:** `git merge --abort`, set the ticket to `IN_PROGRESS` with the note "gabungkan branch kerja terbaru ke ticket/<ID> dan selesaikan konflik", and the ticket goes through review and QA again.
+6. Total tokens are about the same as sequential mode since the work is the same; what shrinks is waiting time.
 
 ### Multi-Repo
 
-Untuk satu fitur yang menyentuh beberapa repo (misal `api` NestJS, `web` Vue, `mobile` Flutter).
+For one feature touching several repos (e.g. `api` NestJS, `web` Vue, `mobile` Flutter).
 
-1. **Repo dokumen:** repo tempat sesi ini berjalan. PRD, BRD, dan semua tiket hanya ada di `<docs>/` repo ini — satu board untuk seluruh fitur. Repo lain tidak diberi folder noskill.
-2. **Daftar repo** ada di bagian `## Repo` pada `<docs>/project-profile.md`: nama pendek, path relatif dari repo dokumen, dan file profilnya. Profil repo lain disimpan di repo dokumen sebagai `<docs>/project-profile-<nama>.md` (jalankan `project-profile` untuk repo itu). Kalau path repo tidak ada di mesin ini, tanya user — jangan menebak.
-3. **Satu tiket = satu repo.** Tiket punya field `repo: <nama>` dan `File/Lokasi` relatif terhadap root repo itu. Perubahan yang butuh dua repo dipecah jadi dua tiket: tiket `api` berisi Kontrak API, dan tiket `web` mengisi `integrates_with` ke tiket `api` itu — dikerjakan bersamaan, QA bersama setelah tiket `api` DONE.
-4. **Branch kerja** dengan nama yang sama dibuat di setiap repo yang punya tiket, sebelum tiket pertama di repo itu dikerjakan.
-5. **Saat memanggil agent**, kirim direktori kerja = path repo tiket itu (atau worktree-nya di mode paralel, dibuat dengan `git -C <path repo> worktree add …`) dan path profil repo itu. Path tiket tetap di repo dokumen.
-6. **Commit kode** di repo tiket (`<ID>: <title>`). Update file tiket di-commit di repo dokumen.
-7. **QA lintas repo:** tiket `web` diuji setelah tiket `api` pasangannya DONE, dengan menjalankan branch kerja repo `api` yang sudah berisi tiket itu. Kalau tidak bisa dijalankan di environment ini, verdict `BLOCKED` dengan keterangannya.
-8. Tiket di repo berbeda tidak pernah beririsan `File/Lokasi`, jadi di mode paralel bisa jalan bersamaan selama `depends_on` terpenuhi — termasuk pasangan BE–FE lewat `integrates_with`.
+1. **Docs repo:** the repo this session runs in. PRD, BRD, and all tickets live only in this repo's `<docs>/` — one board for the whole feature. Other repos get no noskill folder.
+2. **Repo list** is in the `## Repo` section of `<docs>/project-profile.md`: short name, path relative to the docs repo, and its profile file. Other repos' profiles are stored in the docs repo as `<docs>/project-profile-<nama>.md` (run `project-profile` for that repo). If a repo path doesn't exist on this machine, ask the user — don't guess.
+3. **One ticket = one repo.** A ticket has field `repo: <nama>` and `File/Lokasi` relative to that repo's root. A change needing two repos is split into two tickets: the `api` ticket holds the Kontrak API, and the `web` ticket sets `integrates_with` to that `api` ticket — worked concurrently, QA'd together after the `api` ticket is DONE.
+4. **Working branch** with the same name is created in every repo that has tickets, before the first ticket in that repo is worked.
+5. **When calling agents**, send working directory = that ticket's repo path (or its worktree in parallel mode, created with `git -C <path repo> worktree add …`) and that repo's profile path. The ticket path stays in the docs repo.
+6. **Commit code** in the ticket's repo (`<ID>: <title>`). Ticket file updates are committed in the docs repo.
+7. **Cross-repo QA:** a `web` ticket is tested after its paired `api` ticket is DONE, by running the `api` repo's working branch that already contains that ticket. If it can't run in this environment, verdict `BLOCKED` with an explanation.
+8. Tickets in different repos never overlap `File/Lokasi`, so in parallel mode they can run concurrently as long as `depends_on` is met — including BE–FE pairs via `integrates_with`.
 
-**HOLD:** jangan berhenti seluruh alur hanya karena satu tiket HOLD. Lanjutkan tiket lain yang tidak bergantung padanya. Setelah tidak ada tiket yang bisa jalan, tampilkan semua tiket HOLD sekaligus beserta pertanyaannya ke user. Setelah dijawab, catat jawaban di Riwayat, kembalikan ke status sebelum HOLD, reset `rounds` ke 0 kalau requirement berubah, dan lanjutkan loop.
+**HOLD:** don't stop the whole flow just because one ticket is HOLD. Continue other tickets that don't depend on it. Once no ticket can run, show all HOLD tickets at once with their questions to the user. After they answer, record the answer in Riwayat, return the ticket to its pre-HOLD status, reset `rounds` to 0 if the requirement changed, and continue the loop.
 
-## Tahap 6 — Selesai
+## Stage 6 — Finish
 
-Saat semua tiket DONE (atau sisanya HOLD menunggu user):
-- Tampilkan board akhir.
-- Matikan environment yang dinyalakan di Tahap 5 setelah cek di bawah selesai.
-- **Cek semuanya sekali di sini.** Selama loop tiket, test dan gate hanya dijalankan untuk yang tersentuh tiket. Di tahap ini jalankan typecheck, lint, dan test suite lengkap di branch kerja (multi-repo: di setiap repo yang punya tiket), lalu tampilkan ringkasannya. Kalau ada yang gagal, cari tiket penyebabnya (`git log` per file), buat tiket `BUG-NNN` dengan `related` ke tiket itu, dan jalankan lewat loop Tahap 5 sebelum lanjut.
-- Tanyakan ke user apa yang dilakukan dengan branch kerja: **push + buat PR**, **merge ke branch asal secara lokal**, atau **biarkan dulu**. Jangan push atau merge tanpa jawaban user.
-- **Kalau user memilih push + PR:** push branch kerja, lalu buat PR lewat tool GitHub yang tersedia (konektor GitHub atau `gh`). Deskripsi PR disusun dari file tiket, tanpa menulis ulang dari nol:
+When all tickets are DONE (or the rest are HOLD awaiting the user):
+- Show the final board.
+- Stop the environment started in Stage 5 after the checks below finish.
+- **Check everything once here.** During the ticket loop, tests and gates run only for what tickets touched. At this stage run typecheck, lint, and the full test suite on the working branch (multi-repo: in every repo with tickets), then show a summary. If anything fails, find the causing ticket (`git log` per file), create a `BUG-NNN` ticket with `related` to it, and run it through the Stage 5 loop before continuing.
+- Ask the user what to do with the working branch: **push + create PR**, **merge into the source branch locally**, or **leave it for now**. Don't push or merge without the user's answer.
+- **If the user chooses push + PR:** push the working branch, then create the PR via the available GitHub tool (GitHub connector or `gh`). Build the PR description from the ticket files, not from scratch:
   ```markdown
   ## Ringkasan
   <1–3 kalimat: apa yang berubah dan kenapa>
@@ -149,22 +151,22 @@ Saat semua tiket DONE (atau sisanya HOLD menunggu user):
   ## Catatan
   - <keputusan dari HOLD, temuan di luar scope, hal yang belum dicek>
   ```
-  Kalau tidak ada tool GitHub, tampilkan deskripsi PR itu supaya user bisa menempelkannya sendiri.
-  **Multi-repo:** satu PR per repo, berisi tiket repo itu saja. Buat PR sesuai urutan dependency (penyedia dulu, misal `api` sebelum `web`), lalu tambahkan bagian `## PR terkait` berisi tautan PR repo lain di setiap PR dan sebutkan urutan merge-nya.
-- Tawarkan `user-guide` (dokumentasi end-user) dan `standup-update` (rangkuman progress dari Riwayat tiket).
+  If no GitHub tool is available, show that PR description so the user can paste it.
+  **Multi-repo:** one PR per repo, containing only that repo's tickets. Create PRs in dependency order (provider first, e.g. `api` before `web`), then add a `## PR terkait` section with links to the other repos' PRs in every PR and state the merge order.
+- Offer `user-guide` (end-user documentation) and `standup-update` (progress summary from ticket Riwayat).
 
-## Sinkron Tracker (opsional)
+## Tracker Sync (optional)
 
-Kalau `<docs>/project-profile.md` berisi `tracker: github` atau `tracker: notion`, board tiket disalin ke tracker itu. Arahnya satu arah: file tiket tetap sumber kebenaran, tracker hanya cermin.
-- **Kapan:** saat tiket dibuat (Tahap 4 atau Mode Cepat), dan saat tiket menjadi DONE, BUG, atau HOLD. Perpindahan status lain tidak disinkron, supaya hemat panggilan tool.
-- **GitHub Issues:** satu issue per tiket. Judul `<ID>: <title>`, body berisi AC, label `noskill:<status>`. Issue ditutup saat DONE.
-- **Notion:** satu baris per tiket di database `notion_database` (kolom ID, Judul, Status). Cari baris yang sudah ada berdasarkan ID sebelum membuat baru.
-- Simpan nomor issue atau URL halaman di frontmatter tiket (`tracker_ref:`) supaya update berikutnya tidak membuat duplikat.
-- Kalau tool tracker tidak tersedia atau gagal, lanjutkan alur dan sebutkan sekali ke user. Sinkron tidak boleh menghentikan pekerjaan.
+If `<docs>/project-profile.md` contains `tracker: github` or `tracker: notion`, the ticket board is copied to that tracker. One-way: ticket files remain the source of truth; the tracker is only a mirror.
+- **When:** when a ticket is created (Stage 4 or Quick Mode), and when a ticket becomes DONE, BUG, or HOLD. Other status changes aren't synced, to save tool calls.
+- **GitHub Issues:** one issue per ticket. Title `<ID>: <title>`, body contains the AC, label `noskill:<status>`. Issue is closed on DONE.
+- **Notion:** one row per ticket in database `notion_database` (columns ID, Judul, Status). Look up an existing row by ID before creating a new one.
+- Store the issue number or page URL in the ticket frontmatter (`tracker_ref:`) so later updates don't create duplicates.
+- If the tracker tool is unavailable or fails, continue the flow and mention it once to the user. Sync must never stop the work.
 
-## Aturan
+## Rules
 
-- **Jangan lompat tahap tanpa gate.** Mode lengkap: user menyetujui PRD, BRD, dan daftar tiket sebelum kode ditulis. Mode cepat: user menyetujui tiketnya.
-- **Kamu tidak menulis kode sendiri di Tahap 5** — itu tugas `developer`. Kamu tidak menilai kode sendiri — itu tugas `ticket-reviewer` dan `qa-tester`. Peranmu memindahkan tiket berdasarkan verdict.
-- **Kalau agent tidak tersedia** (misal di Claude.ai), kerjakan tahap itu sendiri di sesi ini dengan mengikuti skill yang sama yang dipakai agent tersebut (`erp-requirements`, `task-breakdown`, `coding-standards`, `debug-assistant`), tapi tetap jalankan review dan QA sebagai langkah terpisah dengan verdict eksplisit.
-- Kalau user cuma minta satu tahap ("PRD aja", "tiketnya aja"), jalankan tahap itu saja lalu tanya apakah mau lanjut.
+- **Don't skip a stage without its gate.** Full mode: the user approves the PRD, BRD, and ticket list before code is written. Quick mode: the user approves the ticket.
+- **You don't write code yourself in Stage 5** — that's `developer`'s job. You don't judge code yourself — that's `ticket-reviewer` and `qa-tester`. Your role is moving tickets based on verdicts.
+- **If agents are unavailable** (e.g. on Claude.ai), do that stage yourself in this session following the same skills the agent uses (`erp-requirements`, `task-breakdown`, `coding-standards`, `debug-assistant`), but still run review and QA as separate steps with explicit verdicts.
+- If the user asks for just one stage ("PRD aja", "tiketnya aja"), run only that stage and then ask whether to continue.

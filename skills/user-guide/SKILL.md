@@ -1,42 +1,44 @@
 ---
 name: user-guide
 description: >-
-  Menyusun user guide untuk pengguna non-teknis: bahasa sederhana, langkah per fitur, flowchart bahasa awam, dan slot screenshot. Gunakan saat user minta user guide, panduan pengguna, manual book, atau dokumentasi untuk karyawan/admin.
+  Writes user guides for non-technical users: plain language, per-feature steps, plain-language flowcharts, screenshot slots. Use for "buatkan user guide", "panduan pengguna", "manual book", or docs for employees/admins.
 ---
 
 # User Guide Writer
 
-Menyusun dokumentasi yang dibaca oleh **pengguna akhir aplikasi** (karyawan, admin, vendor, customer — bukan developer). Prioritas utama: mudah dimengerti oleh orang yang tidak paham istilah teknis, bisa langsung dipraktikkan sambil buka aplikasi.
+Write the document in Bahasa Indonesia unless the user asks otherwise.
 
-## Perbedaan dengan Skill Dokumentasi Lain
+Writes documentation read by the **application's end users** (employees, admins, vendors, customers — not developers). Top priority: easy to understand for people who don't know technical terms, and usable step by step with the app open.
 
-| Skill | Audiens | Bahasa | Isi |
+## Difference from Other Documentation Skills
+
+| Skill | Audience | Language | Content |
 |---|---|---|---|
-| `prd-writer` | Tim dev/product | Teknis | Requirement, arsitektur, schema |
-| `coding-standards` (`references/api-doc.md`) | Developer konsumen API | Teknis | Endpoint, payload, status code |
-| **`user-guide`** | **Pengguna aplikasi (non-teknis)** | **Sederhana, langsung ke tindakan** | **Cara pakai fitur, langkah klik, screenshot** |
+| `prd-writer` | Dev/product team | Technical | Requirements, architecture, schema |
+| `coding-standards` (`references/api-doc.md`) | API-consuming developers | Technical | Endpoints, payloads, status codes |
+| **`user-guide`** | **App users (non-technical)** | **Simple, action-first** | **How to use features, click steps, screenshots** |
 
-Kalau user minta "dokumentasi" tanpa spesifik, tanyakan atau simpulkan dari konteks — kalau yang dibutuhkan buat dibaca karyawan/admin yang pakai aplikasinya, ini skill yang tepat.
+If the user asks for "dokumentasi" without specifics, ask or infer from context — if it's meant to be read by employees/admins who use the app, this is the right skill.
 
-## Sumber Informasi
+## Information Sources
 
-Cek dulu apakah ada PRD terkait di percakapan/project ini (hasil skill `prd-writer` atau yang di-upload user) — pakai itu sebagai sumber kebenaran fitur, role, dan flow. Kalau tidak ada PRD, tanyakan ke user fitur apa saja yang perlu didokumentasikan, atau minta mereka jelaskan/screenshot alurnya.
+First check whether a related PRD exists in this conversation/project (from the `prd-writer` skill or uploaded by the user) — use it as the source of truth for features, roles, and flows. If there is no PRD, ask the user which features need documenting, or ask them to explain/screenshot the flow.
 
-## Sepakati Outline Dulu (untuk dokumen besar)
+## Agree on the Outline First (for large documents)
 
-**Untuk dokumen dengan banyak fitur/role (perkiraan >5 section)**, jangan langsung tulis draft penuh dari awal sampai akhir — sepakati dulu **outline/daftar isi** dengan user sebelum drafting per section:
+**For documents with many features/roles (roughly >5 sections)**, don't write the full draft start to finish right away — first agree on the **outline/table of contents** with the user before drafting each section:
 
-1. Susun daftar section yang akan ditulis (per role kalau multi-role, per fitur dari PRD) sebagai outline singkat — cukup judul section + 1 baris ringkasan isinya, bukan draft lengkap
-2. Tampilkan outline ini ke user untuk dikonfirmasi/direvisi sebelum lanjut ke penulisan penuh — apakah ada section yang kurang, section yang tidak perlu, atau urutan yang perlu diubah
-3. Setelah outline disetujui, baru tulis draft lengkap per section
+1. List the sections to be written (per role if multi-role, per feature from the PRD) as a short outline — just section title + a 1-line summary of its content, not a full draft
+2. Show this outline to the user to confirm/revise before full writing — any missing sections, unneeded sections, or order changes
+3. Once the outline is approved, write the full draft section by section
 
-**Untuk dokumen kecil (≤5 section, 1 role, fitur sedikit)**, langsung tulis draft penuh tanpa tahap outline terpisah — overhead konfirmasi tidak sepadan untuk dokumen singkat.
+**For small documents (≤5 sections, 1 role, few features)**, write the full draft directly without a separate outline stage — the confirmation overhead isn't worth it for short documents.
 
-Alasan tahapan ini: dokumen user guide yang salah struktur (section kurang, urutan membingungkan, ada bagian tidak relevan untuk role tersebut) baru ketahuan setelah user baca draft penuh berarti kerja ulang besar — mengonfirmasi kerangka dulu jauh lebih murah diperbaiki.
+Reason for this stage: a badly structured user guide (missing sections, confusing order, parts irrelevant to that role) discovered only after the user reads the full draft means major rework — confirming the skeleton first is much cheaper to fix.
 
-## Struktur Dokumen
+## Document Structure
 
-### 1. Judul & Pembuka
+### 1. Title & Opening
 ```
 # Panduan Penggunaan [Nama Aplikasi]
 ## Untuk [Nama Role, misal: Karyawan / Admin HR]
@@ -45,15 +47,15 @@ Alasan tahapan ini: dokumen user guide yang salah struktur (section kurang, urut
 ```
 
 ### 2. Daftar Isi
-Wajib untuk dokumen dengan banyak fitur (>3 section), supaya user bisa lompat langsung ke bagian yang dicari tanpa scroll dari awal.
+Required for documents with many features (>3 sections), so the user can jump straight to the part they need without scrolling from the top.
 
 ### 3. Memulai (Getting Started)
-- Cara mengakses aplikasi (link, cara login, download app kalau mobile)
-- Tampilan awal yang akan dilihat user pertama kali (deskripsikan, sertakan screenshot kalau ada)
+- How to access the app (link, how to log in, app download if mobile)
+- The first screen the user will see (describe it, include a screenshot if available)
 
-### 4. Panduan Per Fitur
+### 4. Per-Feature Guide
 
-Ini bagian utama — satu section per fitur/kemampuan utama yang relevan untuk role tersebut. Format tiap fitur:
+This is the main part — one section per main feature/capability relevant to that role. Format for each feature:
 
 ```
 ## [Nama Fitur dalam bahasa user, bukan istilah teknis]
@@ -71,15 +73,15 @@ Ini bagian utama — satu section per fitur/kemampuan utama yang relevan untuk r
 > ⚠️ **Perhatian:** [kalau ada hal yang sering salah/perlu diwaspadai, opsional]
 ```
 
-**Aturan bahasa:**
-- Gunakan kata kerja aktif langsung: "Klik", "Pilih", "Isi" — bukan pasif ("tombol dapat diklik")
-- Hindari istilah teknis: bukan "submit form", tapi "klik tombol Kirim/Simpan"; bukan "endpoint gagal merespons", tapi "coba lagi beberapa saat, atau hubungi admin kalau masih gagal"
-- Sebut nama tombol/menu **persis** seperti yang tertulis di aplikasi (kalau tombolnya bertuliskan "Simpan Perubahan", jangan ditulis "klik simpan" — sebutkan lengkap dan konsisten)
-- Kalimat pendek, satu instruksi per langkah — jangan gabung beberapa aksi dalam satu poin
+**Language rules:**
+- Use direct active verbs: "Klik", "Pilih", "Isi" — not passive ("tombol dapat diklik")
+- Avoid technical terms: not "submit form" but "klik tombol Kirim/Simpan"; not "endpoint gagal merespons" but "coba lagi beberapa saat, atau hubungi admin kalau masih gagal"
+- Name buttons/menus **exactly** as written in the app (if the button says "Simpan Perubahan", don't write "klik simpan" — use the full name, consistently)
+- Short sentences, one instruction per step — don't combine several actions in one point
 
-### 5. Flowchart Alur (kalau ada proses multi-langkah/kondisional)
+### 5. Flow Flowchart (if there is a multi-step/conditional process)
 
-**Sertakan flowchart Mermaid** untuk alur yang punya percabangan atau lebih dari ~4 langkah berurutan — membantu user melihat "peta besar" sebelum masuk detail tiap langkah. Beda dari flowchart teknis di `prd-writer`, di sini **label pakai bahasa user**, bukan istilah sistem:
+**Include a Mermaid flowchart** for flows with branches or more than ~4 sequential steps — it helps the user see the "big picture" before the step details. Unlike the technical flowcharts in `prd-writer`, here **labels use the user's language**, not system terms:
 
 ```mermaid
 flowchart TD
@@ -90,47 +92,47 @@ flowchart TD
     E --> F[Pesanan berhasil disimpan]
 ```
 
-Tempatkan flowchart di **awal section fitur** (sebelum langkah detail) sebagai overview, atau di akhir sebagai ringkasan — pilih yang paling pas dengan kompleksitas fiturnya. Untuk fitur simpel (2-3 langkah linear tanpa percabangan), flowchart tidak perlu dipaksakan — cukup numbered list.
+Place the flowchart at the **start of the feature section** (before the detailed steps) as an overview, or at the end as a summary — whichever best fits the feature's complexity. For simple features (2-3 linear steps without branches), don't force a flowchart — a numbered list is enough.
 
-### 6. Screenshot (Opsional)
+### 6. Screenshots (Optional)
 
-Screenshot **sangat direkomendasikan** tapi opsional — sertakan kalau:
-- User meng-upload screenshot aplikasi yang bisa dipakai, ATAU
-- Ada artifact/mockup dari skill `mockup-prototype` yang sudah dibuat di percakapan ini, ATAU
-- User secara eksplisit minta dibuatkan mockup pendamping dokumentasi
+Screenshots are **highly recommended** but optional — include them if:
+- The user uploads usable app screenshots, OR
+- An artifact/mockup from the `mockup-prototype` skill was already made in this conversation, OR
+- The user explicitly asks for an accompanying mockup for the documentation
 
-**Cara menyertakan:**
-- Kalau user upload gambar aplikasi asli (lokasi upload beda tiap environment — pakai path yang diberikan user/environment), gunakan gambar itu langsung — copy ke lokasi output dan reference dengan markdown image syntax
-- Kalau tidak ada screenshot tersedia dan user tidak minta dibuatkan, **jangan mengarang gambar** — tulis placeholder yang jelas supaya gampang diisi belakangan:
+**How to include:**
+- If the user uploads real app images (upload location differs per environment — use the path the user/environment gives), use those images directly — copy them to the output location and reference them with markdown image syntax
+- If no screenshot is available and the user didn't ask for one to be made, **do not invent images** — write a clear placeholder that's easy to fill later:
   ```
   > 📸 *[Screenshot: tampilan halaman pilih menu]*
   ```
-- Kalau user minta dibuatkan visual pendamping tapi tidak ada screenshot asli, tawarkan untuk membuatkan mockup sederhana lewat skill `mockup-prototype` sebagai pengganti, jangan berpura-pura itu screenshot asli aplikasi
+- If the user asks for accompanying visuals but there are no real screenshots, offer to make a simple mockup via the `mockup-prototype` skill as a substitute; don't pretend it is a real app screenshot
 
-### 7. Pertanyaan Umum (FAQ) — Opsional
+### 7. Pertanyaan Umum (FAQ) — Optional
 
-Kalau ada pertanyaan yang kemungkinan besar muncul (dari edge case di PRD, atau hal yang sering jadi kebingungan), kumpulkan jadi FAQ singkat:
+If there are likely questions (from edge cases in the PRD, or common points of confusion), collect them into a short FAQ:
 ```
 **Q: Apa yang terjadi kalau saya tidak pilih menu sampai batas waktu?**
 A: Sistem otomatis memesankan menu default untuk kamu, kecuali hari itu kamu sedang cuti atau libur.
 ```
 
 ### 8. Butuh Bantuan?
-Section penutup singkat: kontak siapa/channel apa kalau user mengalami masalah yang tidak tercakup panduan ini.
+Short closing section: who/which channel to contact if the user has a problem not covered by this guide.
 
-## Prinsip Penulisan
+## Writing Principles
 
-1. **Tulis untuk pembaca yang belum pernah pakai aplikasi ini.** Kalau ragu apakah suatu istilah perlu dijelaskan, jelaskan — lebih baik sedikit berlebih daripada bikin user bingung.
-2. **Urutan sesuai urutan klik sungguhan**, bukan urutan logis versi developer. Ikuti sequence yang benar-benar dilihat user di layar.
-3. **Screenshot dan flowchart melengkapi teks, bukan pengganti.** Tetap tulis instruksi lengkap dalam teks meskipun ada visual, karena tidak semua orang membaca gambar dengan seksama (atau gambar belum tentu ter-render di semua platform baca).
-4. **Pisahkan dokumen per role kalau aplikasinya multi-role** dengan tampilan/kemampuan berbeda jauh (karyawan vs admin) — jangan gabung jadi satu dokumen campur aduk yang bikin karyawan bingung baca bagian admin, atau sebaliknya.
-5. **Update mengikuti perubahan aplikasi.** Kalau user bilang ada fitur yang berubah, revisi bagian itu saja, jangan tulis ulang seluruh dokumen dari nol.
+1. **Write for a reader who has never used this app.** If unsure whether a term needs explaining, explain it — slightly too much is better than confusing the user.
+2. **Order follows the real click order**, not the developer's logical order. Follow the sequence the user actually sees on screen.
+3. **Screenshots and flowcharts complement the text, not replace it.** Still write full text instructions even with visuals, because not everyone reads images carefully (and images may not render on every reading platform).
+4. **Split documents per role if the app is multi-role** with very different views/capabilities (employee vs. admin) — don't merge into one mixed document that confuses employees reading admin parts, or vice versa.
+5. **Update as the app changes.** If the user says a feature changed, revise only that part; don't rewrite the whole document from scratch.
 
-## Format Output
+## Output Format
 
-Dokumen dibuat sebagai **file Markdown** (`.md`) lewat tool pembuat file yang tersedia di environment ini, lalu disajikan/dikirim ke user lewat tool untuk menampilkan file (nama tool bervariasi antar environment) — supaya user bisa simpan dan share. Kalau user secara eksplisit minta format Word (untuk didistribusikan formal ke karyawan/dicetak), gunakan skill `docx` bawaan untuk convert setelah draft markdown disetujui.
+The document is created as a **Markdown file** (`.md`) with the file-creation tool available in this environment, then presented/sent to the user with the file-display tool (tool names vary by environment) — so the user can save and share it. If the user explicitly asks for Word format (for formal distribution to employees/printing), use the built-in `docx` skill to convert after the markdown draft is approved.
 
-## Referensi Skill Terkait
-- `prd-writer` — sumber requirement/fitur untuk dijadikan acuan konten
-- `mockup-prototype` — sumber visual/screenshot pengganti kalau screenshot asli belum ada
-- `docx` (built-in) — kalau dibutuhkan versi Word untuk distribusi formal
+## Related Skills
+- `prd-writer` — source of requirements/features to base the content on
+- `mockup-prototype` — source of substitute visuals/screenshots when real screenshots don't exist yet
+- `docx` (built-in) — when a Word version is needed for formal distribution

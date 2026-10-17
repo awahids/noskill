@@ -1,8 +1,8 @@
-# Coding Standards — Struktur Folder
+# Coding Standards — Folder Structure
 
-> Bagian dari skill `coding-standards`. Nomor bagian dipertahankan supaya rujukan seperti "bagian 4.5" tetap valid.
+> Part of the `coding-standards` skill. Section numbers are kept so references like "section 4.5" stay valid.
 
-## 4. Struktur Folder
+## 4. Folder Structure
 
 ### 4.1 NestJS (Modular by Feature)
 
@@ -21,30 +21,30 @@ src/
 ├── config/
 └── main.ts
 ```
-Aturan: 1 modul = 1 domain/fitur (bukan 1 tabel). Controller tidak boleh berisi business logic — hanya orkestrasi. Business logic wajib di Service, akses DB via Repository. DTO wajib pakai `class-validator`.
+Rules: 1 module = 1 domain/feature (not 1 table). Controllers must not contain business logic — orchestration only. Business logic must live in the Service, DB access via the Repository. DTOs must use `class-validator`.
 
 ### 4.2 Laravel
 
 ```
 app/
 ├── Http/Controllers/
-├── Http/Requests/     # Form Request untuk validasi
-├── Http/Resources/    # API Resource untuk response shaping
+├── Http/Requests/     # Form Request for validation
+├── Http/Resources/    # API Resource for response shaping
 ├── Services/
-├── Actions/            # single-purpose action class (opsional)
+├── Actions/            # single-purpose action class (optional)
 ├── Repositories/
 ├── Models/
 └── Exceptions/
 ```
-Aturan: controller tetap tipis (thin controller, fat service). Validasi wajib pakai Form Request. Response API konsisten pakai API Resource, jangan return Model mentah.
+Rules: keep controllers thin (thin controller, fat service). Validation must use Form Requests. API responses consistently use API Resources; never return a raw Model.
 
 ### 4.3 Vue.js
 ```
 src/
 ├── components/common/     # reusable
-├── components/features/   # per-fitur
+├── components/features/   # per feature
 ├── composables/
-├── views/ (atau pages/)
+├── views/ (or pages/)
 ├── stores/                 # Pinia
 ├── services/                # API call layer
 └── utils/
@@ -54,7 +54,7 @@ src/
 ```
 app/
 ├── (auth)/login/ register/
-├── dashboard/_components/  # private folder khusus halaman ini
+├── dashboard/_components/  # private folder for this page only
 components/                  # shared global
 lib/                          # utils, api client, helpers
 hooks/
@@ -66,38 +66,38 @@ types/
 ```
 cmd/
 └── api/
-    └── main.go                 # entry point, setup router & dependency injection
+    └── main.go                 # entry point, router setup & dependency injection
 
 internal/
-├── handler/                    # HTTP handler (setara controller) — parse request, call service, return response
+├── handler/                    # HTTP handler (controller equivalent) — parse request, call service, return response
 │   └── order_handler.go
 ├── service/                    # business logic
 │   └── order_service.go
-├── repository/                 # akses database (GORM/sqlx), interface + implementasi
+├── repository/                 # database access (GORM/sqlx), interface + implementation
 │   ├── order_repository.go
 │   └── order_repository_interface.go
-├── model/                      # struct entity (lihat naming di 2.4)
+├── model/                      # entity structs (see naming in 2.4)
 │   └── order.go
 ├── middleware/                 # auth, logging, CORS, recovery
 │   └── auth_middleware.go
-├── dto/                        # request/response struct (bukan entity langsung)
+├── dto/                        # request/response structs (not entities directly)
 │   ├── create_order_request.go
 │   └── order_response.go
-├── response/                    # helper response envelope (Success/Error/SuccessWithPagination), lihat bagian 6.2
+├── response/                    # response envelope helpers (Success/Error/SuccessWithPagination), see section 6.2
 │   └── response.go
-└── config/                     # konfigurasi env, database connection
+└── config/                     # env config, database connection
 
-pkg/                            # kode reusable lintas project (kalau ada)
-migrations/                     # file migration (golang-migrate/goose)
+pkg/                            # code reusable across projects (if any)
+migrations/                     # migration files (golang-migrate/goose)
 ```
 
-**Aturan:**
-- `internal/` dipakai untuk semua kode yang spesifik ke project ini — Go compiler mencegah package `internal/` diimpor dari luar module, ini fitur bahasa yang wajib dimanfaatkan (bukan sekadar konvensi)
-- Handler **tidak boleh** berisi business logic atau akses database langsung — hanya bind request, panggil service, format response
-- Repository wajib berupa interface + implementasi terpisah, supaya bisa di-mock untuk testing
-- DTO (request/response) dipisah dari model/entity — jangan expose struct database langsung sebagai response API, meskipun field-nya kebetulan sama (lihat aturan field parity di 2.4/2.5, tapi tetap disiplin pisahkan layer-nya untuk fleksibilitas validasi/dokumentasi)
+**Rules:**
+- `internal/` holds all code specific to this project — the Go compiler prevents `internal/` packages from being imported outside the module; this is a language feature that must be used (not just a convention)
+- Handlers **must not** contain business logic or direct database access — only bind the request, call the service, format the response
+- Repositories must be an interface + separate implementation, so they can be mocked for testing
+- DTOs (request/response) are separate from models/entities — don't expose database structs directly as API responses, even if the fields happen to match (see the field parity rule in 2.4/2.5, but still keep the layers separate for validation/documentation flexibility)
 
-**Routing dengan versioning (Gin), konsisten dengan bagian 6.1:**
+**Routing with versioning (Gin), consistent with section 6.1:**
 ```go
 func SetupRouter(h *handler.OrderHandler) *gin.Engine {
     r := gin.Default()

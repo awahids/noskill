@@ -1,90 +1,90 @@
 ---
 name: erp-requirements
 description: >-
-  Requirement ERP/WMS dalam dua bagian. (A) Checklist desain domain sebelum menulis schema: master data terpusat, stock ledger (bukan field stock), workflow status, RBAC, audit trail, document numbering, roadmap MVP, modular monolith. (B) Dokumen requirement dengan rantai ID traceable BR → PROC → US → AC → TECH → TC → UAT dan matrix ownership. Gunakan saat mendesain modul/ERD ERP (inventory, purchasing, sales, finance, WMS), atau saat user minta BRD, user story + acceptance criteria, traceability matrix, atau requirement formal fitur ERP.
+  ERP/WMS requirements in two parts: (A) domain design checklist before schema/ERD — master data, stock ledger, workflow status, RBAC, audit, numbering, MVP; (B) traceable BRD chain BR → PROC → US → AC → TECH → TC → UAT. Use for "desain ERD inventory", "buatkan BRD", "user story + AC".
 ---
 
 # ERP Requirements
 
-Folder dokumen noskill: `${user_config.docs_dir}` — selanjutnya ditulis `<docs>`. Kalau nilai itu masih tertulis apa adanya (tidak tersubstitusi), pakai `docs/noskill`.
+noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
 
-Dua bagian yang dipakai berurutan:
-- **Bagian A — Desain domain:** checklist sebelum menulis schema/ERD. Dipakai di `feature-flow` Tahap 1, di sesi utama.
-- **Bagian B — BRD traceability:** dokumen requirement formal dengan ID yang bisa ditelusuri. Dipakai di `feature-flow` Tahap 3 oleh agent `brd-tracer`.
+Two parts, used in order:
+- **Part A (Bagian A) — Domain design:** checklist before writing schema/ERD. Used in `feature-flow` Tahap 1, in the main session.
+- **Part B (Bagian B) — BRD traceability:** formal requirement document with traceable IDs. Used in `feature-flow` Tahap 3 by the `brd-tracer` agent.
 
-Kalau permintaannya hanya salah satu (misal "desain ERD inventory" atau "buatkan user story + AC"), pakai bagian itu saja.
+If the request covers only one (e.g. "desain ERD inventory" or "buatkan user story + AC"), use only that part.
 
-## Bagian A — Desain Domain
+## Part A (Bagian A) — Domain Design
 
-Kumpulan prinsip desain untuk sistem ERP/WMS supaya konsisten di semua modul dan tidak menimbulkan masalah data ("kok stock di Sales 100, Warehouse 87, Dashboard 92?"). Pakai sebagai checklist sebelum membuat ERD/schema/API untuk modul baru.
+Design principles for ERP/WMS systems so all modules stay consistent and avoid data problems ("kok stock di Sales 100, Warehouse 87, Dashboard 92?"). Use as a checklist before creating the ERD/schema/API for a new module.
 
-### 0. Tentukan core business dulu
+### 0. Define the core business first
 
-Sebelum bikin modul apapun, jawab: "perusahaan ini menghasilkan uang dari proses apa?" Gambar alur besarnya dulu (mis. Purchasing → Receiving → Warehouse → Production → Sales Order → Delivery → Invoice → Payment). Modul ERP yang dibutuhkan mengikuti alur ini, bukan sebaliknya.
+Before building any module, answer: "how does this company make money?" Draw the big flow first (e.g. Purchasing → Receiving → Warehouse → Production → Sales Order → Delivery → Invoice → Payment). The ERP modules needed follow this flow, not the other way around.
 
-### 1. Master Data adalah fondasi — satu sumber, dipakai semua modul
+### 1. Master Data is the foundation — one source, used by all modules
 
-Jangan biarkan tiap modul punya tabel item/customer sendiri. Struktur minimal:
+Don't let each module keep its own item/customer table. Minimum structure:
 ```
 Organization → Company → Branch → Department → Warehouse
 Product      → Item → Category / Unit / Brand / Variant / Batch-Lot / Serial Number
 Business Partner → Customer / Vendor / Employee
 ```
-Satu master `Item` dipakai Purchasing, Inventory, Sales, Production, Finance — bukan masing-masing modul punya copy sendiri.
+One `Item` master is used by Purchasing, Inventory, Sales, Production, Finance — not a separate copy per module.
 
-### 2. Stock Ledger, bukan field stock
+### 2. Stock Ledger, not a stock field
 
-**Jangan** simpan `item.stock = 100` langsung. **Pakai** stock movement / ledger sebagai sumber audit:
+**Don't** store `item.stock = 100` directly. **Use** stock movements / a ledger as the audit source:
 ```
 StockMovement: id, item, warehouse, location, batch, type, reference, quantity, direction, created_at
 ```
-Contoh entry: `PURCHASE_RECEIVE +100`, `SALES_SHIP -20`, `TRANSFER_OUT -10`, `TRANSFER_IN +10`, `ADJUSTMENT +5`.
-`current_stock = SUM(semua stock movement)` — atau pakai `stock_balances` sebagai cache untuk performa, tapi ledger tetap jadi sumber kebenaran saat ada pertanyaan "kenapa stock item A tinggal 70?".
+Example entries: `PURCHASE_RECEIVE +100`, `SALES_SHIP -20`, `TRANSFER_OUT -10`, `TRANSFER_IN +10`, `ADJUSTMENT +5`.
+`current_stock = SUM(semua stock movement)` — or use `stock_balances` as a performance cache, but the ledger stays the source of truth when someone asks "why does item A only have 70 left?".
 
-### 3. Semua transaksi punya workflow status, bukan sekadar CRUD
+### 3. Every transaction has a workflow status, not just CRUD
 
-Contoh Purchase Order: `DRAFT → SUBMITTED → APPROVED → PARTIALLY_RECEIVED → COMPLETED`.
-Contoh Sales Order: `DRAFT → SUBMITTED → APPROVED → PICKING → PACKING → SHIPPED → COMPLETED`.
-Setiap dokumen transaksi idealnya punya: Header, Details, Status, Approval, History, Audit Log.
+Purchase Order example: `DRAFT → SUBMITTED → APPROVED → PARTIALLY_RECEIVED → COMPLETED`.
+Sales Order example: `DRAFT → SUBMITTED → APPROVED → PICKING → PACKING → SHIPPED → COMPLETED`.
+Each transaction document should ideally have: Header, Details, Status, Approval, History, Audit Log.
 
-### 4. RBAC, bukan hardcode role
+### 4. RBAC, not hardcoded roles
 
 ```
 User → Role → Permission
 ```
-Hindari `if (user.role === 'ADMIN') ...` tersebar di code. Definisikan permission granular per aksi (mis. `inventory.goods_receipt.confirm`, `purchasing.po.approve`).
+Avoid `if (user.role === 'ADMIN') ...` scattered through the code. Define granular per-action permissions (e.g. `inventory.goods_receipt.confirm`, `purchasing.po.approve`).
 
-### 5. Audit Trail wajib untuk sistem serius
+### 5. Audit Trail is mandatory for serious systems
 
-Simpan minimal: Who, What, When, Before, After, Reason. Contoh:
+Store at least: Who, What, When, Before, After, Reason. Example:
 ```
 User: budi.santoso | Action: UPDATE | Module: Purchase Order | Document: PO/260920/0012
 Before: quantity=100 → After: quantity=120 | Reason: Vendor confirmation
 ```
 
-### 6. Document numbering tersentralisasi
+### 6. Centralized document numbering
 
-Jangan generate nomor dokumen (PO/SO/GR/DO/INV) di frontend. Buat `document_sequence` service terpusat. Format umum: `PO/2609/00001`.
+Don't generate document numbers (PO/SO/GR/DO/INV) in the frontend. Build a central `document_sequence` service. Common format: `PO/2609/00001`.
 
-### 7. Tentukan source of truth per entity — hindari data ganda
+### 7. Define a source of truth per entity — avoid duplicate data
 
 ```
 Item        → Item Master     → dipakai Purchasing, Inventory, Sales, Production, Finance
 Customer    → Customer Master → dipakai Sales, Delivery, Invoice, Payment
 Stock       → Stock Ledger    → dipakai Warehouse, Sales, Purchasing, Production, Reporting
 ```
-Jangan sampai Sales, Warehouse, dan Production masing-masing punya angka stock sendiri yang bisa beda-beda.
+Sales, Warehouse, and Production must not each hold their own stock numbers that can diverge.
 
-### 8. Urutan desain: business flow dulu, baru ERD
+### 8. Design order: business flow first, then ERD
 
 ```
 Business Process → Requirement → Workflow → Document → Database Model → API → UI
 ```
-Jangan langsung "buat Prisma schema → buat CRUD → buat frontend" tanpa memetakan proses bisnis dan workflow dulu.
+Don't jump straight to "buat Prisma schema → buat CRUD → buat frontend" without mapping the business process and workflow first.
 
-### 9. Roadmap MVP bertahap — jangan bangun 15 modul sekaligus
+### 9. Phased MVP roadmap — don't build 15 modules at once
 
-| Fase | Modul |
+| Phase | Modules |
 |---|---|
 | 1 — Foundation | Auth, User, Role, Permission, Company, Branch, Warehouse, Audit Log, Document Number |
 | 2 — Master | Item, Category, Unit, Customer, Vendor, Warehouse, Location |
@@ -92,41 +92,41 @@ Jangan langsung "buat Prisma schema → buat CRUD → buat frontend" tanpa memet
 | 4 — Purchasing | Purchase Request, Purchase Order, Goods Receipt, Supplier Invoice |
 | 5 — Sales | Sales Order, Picking, Delivery Order, Sales Invoice |
 | 6 — Finance | Account, Journal, Invoice, Payment, AR, AP |
-| Setelahnya | Manufacturing, HR, Payroll, Asset, CRM, Project, Maintenance, BI |
+| Later | Manufacturing, HR, Payroll, Asset, CRM, Project, Maintenance, BI |
 
-### 10. Arsitektur: modular monolith dulu, microservices belakangan
+### 10. Architecture: modular monolith first, microservices later
 
-Mulai dari satu aplikasi (mis. NestJS) dengan modul terpisah jelas:
+Start with one application (e.g. NestJS) with clearly separated modules:
 ```
 apps/erp-api/src/modules/
   ├── iam/  ├── master-data/  ├── purchasing/  ├── inventory/
   ├── sales/  ├── finance/  ├── manufacturing/  └── audit/
 ```
-Satu PostgreSQL sebagai starting point. Microservices baru relevan kalau sudah butuh independent deployment/scaling, team ownership per service, failure isolation, domain sudah matang, dan integration boundary jelas — bukan karena "biar modern". Kalau boundary bisnis belum jelas, microservices cuma menambah kompleksitas (network, API gateway, message broker, distributed transaction, deployment, monitoring, retry, event consistency, service discovery) padahal bisnisnya sendiri belum stabil.
+One PostgreSQL as the starting point. Microservices only become relevant when you need independent deployment/scaling, per-service team ownership, failure isolation, a mature domain, and clear integration boundaries — not "to be modern". If business boundaries are still unclear, microservices only add complexity (network, API gateway, message broker, distributed transactions, deployment, monitoring, retries, event consistency, service discovery) while the business itself isn't stable yet.
 
-Ikuti urutan: `Business Capability → Bounded Context → Application Module → Technical Component`. Contoh: Warehouse Management → Inventory Context → Inventory Module → `StockService`, `StockMovementService`, `ReservationService`, `StockRepository`.
+Follow the order: `Business Capability → Bounded Context → Application Module → Technical Component`. Example: Warehouse Management → Inventory Context → Inventory Module → `StockService`, `StockMovementService`, `ReservationService`, `StockRepository`.
 
-### 11. Inventory harus jadi single owner stock, bukan diubah langsung modul lain
+### 11. Inventory must be the single owner of stock, not modified directly by other modules
 
-Salah: `Sales → UPDATE stock` langsung, `Purchasing → UPDATE stock` langsung.
-Benar: `Purchasing → Goods Receipt → Inventory → Stock Movement → Stock Balance` dan `Sales → Shipment → Inventory → Stock Movement → Stock Balance`.
+Wrong: `Sales → UPDATE stock` directly, `Purchasing → UPDATE stock` directly.
+Right: `Purchasing → Goods Receipt → Inventory → Stock Movement → Stock Balance` and `Sales → Shipment → Inventory → Stock Movement → Stock Balance`.
 
-### 12. Event untuk side-effect, bukan untuk transaksi inti
+### 12. Events for side-effects, not for core transactions
 
-Event cocok untuk hal seperti notifikasi/integrasi setelah `Goods Receipt Confirmed`. Tapi transaksi inti (mis. confirm GR + update stock) sebaiknya tetap satu transaction boundary yang jelas — jangan pecah jadi rantai Service A → Event → Service B → Event → Service C kalau sebenarnya bisa selesai dalam satu transaction.
+Events suit things like notifications/integrations after `Goods Receipt Confirmed`. But the core transaction (e.g. confirm GR + update stock) should stay within one clear transaction boundary — don't split it into a chain Service A → Event → Service B → Event → Service C if it can be done in one transaction.
 
 
-## Bagian B — BRD Traceability
+## Part B (Bagian B) — BRD Traceability
 
-Framework 5-layer untuk mendokumentasikan fitur ERP/enterprise dari masalah bisnis sampai rilis, dengan setiap artefak bisa ditelusuri (traceable) ke artefak sebelum dan sesudahnya. Dipakai supaya tidak ada fitur yang "requirement-nya nggak jelas dari mana" dan tidak ada bug yang "nggak ketahuan melanggar requirement yang mana".
+A 5-layer framework for documenting ERP/enterprise features from business problem to release, with every artifact traceable to the artifacts before and after it. Prevents features whose "requirement came from nowhere" and bugs where "nobody knows which requirement they violate".
 
-### Kapan pakai full chain vs ringkas
+### When to use the full chain vs. the short form
 
-- **Fitur baru / cross-functional / butuh sign-off bisnis** (mis. Goods Receipt, approval PO, perhitungan stock) → jalankan full chain (Layer 1–5).
-- **Perubahan kecil / bugfix / internal tooling** → cukup User Story + Acceptance Criteria + Technical Task (Layer 3–4), skip BRD & UAT formal.
-- Kalau tidak yakin, tanya user: "ini perlu full BRD-to-UAT, atau langsung ke user story + AC saja?"
+- **New / cross-functional feature / needs business sign-off** (e.g. Goods Receipt, PO approval, stock calculation) → run the full chain (Layers 1–5).
+- **Small change / bugfix / internal tooling** → User Story + Acceptance Criteria + Technical Task (Layers 3–4) is enough; skip BRD and formal UAT.
+- If unsure, ask the user: "ini perlu full BRD-to-UAT, atau langsung ke user story + AC saja?"
 
-### Alur 5 Layer
+### 5-Layer Flow
 
 ```
 1. BUSINESS REQUIREMENT (BR)      "Kenapa & apa yang bisnis butuhkan?"
@@ -140,33 +140,33 @@ Framework 5-layer untuk mendokumentasikan fitur ERP/enterprise dari masalah bisn
 5. TESTING / UAT (TC + UAT)       "Buktikan sistem sesuai requirement"
 ```
 
-Prinsip utama: **pisahkan kebutuhan bisnis, perilaku sistem, dan cara implementasi.** Jangan langsung "user minta menu GR" → "oke bikin CRUD Goods Receipt". Selalu urut: masalah bisnis → proses bisnis → business rule → requirement → acceptance criteria → baru desain teknis → coding.
+Core principle: **separate business needs, system behavior, and implementation.** Don't go straight from "user wants a GR menu" to "ok, build Goods Receipt CRUD". Always in order: business problem → business process → business rule → requirement → acceptance criteria → only then technical design → coding.
 
-### Skema penomoran ID
+### ID numbering scheme
 
-Pakai prefix + domain + nomor urut, konsisten di semua layer supaya bisa di-grep dan di-trace:
+Use prefix + domain + sequence number, consistent across all layers so it can be grepped and traced:
 
-| Layer | Prefix | Contoh |
+| Layer | Prefix | Example |
 |---|---|---|
 | Business Requirement | `BR-<DOMAIN>-NNN` | `BR-INV-001` |
 | Business Process | `PROC-<DOMAIN>-NNN` | `PROC-INV-001` |
 | User Story | `US-<DOMAIN>-NNN` | `US-INV-001` |
 | Functional Requirement | `FR-<DOMAIN>-NNN` | `FR-INV-001` |
-| Acceptance Criteria | `AC-NNN` (di bawah satu US) | `AC-001`..`AC-005` |
-| Technical Task | `TECH-NNN` (di bawah satu US) | `TECH-001`..`TECH-010` |
+| Acceptance Criteria | `AC-NNN` (under one US) | `AC-001`..`AC-005` |
+| Technical Task | `TECH-NNN` (under one US) | `TECH-001`..`TECH-010` |
 | Test Case | `TC-<DOMAIN>-NNN` | `TC-INV-001` |
 | UAT Scenario | `UAT-<DOMAIN>-NNN` | `UAT-INV-001` |
 
-`<DOMAIN>` singkat 3 huruf sesuai modul: `INV` (inventory), `PUR` (purchasing), `SLS` (sales), `FIN` (finance), `MFG` (manufacturing).
+`<DOMAIN>` is a 3-letter module code: `INV` (inventory), `PUR` (purchasing), `SLS` (sales), `FIN` (finance), `MFG` (manufacturing).
 
-Rantai lengkap satu fitur:
+Full chain for one feature:
 ```
 BR-INV-001 → PROC-INV-001 → US-INV-001 → [AC-001..AC-00N] → [TECH-001..TECH-00N] → [TC-001..TC-00N] → UAT-INV-001 → Release
 ```
 
 ### Layer 1 — Business Requirement (BR)
 
-Jawab "kenapa sistem ini dibuat", bukan database/API/UI. Isi minimal:
+Answers "why is this system being built", not database/API/UI. Minimum contents:
 
 1. Document Information
 2. Background
@@ -180,7 +180,7 @@ Jawab "kenapa sistem ini dibuat", bukan database/API/UI. Isi minimal:
 10. Assumptions & Constraints
 11. Glossary
 
-Contoh singkat:
+Short example:
 ```
 BR-INV-001
 Business Requirement: Perusahaan membutuhkan proses penerimaan barang
@@ -190,20 +190,20 @@ stock secara terkontrol.
 
 ### Layer 2 — Business Process (PROC)
 
-Jelaskan alur nyata proses bisnisnya (bukan implementasi). Field yang perlu diisi: Process ID, Objective, Trigger, Actor, Precondition, Main Flow, Alternative Flow, Exception Flow, Business Rules, Output, Status/Approval, Integration.
+Describe the real business process flow (not the implementation). Fields to fill: Process ID, Objective, Trigger, Actor, Precondition, Main Flow, Alternative Flow, Exception Flow, Business Rules, Output, Status/Approval, Integration.
 
-Contoh business rule yang biasa muncul di sini:
+Typical business rules here:
 - "PO harus APPROVED sebelum dapat dibuatkan GR."
 - "Received Qty tidak boleh melebihi Outstanding Qty."
 - "GR yang sudah CONFIRMED tidak boleh diedit."
 
-Ini juga tempat menentukan status/workflow transaksi, lihat Bagian A untuk pola workflow status yang konsisten.
+This is also where transaction status/workflow is defined; see Part A for the consistent workflow status pattern.
 
 ### Layer 3 — Functional Specification (US + FR + AC)
 
-Jembatan business ↔ engineering. Isi: User Story, Functional Requirement, Acceptance Criteria, validasi, permission, status transition, notification, audit requirement, UI requirement, error handling.
+The business ↔ engineering bridge. Contents: User Story, Functional Requirement, Acceptance Criteria, validation, permission, status transition, notification, audit requirement, UI requirement, error handling.
 
-**User Story** — format standar:
+**User Story** — standard format:
 ```
 US-INV-001
 Sebagai <role>,
@@ -211,7 +211,7 @@ saya ingin <aksi>,
 agar <manfaat/tujuan bisnis>.
 ```
 
-**Acceptance Criteria** — format Given/When/Then, satu AC = satu kondisi terverifikasi:
+**Acceptance Criteria** — Given/When/Then format, one AC = one verifiable condition:
 ```
 AC-001
 Given PO sudah APPROVED
@@ -223,11 +223,11 @@ Given outstanding quantity = 30
 When user memasukkan quantity = 40
 Then sistem menolak transaksi.
 ```
-AC menjadi **kontrak perilaku sistem** — jangan mulai desain teknis sebelum AC lengkap mencakup: happy path, validation/reject path, side-effect (mis. stock movement tercipta), dan larangan (mis. data yang sudah confirmed tidak boleh diedit).
+ACs are the **system behavior contract** — don't start technical design until the ACs fully cover: happy path, validation/reject path, side-effects (e.g. a stock movement is created), and prohibitions (e.g. confirmed data cannot be edited).
 
 ### Layer 4 — Technical Specification (TECH)
 
-Baru di sini bicara arsitektur, ERD, API, service, transaction, authorization, event, logging. Turunkan Technical Task langsung dari AC yang sudah dibuat — jangan sebaliknya.
+Only here do you talk architecture, ERD, API, services, transactions, authorization, events, logging. Derive Technical Tasks directly from the ACs already written — not the other way around.
 
 ```
 US-INV-001 + AC-001..AC-005
@@ -243,11 +243,11 @@ TECH-008  Tambah permission inventory.goods_receipt.confirm
 TECH-009  Implementasi audit log
 ```
 
-Technical Task **bukan** requirement bisnis — dia hasil turunan dari functional requirement/AC. Untuk breakdown task lebih detail dengan struktur folder/konvensi kode proyek, lanjutkan ke skill `task-breakdown` / `coding-standards` — `task-breakdown` memetakan tiap TECH-xxx ke Task-ID lewat kolom **Trace**, jadi rantai traceability tetap utuh sampai task tracker.
+A Technical Task is **not** a business requirement — it is derived from the functional requirement/AC. For more detailed task breakdown using the project's folder structure/code conventions, continue with the `task-breakdown` / `coding-standards` skills — `task-breakdown` maps each TECH-xxx to a Task-ID via the **Trace** column, so the traceability chain stays intact up to the task tracker.
 
 ### Layer 5 — Testing & UAT
 
-Setiap AC harus punya minimal satu Test Case **positif** dan, kalau AC punya kondisi tolak/larangan, minimal satu Test Case **negatif**. Tandai jenisnya di field `Type`:
+Every AC must have at least one **positive** Test Case and, if the AC has a reject/prohibition condition, at least one **negative** Test Case. Mark the kind in the `Type` field:
 ```
 TC-INV-001
 Requirement : US-INV-001 / AC-002
@@ -257,7 +257,7 @@ Input       : Outstanding = 30, Received = 40
 Expected    : Sistem menolak transaksi.
 ```
 
-UAT dilakukan business user, langkahnya urutan aksi nyata:
+UAT is done by business users; steps are the real sequence of actions:
 ```
 UAT-INV-001
 Warehouse Staff → pilih PO → input receiving → confirm
@@ -266,7 +266,7 @@ Warehouse Staff → pilih PO → input receiving → confirm
 
 ### Ownership per layer
 
-| Layer | Main Owner | Input dari | Approver |
+| Layer | Main Owner | Input from | Approver |
 |---|---|---|---|
 | BRD | BA / Product Owner | Business Owner + SME | Business Owner |
 | Process | BA | Process Owner + SME | Process Owner |
@@ -274,9 +274,9 @@ Warehouse Staff → pilih PO → input receiving → confirm
 | Technical | Architect / Tech Lead | Developer + BA | Architect / Tech Lead |
 | Testing | QA | BA + Dev + SME | Business User |
 
-Hindari tiap divisi bikin BRD sendiri-sendiri untuk proses cross-functional (purchasing → warehouse → finance) — pakai centralized ownership di atas + input lintas fungsi.
+Avoid each division writing its own BRD for a cross-functional process (purchasing → warehouse → finance) — use the centralized ownership above with cross-functional input.
 
-### Struktur folder dokumentasi (kalau disimpan di repo)
+### Documentation folder structure (if stored in the repo)
 
 ```
 <docs>/
@@ -287,7 +287,7 @@ Hindari tiap divisi bikin BRD sendiri-sendiri untuk proses cross-functional (pur
 └── 05-testing/         (test-cases/, integration/, uat/)
 ```
 
-### Mapping ke Jira/Linear
+### Mapping to Jira/Linear
 
 ```
 Epic (mis. "Inventory Management")
@@ -296,27 +296,27 @@ Epic (mis. "Inventory Management")
               ├── Technical Task (TECH-001..TECH-00N)
               └── QA Sub-task (TC-001..TC-00N)
 ```
-Task management (Jira/Linear) mengelola pekerjaan; dokumen requirement tetap jadi sumber kebenaran untuk why/what/how/expected behavior — jangan gunakan tiket sebagai pengganti dokumen.
+Task management (Jira/Linear) manages the work; the requirement document stays the source of truth for why/what/how/expected behavior — don't use tickets as a substitute for documents.
 
 
-## Cara pakai
+## How to use
 
-**Desain domain (Bagian A):**
-1. Kalau user mau desain modul/ERD baru untuk ERP/WMS, jalankan checklist Bagian A satu per satu sebelum menulis schema.
-2. Kalau user tanya "modul apa duluan", rujuk roadmap MVP (A.9).
-3. Konvensi penamaan/struktur folder kode ada di skill `coding-standards`.
+**Domain design (Part A):**
+1. If the user wants to design a new ERP/WMS module/ERD, go through the Part A checklist item by item before writing the schema.
+2. If the user asks "which module first", refer to the MVP roadmap (A.9).
+3. Code naming/folder structure conventions are in the `coding-standards` skill.
 
-**Dokumen requirement (Bagian B):**
-Kalau user minta dibuatkan requirement/BRD/user-story untuk fitur ERP:
-1. Tanyakan domain modulnya (inventory/purchasing/sales/finance/manufacturing) untuk prefix ID.
-2. Tanyakan level: full chain (BR→UAT) atau ringkas (US→AC→TECH saja).
-3. Gali Business Problem & business rule dulu sebelum masuk ke User Story — jangan loncat.
-4. Tulis output mengikuti template tiap layer di atas, dengan ID yang konsisten dan saling merujuk.
-5. Kalau butuh contoh end-to-end lengkap satu fitur (Goods Receipt), baca `references/example-goods-receipt.md`.
+**Requirement document (Part B):**
+If the user asks for requirements/BRD/user stories for an ERP feature:
+1. Ask for the module domain (inventory/purchasing/sales/finance/manufacturing) for the ID prefix.
+2. Ask for the level: full chain (BR→UAT) or short (US→AC→TECH only).
+3. Dig into the Business Problem and business rules before moving to User Stories — don't skip ahead.
+4. Write output following each layer's template above, with consistent, cross-referencing IDs.
+5. For a complete end-to-end example of one feature (Goods Receipt), read `references/example-goods-receipt.md`.
 
-## Posisi dalam alur noskill
+## Position in the noskill flow
 
 ```
 Bagian A (desain domain) → prd-writer → Bagian B (BRD) → task-breakdown → coding-standards → debug-assistant → user-guide
 ```
-Untuk menjalankan seluruh alur sampai tiket DONE (develop → review → QA), gunakan skill `feature-flow` — Bagian B dikerjakan agent `brd-tracer` yang memuat skill ini.
+To run the whole flow until tickets are DONE (develop → review → QA), use the `feature-flow` skill — Part B is done by the `brd-tracer` agent, which loads this skill.

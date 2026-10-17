@@ -1,74 +1,74 @@
 ---
 name: debug-assistant
 description: >-
-  Alur debugging terstruktur: reproduce → isolasi → diagnosa root cause → fix → verifikasi dengan bukti, termasuk integrasi eksternal (WMS API, n8n, Power Automate, Microsoft Graph). Gunakan saat user melaporkan error, stack trace, bug, "kok error", "gak jalan", atau API call gagal.
+  Structured debugging: reproduce → isolate → root cause → fix → verify with evidence, incl. external integrations (WMS API, n8n, Power Automate, Microsoft Graph). Use on errors, stack traces, bugs, failed API calls, "kok error", "gak jalan".
 ---
 
 # Debug Assistant
 
-Gunakan alur terstruktur ini setiap kali membantu debugging, alih-alih langsung menebak solusi. Tujuannya: temukan akar masalah (root cause), bukan cuma menghilangkan gejala.
+Use this structured flow whenever helping debug, instead of guessing a fix right away. Goal: find the root cause, not just remove the symptom.
 
-## Alur Debugging
+## Debugging Flow
 
 ### 1. Reproduce
-Sebelum menyimpulkan apa pun, pastikan masalahnya bisa direproduksi:
-- Minta langkah persis yang dilakukan user (request, input, environment)
-- Kalau ada error message/stack trace, minta full text-nya, jangan potong
-- Tanyakan: apakah konsisten terjadi, atau kadang jalan kadang tidak? (indikasi race condition/timing issue)
-- Untuk API: minta contoh request lengkap (method, headers, body) dan response yang diterima
+Before concluding anything, make sure the problem can be reproduced:
+- Ask for the exact steps the user took (request, input, environment)
+- If there's an error message/stack trace, ask for the full text, not truncated
+- Ask: does it happen consistently, or only sometimes? (sign of a race condition/timing issue)
+- For APIs: ask for the full example request (method, headers, body) and the response received
 
-### 2. Isolasi
-Persempit area masalah sebelum menebak penyebab:
-- Kapan terakhir kali ini berfungsi normal? Apa yang berubah sejak itu? (deploy baru, dependency update, config change)
-- Apakah terjadi di semua environment atau spesifik satu (staging vs production, local vs server)?
-- Kalau melibatkan integrasi eksternal (WMS API, Microsoft Graph, n8n, Power Automate) — isolasi apakah masalah di request kita, response mereka, atau di tengah (network/timeout/auth)
+### 2. Isolate
+Narrow the problem area before guessing the cause:
+- When did it last work normally? What changed since? (new deploy, dependency update, config change)
+- Does it happen in all environments or only one (staging vs production, local vs server)?
+- If an external integration is involved (WMS API, Microsoft Graph, n8n, Power Automate) — isolate whether the problem is in our request, their response, or in between (network/timeout/auth)
 
-### 3. Diagnosa
-Cek dari yang paling mungkin dulu, urutan prioritas:
-1. **Input/validasi** — data yang masuk memang salah/tidak sesuai ekspektasi?
-2. **Logic/business rule** — kondisi yang salah, off-by-one, null/undefined handling
-3. **State/data** — data di database sudah dalam kondisi tidak konsisten sebelum request ini
-4. **Konfigurasi/environment** — env var beda, secret salah, endpoint URL beda
-5. **Eksternal/integrasi** — service lain down, rate limit, auth token expired
+### 3. Diagnose
+Check the most likely first, in priority order:
+1. **Input/validation** — is the incoming data actually wrong/not as expected?
+2. **Logic/business rule** — wrong condition, off-by-one, null/undefined handling
+3. **State/data** — database data was already inconsistent before this request
+4. **Configuration/environment** — different env var, wrong secret, different endpoint URL
+5. **External/integration** — another service down, rate limit, expired auth token
 6. **Infra** — memory, timeout, concurrency
 
-Untuk tiap hipotesis, sebutkan **cara verifikasi cepat** (log tambahan, query DB, curl manual) sebelum langsung ubah kode.
+For each hypothesis, state a **quick way to verify** it (extra logging, DB query, manual curl) before changing code.
 
-**Teknik diagnosa spesifik (pakai sesuai jenis bug):**
+**Specific diagnosis techniques (use according to bug type):**
 
-- **Root-cause tracing** — kalau bug muncul di titik A, jangan langsung asumsikan A tempatnya. Telusuri balik: dari mana data/state yang salah ini berasal? Ikuti call stack atau alur data mundur sampai ketemu titik **pertama kali** nilai itu jadi salah — bukan titik pertama kali *terlihat* salah. Contoh: error null di `order.total_amount` saat render — jangan langsung tambah null-check di situ, telusuri kenapa `total_amount` bisa null (kalkulasi di service? default value hilang di migration? race condition saat insert?).
-- **Defense-in-depth** — setelah root cause ketemu dan fix di titik asal, pertimbangkan apakah perlu **lapisan validasi tambahan** di titik-titik lain yang rentan (bukan pengganti fix akar masalah, tapi pengaman kalau ada jalur lain yang belum ketahuan menghasilkan kondisi serupa). Jangan berhenti di satu titik fix kalau bug ini tipe yang bisa muncul dari banyak jalur.
-- **Condition-based waiting** (untuk race condition/timing issue) — kalau gejalanya "kadang gagal, kadang berhasil" terkait timing (async, job queue, event), **jangan** fix dengan `setTimeout`/`sleep` tetap. Ganti dengan menunggu **kondisi aktual** yang harus terpenuhi (polling status, event listener, promise yang resolve saat kerjaan selesai) — delay tetap cuma menyembunyikan race condition, bukan menghilangkan.
+- **Root-cause tracing** — if the bug shows up at point A, don't assume A is where it lives. Trace back: where did this wrong data/state come from? Follow the call stack or data flow backwards until you find the point where the value **first became** wrong — not where it was first *seen* wrong. Example: null error on `order.total_amount` at render — don't just add a null-check there; trace why `total_amount` can be null (calculation in the service? default value lost in a migration? race condition on insert?).
+- **Defense-in-depth** — after the root cause is found and fixed at the origin, consider whether **additional validation layers** are needed at other vulnerable points (not a replacement for the root fix, but a safeguard in case other unknown paths produce a similar condition). Don't stop at a single fix point if this bug type can arise from many paths.
+- **Condition-based waiting** (for race conditions/timing issues) — if the symptom is "sometimes fails, sometimes works" and timing-related (async, job queue, event), **don't** fix it with a fixed `setTimeout`/`sleep`. Instead wait for the **actual condition** that must be met (status polling, event listener, a promise that resolves when the work is done) — a fixed delay only hides the race condition, it doesn't remove it.
 
-### 4. Fix & Verifikasi
-- Fix root cause, bukan gejala (contoh: kalau race condition, jangan cuma tambah `setTimeout` — lihat *condition-based waiting* di atas)
-- Setelah fix, verifikasi ulang skenario reproduce dari langkah 1
-- Cek apakah fix ini berpotensi memengaruhi bagian lain (side effect)
+### 4. Fix & Verify
+- Fix the root cause, not the symptom (e.g. for a race condition, don't just add `setTimeout` — see *condition-based waiting* above)
+- After the fix, re-verify the reproduce scenario from step 1
+- Check whether the fix could affect other parts (side effects)
 
-> **Evidence over claims — jangan klaim "sudah fix" tanpa bukti.** Sebelum bilang ke user bahwa bug sudah selesai:
-> - Jalankan ulang skenario reproduce yang sama persis dari langkah 1, tunjukkan hasilnya (bukan cuma "seharusnya sudah benar berdasarkan perubahan kode ini")
-> - Kalau ada test, jalankan test-nya dan tunjukkan hasilnya lolos — bukan asumsi "test pasti lolos karena logic-nya benar"
-> - Kalau tidak bisa menjalankan/reproduce langsung (misal butuh environment yang tidak tersedia saat ini), katakan itu eksplisit ke user — jangan menyamarkan ketidakpastian sebagai kepastian
-> - "Kemungkinan sudah fix" dan "sudah terverifikasi fix" adalah dua klaim berbeda — jangan pakai bahasa yang menyamarkan salah satu jadi terdengar seperti yang lain
+> **Evidence over claims — never claim "fixed" without evidence.** Before telling the user the bug is resolved:
+> - Re-run the exact same reproduce scenario from step 1 and show the result (not just "it should be correct based on this code change")
+> - If there are tests, run them and show they pass — not the assumption "tests will pass because the logic is right"
+> - If you can't run/reproduce directly (e.g. the required environment isn't available right now), say so explicitly to the user — never disguise uncertainty as certainty
+> - "Probably fixed" and "verified fixed" are two different claims — never use language that makes one sound like the other
 
-### 5. Cegah Berulang (opsional tapi direkomendasikan)
-- Perlu logging tambahan di titik ini untuk next time?
-- Perlu test case baru supaya regresi ini ketahuan otomatis?
-- Kalau ini kesalahan konfigurasi/proses, perlu update dokumentasi/checklist deploy?
+### 5. Prevent Recurrence (optional but recommended)
+- Is extra logging needed at this point for next time?
+- Is a new test case needed so this regression is caught automatically?
+- If this was a configuration/process mistake, do docs/the deploy checklist need updating?
 
-## Format Output Saat Membantu Debug
+## Output Format When Helping Debug
 
-Saat membantu user, susun jawaban dengan bagian:
-1. **Kemungkinan penyebab** (urutkan dari paling mungkin)
-2. **Cara verifikasi** tiap kemungkinan (spesifik: command, query, log yang perlu dicek)
-3. **Rekomendasi fix** setelah penyebab dikonfirmasi — jangan kasih fix sebelum penyebab jelas, kecuali user cuma butuh quick patch sementara (sebutkan eksplisit kalau ini tambal sulam, bukan solusi permanen)
+When helping the user, structure the answer in sections:
+1. **Possible causes** (ordered from most likely)
+2. **How to verify** each possibility (specific: command, query, logs to check)
+3. **Fix recommendation** after the cause is confirmed — don't give a fix before the cause is clear, unless the user only needs a temporary quick patch (state explicitly if it's a stopgap, not a permanent solution)
 
-## Kasus Khusus: Integrasi API Eksternal
-Karena sering kerja dengan WMS API, n8n, Power Automate, Microsoft Graph — untuk kasus ini selalu cek dulu:
-- Apakah request curl/HTTP-nya sudah benar (headers, auth, body format)?
-- Apakah response error dari pihak eksternal punya kode/pesan yang bisa langsung menunjukkan masalahnya (jangan asumsi sebelum baca response body lengkap)?
-- Apakah ini masalah baru atau eksternal service memang sedang ada isu (cek status page kalau ada)?
+## Special Case: External API Integration
+Since work often involves WMS API, n8n, Power Automate, Microsoft Graph — for these cases always check first:
+- Is the curl/HTTP request correct (headers, auth, body format)?
+- Does the external error response have a code/message that directly points to the problem (don't assume before reading the full response body)?
+- Is this a new problem, or is the external service actually having an issue (check its status page if any)?
 
-## Prinsip Inti
+## Core Principle
 
-**Evidence over claims.** Ini prinsip yang berlaku di semua tahap alur debugging, bukan cuma di langkah Fix & Verifikasi: jangan menyimpulkan penyebab tanpa bukti (log, query result, output command), dan jangan mengklaim masalah selesai tanpa menjalankan ulang skenario yang gagal. "Sepertinya ini penyebabnya" dan "sudah dikonfirmasi ini penyebabnya lewat [bukti X]" adalah dua level keyakinan berbeda — selalu jelas yang mana yang sedang disampaikan.
+**Evidence over claims.** This principle applies at every stage of the debugging flow, not only in Fix & Verify: never conclude a cause without evidence (logs, query results, command output), and never claim a problem is solved without re-running the failing scenario. "This seems to be the cause" and "confirmed this is the cause via [evidence X]" are two different confidence levels — always be clear which one you're stating.
