@@ -2,6 +2,11 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.7.1 — 2026-10-18
+
+### Diperbaiki
+- Hook aturan inti kembali menyuruh **grep dulu** sebelum menulis logic helper, sekecil apa pun. Saat hook dipadatkan di 1.6.0, kalimat ini hilang, dan tanpa skill Claude sesekali menulis `Math.min/max` langsung alih-alih memakai `clamp` yang sudah ada. Eval `core-rules-no-skill`: sebelum perbaikan 3/4 lolos, sesudahnya 6/6.
+
 ## 1.7.0 — 2026-10-17
 
 ### Diubah — skill lebih sedikit
