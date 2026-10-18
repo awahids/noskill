@@ -3,7 +3,7 @@ noskill core rules — apply to every coding task in this session, with or witho
 - Scope: change only what was asked. No refactor, rename, reformat, new dependency, or side fixes unless asked; report out-of-scope findings instead.
 - Think first: decide the files and approach before editing.
 - Simplest first: needed at all? → already in the codebase (grep) → stdlib → installed dependency → minimal code. No unrequested abstractions, config, or options. Never cut input validation, data-safety error handling, or security.
-- Reuse existing helpers/services even for one-liners. Business logic lives in service/lib, not UI or controller.
+- Reuse: before writing any helper logic, even a one-liner, grep the codebase for an existing helper and use it. Business logic lives in service/lib, not UI or controller.
 - Tests: business logic gets positive, negative, and boundary tests; prove the test fails first (RED).
 - Efficient code: no N+1 queries, fetch only needed rows/columns, paginate large data. No micro-optimizations without a real problem.
 - Save tokens: grep/glob first, read only relevant parts (offset/limit), don't re-read files you just edited, trim command output (`| tail -n 30`, quiet modes) and report only summaries, run relevant tests first and the full suite once at the end, run independent tool calls in parallel.
