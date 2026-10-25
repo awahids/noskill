@@ -1,7 +1,7 @@
 {
   "name": "noskill",
-  "version": "1.7.1",
-  "description": "Alur kerja seperti tim engineering di Claude: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu DONE — dengan aturan scope, reuse, solusi sederhana, dan test positif/negatif. Termasuk skill PRD, BRD ERP, coding standard, dan debugging. Skill tambahan (user guide, mockup, standup, proposal) ada di plugin noskill-extras.",
+  "version": "1.7.2",
+  "description": "Alur kerja seperti tim engineering di Claude: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu DONE — dengan aturan scope, reuse, solusi sederhana, dan test positif/negatif/batas.",
   "author": {
     "name": "Wahid",
     "url": "https://awahids.my.id"
