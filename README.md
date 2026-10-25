@@ -9,13 +9,13 @@
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk alur tiket lengkap (develop → review → QA) dengan agent.
 
-📖 **Dokumentasi lengkap:** [awahids.github.io/noskill](https://awahids.github.io/noskill/) (sumber: [`docs/index.html`](docs/index.html)) — cara install, cara kerja alur tiket, semua skill & referensi.
+📖 **Dokumentasi lengkap:** [awahids.github.io/noskill](https://awahids.github.io/noskill/) (sumber: [`docs/index.html`](docs/index.html)) — cara install, cara kerja alur tiket, semua skill & agent.
 
 ## Skills
 
 Penjelasan detail tiap skill (kapan dipakai, langkah kerja, hasil, aturan penting): **[awahids.github.io/noskill/skills.html](https://awahids.github.io/noskill/skills.html)** (sumber: [`docs/skills.html`](docs/skills.html)).
 
-Yang muncul di menu `/`: `feature-flow`, `tiket`, `lazy`, `project-profile`, `prd-writer`, dan `debug-assistant`. Skill bertanda *internal* dipakai otomatis oleh agent dan orkestrator, jadi tidak muncul di menu.
+Yang muncul di menu `/`: `feature-flow`, `tiket`, `lazy`, `project-profile`, `prd-writer`, dan `debug-assistant`. Skill bertanda *internal* dipakai otomatis oleh agent dan orkestrator, jadi tidak muncul di daftar user-facing.
 
 | Skill | Fungsi |
 |---|---|
@@ -25,9 +25,9 @@ Yang muncul di menu `/`: `feature-flow`, `tiket`, `lazy`, `project-profile`, `pr
 | [`tiket`](skills/tiket/) | Shortcut tiket dalam satu perintah: lihat board, lanjutkan tiket dari sesi sebelumnya, bug fix lewat mode cepat, rapikan tiket lama atau review ulang tiket DONE |
 | [`lazy`](skills/lazy/) | Shortcut: kerjakan langsung dengan solusi paling sederhana, tanpa tiket/review/QA |
 | [`prd-writer`](skills/prd-writer/) | PRD baku dengan diagram Mermaid, didahului minimal 5 pertanyaan klarifikasi; juga Reverse-PRD dari kode |
-| [`erp-requirements`](skills/erp-requirements/) *internal* | ERP/WMS: (A) checklist desain domain — master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP; (B) rantai requirement → BRD traceability |
+| [`erp-requirements`](skills/erp-requirements/) *internal* | ERP/WMS: (A) checklist desain domain — master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP; (B) rantai requirement traceability |
 | [`task-breakdown`](skills/task-breakdown/) *internal* | PRD/BRD → tiket: satu per endpoint (BE, dengan Kontrak API), per fitur (FE), atau per bug |
-| [`coding-standards`](skills/coding-standards/) *internal* | Naming, struktur folder, ORM, API, dokumentasi Swagger/OpenAPI, TDD, quality gate, dan checklist review untuk NestJS/Laravel/Golang/Vue/TypeScript/PHP |
+| [`coding-standards`](skills/coding-standards/) *internal* | Naming, struktur folder, ORM, API, dokumentasi Swagger/OpenAPI, TDD, quality gate, dan checklist review untuk NestJS/Laravel/Golang/Vue/Next.js |
 | [`debug-assistant`](skills/debug-assistant/) | Debugging terstruktur: reproduce → isolasi → root cause → fix → verifikasi dengan bukti |
 
 ### Plugin tambahan `noskill-extras` (opsional)
@@ -55,13 +55,20 @@ Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field 
 
 ## Aturan inti yang selalu aktif
 
-Plugin ini memasang hook `SessionStart` di [`hooks/hooks.json`](hooks/hooks.json). Saat sesi baru dimulai, hook memanggil wrapper startup yang memuat aturan kerja utama dari [`hooks/core-rules.md`](hooks/core-rules.md) dan konteks tambahan dari [`hooks/startup-extra.md`](hooks/startup-extra.md). Tujuannya agar sesi langsung memiliki default behavior noskill tanpa harus menulis skill terlebih dulu.
+Plugin ini memasang hook `SessionStart` di [`hooks/hooks.json`](hooks/hooks.json). Saat sesi baru dimulai, hook memanggil wrapper startup yang memuat aturan kerja utama dari [`hooks/core-rules.md`](hooks/core-rules.md) dan konteks tambahan dari [`hooks/startup-extra.md`](hooks/startup-extra.md).
 
-Catatan penting: hook hanya menginject konteks/startup ke sesi. Hook tidak otomatis menambah slash command atau membuat skill `/noskill:*` muncul di menu. Skill tetap di-register oleh plugin system dan dipanggil secara eksplisit.
+Selain itu, hook `UserPromptSubmit` di [`hooks/hooks.json`](hooks/hooks.json) juga mendeteksi intent prompt dan memberi rekomendasi skill paling relevan. Contoh:
+
+- fitur baru → `/noskill:feature-flow`
+- bug/error → `/noskill:tiket fix`
+- lanjutan kerja → `/noskill:tiket lanjut`
+- tugas umum → `/noskill:lazy`
+
+Ini adalah smart suggestion / intent routing. Hook tidak otomatis mendaftarkan slash command atau memaksa eksekusi skill di luar runtime yang memang mendukung dispatch command. Skill tetap di-register oleh plugin system, dan user tetap memegang kontrol.
 
 ### Bahasa
 
-Instruksi di dalam skill, agent, dan hook ditulis dalam bahasa Inggris karena lebih hemat token (±20–40% lebih sedikit dari versi bahasa Indonesia). Semua yang dibaca pengguna tetap berbahasa Indonesia kecuali pengguna menulis dalam bahasa lain.
+Instruksi di dalam skill, agent, dan hook ditulis dalam bahasa Inggris karena lebih hemat token (±20–40% lebih sedikit dari versi bahasa Indonesia). Semua yang dibaca pengguna tetap berbahasa Indonesia: jawaban, prompt, dan hasil kerja.
 
 ## Folder hasil
 
@@ -80,7 +87,7 @@ Pengaturan ini berlaku untuk semua project di komputer itu.
 | `/noskill:tiket` atau `/noskill:tiket board` | Tampilkan board tiket, pertanyaan tiket HOLD, dan durasi tiap tahap per tiket |
 | `/noskill:tiket fix <deskripsi>` | Bug fix atau perubahan kecil lewat mode cepat |
 | `/noskill:tiket lanjut [jawaban]` | Lanjutkan tiket yang tertunda dari sesi sebelumnya |
-| `/noskill:tiket rapikan [ID]` | Rapikan tiket TODO/HOLD agar sesuai aturan tiket terbaru (gabung tiket per layer, lengkapi Kontrak API, `integrates_with`, `complexity`); usulan ditampilkan dulu sebelum diterapkan |
+| `/noskill:tiket rapikan [ID]` | Rapikan tiket TODO/HOLD agar sesuai aturan tiket terbaru (gabung tiket per layer, lengkapi Kontrak API, `integrates_with`, `complexity`); usulan ditampilkan dulu, diterapkan setelah kamu setujui |
 | `/noskill:tiket rapikan review <ID>` | Review ulang kode tiket DONE; temuan jadi tiket BUG baru |
 | `/noskill:lazy <permintaan>` | Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan (YAGNI, stdlib dulu, tanpa abstraksi), tanpa tiket/review/QA |
 | `/noskill:feature-flow` | Alur lengkap (mode cepat atau dari PRD) |
@@ -90,43 +97,42 @@ Pengaturan ini berlaku untuk semua project di komputer itu.
 
 Panggil `/noskill:feature-flow` lalu jelaskan pekerjaannya.
 
-- **Mode cepat** — bug fix atau fitur kecil. Orkestrator langsung menulis satu tiket (AC positif & negatif, File/Lokasi, Cara Verifikasi), kamu setujui, lalu masuk loop developer → reviewer → QA → DONE.
-- **Mode lengkap** — fitur atau modul baru, mulai dari PRD. Level BRD bisa dipilih: **lengkap** (BR→UAT, untuk sign-off/UAT formal), **ringkas** (US→AC→TECH + Test Case), atau **tanpa BRD**.
+- **Mode cepat** — bug fix atau fitur kecil. Orkestrator langsung menulis satu tiket (AC positif & negatif, File/Lokasi, Cara Verifikasi), kamu setujui, lalu masuk loop developer → reviewer → QA.
+- **Mode lengkap** — fitur atau modul baru, mulai dari PRD. Level BRD bisa dipilih: **lengkap** (BR→UAT, untuk sign-off/UAT formal), **ringkas** (US→AC→TECH + Test Case), atau **tanpa BRD** (langsung PRD → tiket).
 
-Aturan tiket: **satu tiket per endpoint (BE), per fitur/halaman (FE), atau per bug**. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer. Perubahan kecil digabung: masalah serupa yang sama-same file atau endpoint bisa digabung.
+Aturan tiket: **satu tiket per endpoint (BE), per fitur/halaman (FE), atau per bug**. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer. Perubahan kecil digabung: maksimal 3 endpoint `simple` di resource yang sama, atau satu layar/fitur kecil yang berhubungan.
 
 Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket. Di akhir kamu memilih: push + PR (deskripsi PR disusun otomatis dari tiket), merge lokal, atau biarkan dulu.
 
 **Mode paralel** (opsional): selagi tiket A di-review/QA, developer sudah mengerjakan tiket B di git worktree terpisah. Maksimal 2 tiket aktif, atau 3 kalau tiketnya di repo berbeda.
 
-**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (DB + server) dinyalakan sekali per sesi sebelum QA kebutuhan.
+**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (DB + server) dinyalakan sekali per sesi lalu dipakai bersama oleh semua QA.
 
-**Multi-repo:** satu fitur bisa menyentuh beberapa repo (misal api NestJS + web Vue + mobile Flutter). Daftarkan repo di bagian `## Repo` pada `project-profile.md`; PRD, BRD, dan tiket tetap di satu repo utama, sementara profil repo lain ikut dilampirkan.
+**Multi-repo:** satu fitur bisa menyentuh beberapa repo (misal api NestJS + web Vue + mobile Flutter). Daftarkan repo di bagian `## Repo` pada `project-profile.md`; PRD, BRD, dan tiket tetap di satu root docs.
 
-Opsional: isi `tracker: github` atau `tracker: notion` di `docs/noskill/project-profile.md` supaya board tiket tercermin di GitHub Issues atau database Notion. `standup-update` (plugin `noskill-extras`) bisa membaca riwayat tiket untuk update harian.
+Opsional: isi `tracker: github` atau `tracker: notion` di `docs/noskill/project-profile.md` supaya board tiket tercermin di GitHub Issues atau database Notion. `standup-update` (plugin `noskill-extras`) bisa dibaca dari Riwayat tiket.
 
 Mode lengkap:
 
 ```
 [sesi utama, interaktif]           [agent]
-erp-requirements A → prd-writer ──► brd-tracer ──► task-planner ──► tiket TODO
-   (tanya-jawab + persetujuan)      docs/noskill/01..05     docs/noskill/tickets/
+requirements → prd-writer ──► brd-tracer ──► task-planner ──► tiket TODO
 
 Per tiket:
 TODO ─► IN_PROGRESS ─► REVIEW ─► QA ─► DONE (commit lokal)
-         (developer)   (reviewer)  (qa-tester)
-              ▲           │          │
-              └─ revisi ──┘          └─► BUG ─► developer (debug-assistant)
+     (developer)   (reviewer)  (qa-tester)
+          ▲           │          │
+          └─ revisi ──┘          └─► BUG ─► developer (debug-assistant)
 Blocker / 3x gagal ─► HOLD ─► ditanyakan ke user
 ```
 
-Agent tidak berbicara langsung satu sama lain. Mereka terhubung lewat file di `docs/noskill/`, dan hanya `feature-flow` yang memindahkan status tiket. Hasil setiap tahap jadi bisa direview, diedit, atau dipakai oleh tahap berikutnya.
+Agent tidak berbicara langsung satu sama lain. Mereka terhubung lewat file di `docs/noskill/`, dan hanya `feature-flow` yang memindahkan status tiket. Hasil setiap tahap jadi bisa direview, diedit, dan di-cek ulang.
 
-Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-prototype` dipakai di luar siklus inti. Setelah semua DONE, `user-guide` dan `standup-update` bisa dipakai untuk dokumentasi dan update status.
+Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-prototype` dipakai di luar siklus inti. Setelah semua DONE, `user-guide` dan `standup-update` bisa dipakai untuk dokumentasi atau status harian.
 
 ## Eval
 
-`evals/` berisi 16 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan QA memblokir bila environment tidak ada.
+`evals/` berisi 16 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan QA menolak implementasi yang AC negatifnya gagal.
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
