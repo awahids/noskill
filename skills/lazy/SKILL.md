@@ -1,6 +1,6 @@
 ---
 name: lazy
-description: Shortcut — lazy senior dev mode: do it directly with the simplest working solution (YAGNI, stdlib first, no unrequested abstractions), no ticket/review/QA. Use as /noskill:lazy <permintaan>.
+description: "Shortcut — lazy senior dev mode: do it directly with the simplest working solution (YAGNI, stdlib first, no unrequested abstractions), no ticket/review/QA. Use as /noskill:lazy <permintaan>"
 disable-model-invocation: true
 ---
 
@@ -12,7 +12,7 @@ $ARGUMENTS
 
 Stop at the first step that solves the problem. **Step 2 must never be skipped**, even if the solution is a single stdlib line:
 1. **Does it need building?** If the request can be met without new code (existing config, existing behavior), do that.
-2. **Already in the codebase?** Before writing anything, grep the concept (e.g. `clamp|limit|min|max` for value bounds, `format|currency` for money formatting) in helper/lib/utils folders. If a helper does the same thing, use it — an existing helper always beats an inline version, because one source of truth matters more than saving one import.
+2. **Already in the codebase?** Before writing anything, grep the concept (e.g. `clamp|limit|min|max` for value bounds, `format|currency` for money formatting) in helper/lib/utils folders. If a helper exists for it, reuse it.
 3. **Standard library or framework feature?** Use it.
 4. **Dependency already installed?** Use it. Don't add new dependencies.
 5. **Write minimal code** that is correct.
@@ -26,7 +26,7 @@ Stop at the first step that solves the problem. **Step 2 must never be skipped**
 
 ## When to stop
 
-If the request turns out to touch new business rules, database schema, more than ~5 files, or several repos, don't silently continue. Stop and suggest `/noskill:tiket fix` (quick mode with review and QA) or `/noskill:feature-flow`.
+If the request turns out to touch new business rules, database schema, more than ~5 files, or several repos, don't silently continue. Stop and suggest `/noskill:tiket fix` (quick mode with review and QA).
 
 ## Report (max ~8 lines)
 
