@@ -1,15 +1,15 @@
 {
-  "description": "Muat aturan kerja inti noskill di awal sesi",
+  "description": "Load noskill startup rules and context in a more superpower-like way",
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume|clear|compact",
+        "matcher": "startup|resume|clear|compact|new",
         "hooks": [
           {
             "type": "command",
-            "command": "cat",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/core-rules.md"],
-            "timeout": 5
+            "command": "bash",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.sh", "session-start"],
+            "timeout": 20
           }
         ]
       }
