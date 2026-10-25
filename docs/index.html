@@ -1,18 +1,9 @@
-    <h3>Aturan inti, aktif di setiap sesi</h3>
-    <p>Saat sesi dimulai, hook <code>SessionStart</code> memanggil wrapper startup yang membacai <code>hooks/core-rules.md</code> dan <code>hooks/startup-extra.md</code>. Ini menaruh konteks default ke sesi: tujuan kerja, batas scope, pola pengambilan keputusan, dan cara kerja ticket.</p>
-    <ul>
-      <li>Ubah hanya yang diminta. Tidak ada refactor, rename, atau dependency baru yang tidak diminta.</li>
-      <li>Pikir dulu, lalu pilih cara paling sederhana. Pakai helper yang sudah ada di codebase, meskipun penggantinya cuma satu baris.</li>
-      <li>Logic bisnis punya test positif, negatif, dan batas, dan test dibuktikan gagal dulu sebelum implementasi.</li>
-      <li>Kode efisien: tidak ada query di dalam loop, data diambil seperlunya, dan data besar dipaginasi.</li>
-      <li>Hemat token: cari dulu, baca bagian yang perlu saja, dan batasi output command.</li>
-      <li>"Selesai" hanya diklaim setelah test dijalankan dan hasilnya terlihat.</li>
-    </ul>
-    <p>Selain itu, hook <code>UserPromptSubmit</code> di <code>hooks/hooks.json</code> memindai intent prompt dan menampilkan saran skill paling relevan. Contoh yang sering muncul:</p>
-    <ul>
-      <li>fitur baru → <code>/noskill:feature-flow</code></li>
-      <li>bug/error → <code>/noskill:tiket fix</code></li>
-      <li>lanjut kerja / resume → <code>/noskill:tiket lanjut</code></li>
-      <li>tugas umum → <code>/noskill:lazy</code></li>
-    </ul>
-    <p class="note">Hook hanya menginject startup context dan route intent. Hook tidak otomatis mendaftarkan slash command atau membuat skill <code>/noskill:*</code> muncul di menu. Skill tetap dipanggil secara eksplisit oleh pengguna, kecuali runtime tertentu memang menyediakan dispatch command yang terkontrol.</p>
+    <header class="hero">
+      <div class="eyebrow">Plugin Claude Code</div>
+      <h1>noskill</h1>
+      <div align="center">
+        <img alt="Version 1.7.2" src="https://img.shields.io/badge/version-1.7.2-1d6b57?style=flat-square&logo=github" />
+      </div>
+      <p class="lede">Skill dan agent untuk kerja development seperti tim engineering: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu masuk DONE. Kodenya hanya mengubah yang diminta, bukan refactor tanpa alasan. Cocok untuk bug fix, fitur kecil, fitur besar, dan multi-repo.</p>
+      <div class="cmd"><pre>/plugin install noskill --marketplace awahids/noskill</pre><button type="button" data-copy>Salin</button></div>
+    </header>
