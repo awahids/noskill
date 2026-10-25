@@ -1,5 +1,5 @@
 {
-  "description": "Load noskill startup rules and context in a more superpower-like way",
+  "description": "Muat aturan kerja inti noskill di awal sesi dan sarankan skill paling relevan berdasarkan intent prompt user",
   "hooks": {
     "SessionStart": [
       {
@@ -10,6 +10,19 @@
             "command": "bash",
             "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.sh", "session-start"],
             "timeout": 20
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/intent-router.sh", "${USER_PROMPT}"],
+            "timeout": 10
           }
         ]
       }
