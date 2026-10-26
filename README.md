@@ -8,7 +8,7 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 1.7.2" src="https://img.shields.io/badge/version-1.7.2-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 1.7.3" src="https://img.shields.io/badge/version-1.7.3-1d6b57?style=flat-square&logo=github" />
 </div>
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk alur tiket lengkap (develop → review → QA) dengan agent.

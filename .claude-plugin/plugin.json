@@ -1,6 +1,6 @@
 {
   "name": "noskill",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "Alur kerja seperti tim engineering di Claude: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu DONE — dengan aturan scope, reuse, solusi sederhana, dan test positif/negatif/batas.",
   "author": {
     "name": "Wahid",
