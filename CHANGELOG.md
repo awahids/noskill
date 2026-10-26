@@ -2,6 +2,15 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.7.3 — 2026-10-26
+
+### Diperbaiki
+- **Hook `UserPromptSubmit` kini benar-benar membaca prompt.** Sebelumnya `hooks.json` mengirim `${USER_PROMPT}` sebagai argumen, padahal placeholder itu tidak ada di Claude Code, sehingga semua prompt (termasuk laporan bug) selalu disarankan `/noskill:lazy`. `hooks/intent-router.sh` sekarang membaca field `prompt` dari JSON stdin (jq → python3 → sed sebagai cadangan).
+- Router tidak memberi saran saat prompt kosong atau saat pengguna sudah mengetik slash command (`/noskill:...`).
+- Kata kunci dicocokkan di awal kata, jadi `prefix` tidak lagi terdeteksi sebagai `fix` dan `ideal` tidak lagi sebagai `idea`. Frasa umum `bisa tidak` dan `next` dihapus dari kata kunci.
+- Urutan deteksi: bug/error dicek lebih dulu (`fix error di fitur login` → `/noskill:tiket fix`), PRD/BRD sebelum fitur (`tulis PRD untuk modul cuti` → `/noskill:prd-writer`), dan profil project sebelum review (`cek project` sebelumnya tidak pernah sampai ke `/noskill:project-profile`).
+- Matcher `SessionStart` hanya memakai nilai yang valid (`new` dihapus); matcher di `UserPromptSubmit` yang diabaikan Claude Code dihapus.
+
 ## 1.7.2 — 2026-10-25
 
 ### Diperbaiki
