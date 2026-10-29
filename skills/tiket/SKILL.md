@@ -1,6 +1,6 @@
 ---
 name: tiket
-description: Shortcut for the ticket board — /noskill:tiket [board] · lanjut [catatan] · fix <deskripsi> · rapikan [ID] · rapikan review <ID>.
+description: Shortcut for the ticket board — /noskill:tiket [board] · lanjut [catatan] · fix DESKRIPSI · rapikan [ID] · rapikan review ID.
 argument-hint: "[board | lanjut [catatan] | fix <deskripsi> | rapikan [review] [ID]]"
 disable-model-invocation: true
 ---

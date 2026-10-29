@@ -2,6 +2,11 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.7.4 — 2026-10-29
+
+### Diperbaiki
+- **Plugin lolos validasi di Cowork/claude.ai.** Deskripsi skill `lazy` dan `tiket` memuat placeholder `<permintaan>`, `<deskripsi>`, dan `<ID>` yang dibaca validator sebagai tag XML sehingga plugin ditolak. Placeholder diganti dengan teks biasa (`followed by the request`, `DESKRIPSI`, `ID`).
+
 ## 1.7.3 — 2026-10-26
 
 ### Diperbaiki
