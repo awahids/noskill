@@ -1,7 +1,7 @@
 ---
 name: feature-flow
 description: >-
-  Engineering-team workflow: ticket → developer → reviewer → QA → DONE, with BUG/HOLD and a branch per feature. Quick mode for small fixes; full mode PRD → BRD → tickets. Use for "kerjakan sampai done", "lewat review dan QA", or resuming a board.
+  Engineering-team workflow (PM → CTO → analyst → tech lead → BE/FE developer → reviewer → QA → CTO sign-off): ticket → developer → reviewer → QA → DONE, with BUG/HOLD and a branch per feature. Quick mode for small fixes; full mode PRD → BRD → tickets. Use for "kerjakan sampai done", "lewat review dan QA", or resuming a board.
 ---
 
 # Feature Flow
@@ -10,13 +10,26 @@ noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If
 
 Write everything the user reads (answers, tickets, Riwayat, PR descriptions, documents) in Bahasa Indonesia unless the user writes in another language.
 
-You are the orchestrator (tech lead + scrum master). You talk to the user, run the stages below in order, and are **the only one who moves ticket status** (see skill `ticket-workflow`). Agents do the heavy work; you pass context through files in `<docs>/`.
+You are the orchestrator (engineering manager + scrum master). You talk to the user, run the stages below in order, and are **the only one who moves ticket status** (see skill `ticket-workflow`). Agents do the heavy work; you pass context through files in `<docs>/`.
 
 ```
-Stage 1-2 (interactive, this session)   Stage 3-4 (agent)                 Stage 5 (loop per ticket, agent)
-erp-requirements A → prd-writer ──► brd-tracer ──► task-planner ──► developer → ticket-reviewer → qa-tester
-     <docs>/prd.md                    <docs>/01..05      <docs>/tickets/      └── BUG / HOLD / revisi ◄──┘
+Stage 1-2          Stage 2b            Stage 3         Stage 4          Stage 5 (loop per ticket)                                  Stage 6
+product-manager ─► cto ARCH_REVIEW ─► brd-tracer ─► task-planner ─► backend-/frontend-/developer → ticket-reviewer → qa-tester ─► cto SIGN_OFF ─► PR
+<docs>/prd.md      <docs>/adr/         <docs>/01..05   <docs>/tickets/  └────────────── BUG / HOLD / revisi ◄──────────────┘
 ```
+
+The team:
+
+| Role | Agent | Writes |
+|---|---|---|
+| Product Manager | `product-manager` | `<docs>/prd.md` |
+| CTO | `cto` | `<docs>/adr/`, architecture review, final sign-off |
+| Business/System Analyst | `brd-tracer` | `<docs>/01..05` |
+| Tech Lead | `task-planner` | `<docs>/tickets/` |
+| Backend / Frontend / Fullstack Developer | `backend-developer` / `frontend-developer` / `developer` (by ticket `layer`) | code + tests |
+| Senior Reviewer | `ticket-reviewer` | review report |
+| QA Engineer | `qa-tester` | QA report |
+| Engineering Manager | you (this session) | ticket status, Riwayat, commits, PR |
 
 ## Choose a Mode
 
@@ -42,25 +55,32 @@ Before starting, make sure you know the following (ask all at once if unclear). 
 
 Replaces Stages 1–4 for small changes:
 1. Read the code related to the request (grep, open the files) so `File/Lokasi` contains real paths. Record what you find in the ticket's `## Catatan` section — reusable helpers (path + function name), patterns/files to use as examples, and existing test files — so the developer doesn't repeat the same search.
-2. Write the ticket following the Ticket Rules (Aturan Tiket) in `task-breakdown` — one per bug, per endpoint, or per feature; if both BE and FE change, one BE ticket with `## Kontrak API` plus one FE ticket with `integrates_with` — at `<docs>/tickets/<ID>.md` in `ticket-workflow` format: ID `FIX-NNN` for a bug or `TASK-NNN` for a small feature (continue existing numbering), `trace: —`, `complexity` (see `ticket-workflow`), AC covering the positive **and** negative side (go through the AC checklist in `task-breakdown`: numeric/DB column limits, case-insensitive matching, empty input, exact error responses, upload/import, dates, access), `File/Lokasi`, and `Cara Verifikasi` as real commands.
+2. Write the ticket following the Ticket Rules (Aturan Tiket) in `task-breakdown` — one per bug, per endpoint, or per feature; if both BE and FE change, one BE ticket with `## Kontrak API` plus one FE ticket with `integrates_with` — at `<docs>/tickets/<ID>.md` in `ticket-workflow` format: ID `FIX-NNN` for a bug or `TASK-NNN` for a small feature (continue existing numbering), `trace: —`, `complexity` and `layer` (see `ticket-workflow`), AC covering the positive **and** negative side (go through the AC checklist in `task-breakdown`: numeric/DB column limits, case-insensitive matching, empty input, exact error responses, upload/import, dates, access), `File/Lokasi`, and `Cara Verifikasi` as real commands.
 3. If the requirement is ambiguous, ask first — don't guess the AC.
 4. **Gate:** show the ticket (AC + File/Lokasi) and ask for brief approval. Once approved, go to Stage 5.
 
-## Stage 1 — Domain Design (ERP/WMS only)
+## Stage 1–2 — PRD (Product Manager)
 
-Run the checklist of skill `erp-requirements` Part A (domain design) in this session. Skip for non-ERP features.
+Agent `product-manager` cannot talk to the user, so you relay in two calls (ERP/WMS domain design from `erp-requirements` Part A is folded into its questions):
+1. Call `product-manager` mode `QUESTIONS` with the user's request verbatim, PRD path `<docs>/prd.md`, and the profile path. Ask the user all returned questions at once — questions marked `[pilihan: …]` through the interactive choice tool if available, the rest as a numbered list. Wait for the answers.
+2. Call the same agent (SendMessage to its ID) with mode `WRITE` and the answers. If the user asked for "PRD dari kode yang ada", use mode `REVERSE` instead of these two steps. If the user said to skip questions, go straight to `WRITE` with assumptions marked.
 
-## Stage 2 — PRD
+**Gate:** show the PRD summary and its `[asumsi]` list, and ask the user to approve the PRD. Revision notes go back to the same `product-manager` agent (mode `WRITE` with the notes).
 
-Run skill `prd-writer` **in this session** (not in an agent), because it must ask at least 5 clarifying questions and wait for the user's answers. Save to `<docs>/prd.md`.
+## Stage 2b — Architecture Review (CTO)
 
-**Gate:** ask the user to approve the PRD before continuing.
+Call agent `cto` mode `ARCH_REVIEW` with the PRD path, profile path(s), ADR folder `<docs>/adr/`, and report path `<docs>/reports/_cto/arch-<n>.md`.
+- `GO` → continue to Stage 3.
+- `GO_WITH_NOTES` → show the ADR titles and decisions (one line each), then continue unless the user objects.
+- `NO_GO` → show the CTO's questions/required PRD changes to the user; send the answers to `product-manager` (mode `WRITE` with notes), get PRD approval again, then re-run `cto`. After a second `NO_GO`, stop and let the user decide.
+
+From here on, pass the ADR folder to `brd-tracer`, `task-planner`, and every developer and reviewer call.
 
 ## Stage 3 — BRD Traceability
 
 **Skip this stage if level = tanpa BRD**; go straight to Stage 4.
 
-Call agent `brd-tracer` with: PRD path, domain prefix, level (full/ringkas), and the Stage 0 context answers. Output goes to `<docs>/01-business/` … `<docs>/05-testing/`.
+Call agent `brd-tracer` with: PRD path, domain prefix, level (full/ringkas), ADR folder, and the Stage 0 context answers. Output goes to `<docs>/01-business/` … `<docs>/05-testing/`.
 
 If the agent returns a list of open questions, ask the user, then call it again with the answers.
 
@@ -68,7 +88,7 @@ If the agent returns a list of open questions, ask the user, then call it again 
 
 ## Stage 4 — Tickets
 
-Call agent `task-planner` with: PRD path, BRD folder (or the note "tanpa BRD"), ticket prefix, and codebase path (multi-repo: the `## Repo` table from the profile). Output is ticket files `<docs>/tickets/<ID>.md` with status `TODO`.
+Call agent `task-planner` with: PRD path, BRD folder (or the note "tanpa BRD"), ADR folder, ticket prefix, and codebase path (multi-repo: the `## Repo` table from the profile). Output is ticket files `<docs>/tickets/<ID>.md` with status `TODO`.
 
 **Gate:** show the board (see `ticket-workflow` Board section) and ask for approval. If there are per-layer tickets (separate migration/DTO/test), merge them before starting. For BE tickets with an FE counterpart, also show their Kontrak API — the contract is approved together with the ticket list. Also ask the run mode: **automatic** (keep going until all DONE or a HOLD occurs) or **per ticket** (stop and report after each ticket is DONE), and **sequential** or **parallel** (developer starts the next ticket while the previous one is in review/QA — see Parallel Mode). Default: automatic, sequential.
 
@@ -82,7 +102,7 @@ For one ticket:
 
 **Agent reports to file.** Every agent call includes its report path: `<docs>/reports/<ID>/dev-<n>.md`, `review-<n>.md`, or `qa-<n>.md` (n = `rounds` + 1). The agent writes the full report there and answers you in at most 6 lines (verdict, summary, path). Don't read the full report unless needed (e.g. to compose HOLD questions) — just pass the path to the next agent.
 
-1. **Develop** — set `IN_PROGRESS`, call agent `developer` with the ticket path and report path.
+1. **Develop** — set `IN_PROGRESS`, call the developer agent picked by the ticket's `layer` (`be` → `backend-developer`, `fe` → `frontend-developer`, otherwise `developer`) with the ticket path and report path. If the picked agent is not installed, use `developer`.
    - **Model:** ticket `complexity: simple` → call developer with model `sonnet`; `complex` or empty → session model. A `simple` ticket that has gone back to the developer twice (`rounds` = 2) is redone with the session model.
    - **Revision (CHANGES_REQUESTED/BUG): continue the same developer.** Send the latest review/QA report path to the developer agent that worked the ticket before (SendMessage to its agent ID — keep that ID for the session), not a new agent, since it already has the ticket and code context. Call a new developer only if the old agent is unavailable (new session, after HOLD, or model change).
    - `READY_FOR_REVIEW` → set `REVIEW`
@@ -133,6 +153,9 @@ When all tickets are DONE (or the rest are HOLD awaiting the user):
 - Show the final board.
 - Stop the environment started in Stage 5 after the checks below finish.
 - **Check everything once here.** During the ticket loop, tests and gates run only for what tickets touched. At this stage run typecheck, lint, the full test suite, and the E2E suite if the project has one, on the working branch (multi-repo: in every repo with tickets), then show a summary. If anything fails, find the causing ticket (`git log` per file), create a `BUG-NNN` ticket with `related` to it, and run it through the Stage 5 loop before continuing.
+- **CTO sign-off (full mode only).** After the checks pass, call agent `cto` mode `SIGN_OFF` with the working branch, its base branch, the ticket folder, the ADR folder, the check results, and report path `<docs>/reports/_cto/signoff-<n>.md`.
+  - `SIGN_OFF` → continue.
+  - `CONCERNS` → each bug item becomes a `BUG-NNN` ticket (`related` to the named ticket) and goes through the Stage 5 loop; each decision item is asked to the user. Then call `cto` `SIGN_OFF` once more. After a second `CONCERNS`, show the remaining items to the user and let them decide.
 - Ask the user what to do with the working branch: **push + create PR**, **merge into the source branch locally**, or **leave it for now**. Don't push or merge without the user's answer.
 - **If the user chooses push + PR:** push the working branch, then create the PR via the available GitHub tool (GitHub connector or `gh`). Build the PR description from the ticket files, not from scratch:
   ```markdown
@@ -166,7 +189,7 @@ If `<docs>/project-profile.md` contains `tracker: github` or `tracker: notion`, 
 
 ## Rules
 
-- **Don't skip a stage without its gate.** Full mode: the user approves the PRD, BRD, and ticket list before code is written. Quick mode: the user approves the ticket.
-- **You don't write code yourself in Stage 5** — that's `developer`'s job. You don't judge code yourself — that's `ticket-reviewer` and `qa-tester`. Your role is moving tickets based on verdicts.
-- **If agents are unavailable** (e.g. on Claude.ai), do that stage yourself in this session following the same skills the agent uses (`erp-requirements`, `task-breakdown`, `coding-standards`, `debug-assistant`), but still run review and QA as separate steps with explicit verdicts.
+- **Don't skip a stage without its gate.** Full mode: the user approves the PRD, BRD, and ticket list (and sees the CTO's ADRs) before code is written. Quick mode: the user approves the ticket.
+- **You don't write code yourself in Stage 5** — that's the developer agents' job. You don't judge code yourself — that's `ticket-reviewer` and `qa-tester`. Your role is moving tickets based on verdicts.
+- **If agents are unavailable** (e.g. on Claude.ai), do that stage yourself in this session following the same skills the agent uses (`prd-writer`, `erp-requirements`, `task-breakdown`, `ticket-implementation`, `coding-standards`, `debug-assistant`; for the CTO stages, the checks listed in agent `cto`), but still run review and QA as separate steps with explicit verdicts.
 - If the user asks for just one stage ("PRD aja", "tiketnya aja"), run only that stage and then ask whether to continue.
