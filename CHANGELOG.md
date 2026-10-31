@@ -2,6 +2,13 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.11.1 — 2026-11-01
+
+### Diperbaiki
+- **Agent yang sedang bekerja tidak terlihat di Kantor.** Di 1.11.0 hanya orkestrator yang menulis `activity.json`, dan dalam praktik langkah itu bisa terlewat. Sekarang setiap agent (PM, CTO, Analyst, Tech Lead, developer, reviewer, QA) menulis baris aktivitasnya sendiri sebagai langkah pertama, dan orkestrator cukup menulis `waiting_user` dan `done`.
+- **Jam `00:00` di Riwayat tiket.** Agent tanpa Bash (task-planner, product-manager, brd-tracer) menulis jam placeholder karena tidak diberi waktu. Orkestrator sekarang menyertakan `Waktu sekarang` di setiap pemanggilan agent.
+- **Kantor:** Tech Lead tetap terlihat menulis tiket walau `activity.json` belum ada, ditebak dari tiket TODO yang baru dibuat.
+
 ## 1.11.0 — 2026-10-31
 
 ### Ditambahkan

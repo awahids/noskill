@@ -1284,6 +1284,24 @@
     acts.filter(function (a) { return activeAct(a) && (!projFilter || a.project === projFilter); }).forEach(function (a) {
       actBy[a.status === 'waiting_user' ? 'em' : a.key] = a;
     });
+    // Without activity.json, freshly created TODO tickets still mean the Tech Lead is writing tickets:
+    // created in the last 20 minutes, or (when the time is missing or a 00:00 placeholder) created today
+    // in a project where no ticket has started yet.
+    if (!actBy.lead) {
+      let newest = null;
+      const today = new Date(); const ymd = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      shownTk.forEach(function (tk) {
+        const h = tk.hist && tk.hist[0];
+        if (!h || tk.status !== 'TODO') return;
+        const timed = h[0].length >= 16 && h[0].slice(11) !== '00:00';
+        let fresh = false, t = Date.parse(h[0].slice(0, 10) + 'T' + (timed ? h[0].slice(11) : '00:00'));
+        if (timed) fresh = !isNaN(t) && Date.now() - t < 20 * 60000;
+        else fresh = h[0].slice(0, 10) === ymd && !shownTk.some(function (o) { return o.project === tk.project && stationFor(o); });
+        if (fresh && (!newest || t >= newest.t)) newest = { t: t, tk: tk };
+      });
+      if (newest) actBy.lead = { project: newest.tk.project, agent: 'task-planner', key: 'lead', status: 'working', stage: 'Stage 4 Tiket',
+        task: 'Menulis tiket, terakhir ' + newest.tk.id + (newest.tk.title ? ': ' + newest.tk.title.slice(0, 80) : ''), ticket: '', at: new Date(newest.t).toISOString() };
+    }
     drawBoard((liveSource === 'db' ? 'Snapshot ' : 'Live ') + hhmm(liveAt), shownTk);
     card.visible = false;
     Object.keys(ST).forEach(function (k) {
