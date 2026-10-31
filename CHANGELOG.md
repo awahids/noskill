@@ -8,6 +8,10 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - **`/noskill:kantor`** — Kantor noskill: diorama 3D kantor tiga lantai (Produk & Arsitektur, Engineering, Quality). Tiap agent punya meja, bisa diklik untuk melihat tugas, skill, dan pekerjaannya, dan berjalan mengantar tiket ke agent berikutnya (termasuk naik-turun tangga).
   - Di Cowork/claude.ai skill ini menerbitkan halaman sebagai artifact milik user. Di aplikasi Claude desktop dengan MCP `filesystem`, board membaca tiket asli dari satu atau beberapa folder `docs/noskill` dan menyimpan salinannya ke database artifact, supaya browser dan HP menampilkan **Snapshot**.
   - Di Claude Code tanpa artifact, halaman disalin ke folder docs dan berjalan dalam mode demo.
+  - Klik tiket di board untuk melihat AC, Riwayat, siapa yang memegang, dan memutar ulang perjalanannya antar meja.
+  - Panel **Metrik**: rata-rata durasi per tahap dan per agent dari baris Riwayat, tiket dengan ronde revisi terbanyak, dan daftar HOLD.
+  - Filter per proyek/fitur, tombol **Ikuti tiket** (kamera mengikuti agent yang membawa tiket), panel yang bisa dikecilkan, dan daftar orang yang sedang membuka kantor.
+- **Eval baru:** `developer-layer-routing`, `pm-questions-only`, `cto-arch-review` (total 19 case).
 
 ## 1.8.0 — 2026-10-31
 
