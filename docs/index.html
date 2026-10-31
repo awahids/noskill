@@ -118,7 +118,7 @@
         <div class="eyebrow">Plugin Claude Code</div>
         <h1>noskill</h1>
         <div align="center">
-          <img alt="Version 1.7.3" src="https://img.shields.io/badge/version-1.7.3-1d6b57?style=flat-square&logo=github" />
+          <img alt="Version 1.8.0" src="https://img.shields.io/badge/version-1.8.0-1d6b57?style=flat-square&logo=github" />
         </div>
         <p class="lede">Skill dan agent untuk kerja development seperti tim engineering: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu masuk DONE. Kodenya hanya mengubah yang diminta, bukan refactor tanpa alasan. Cocok untuk bug fix, fitur kecil, fitur besar, dan multi-repo.</p>
         <div class="cmd"><pre>/plugin install noskill --marketplace awahids/noskill</pre><button type="button" data-copy>Salin</button></div>
@@ -181,7 +181,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <h3>Dua mode kerja</h3>
       <div class="lanes">
         <div class="lane"><h3>Mode cepat</h3><p>Untuk bug fix, fitur kecil, atau revisi fitur yang sudah ada. Permintaan langsung jadi satu tiket (maksimal tiga) berisi AC positif dan negatif, file yang boleh diubah, dan cara verifikasi.</p></div>
-        <div class="lane"><h3>Mode lengkap</h3><p>Untuk fitur atau modul baru. Desain domain dilanjutkan PRD (dengan pertanyaan klarifikasi), lalu tiket. Di antaranya ada BRD dengan tiga pilihan level: lengkap, ringkas, atau tanpa BRD.</p></div>
+        <div class="lane"><h3>Mode lengkap</h3><p>Untuk fitur atau modul baru. Product Manager menulis PRD (dengan pertanyaan klarifikasi), CTO me-review arsitektur dan menulis ADR, lalu tiket. Di akhir, CTO memberi sign-off sebelum PR. Di antaranya ada BRD dengan tiga pilihan level: lengkap, ringkas, atau tanpa BRD.</p></div>
       </div>
       <p>Pekerjaan dilakukan di branch baru (<code>feat/…</code> atau <code>fix/…</code>) dengan satu commit per tiket. Di akhir kamu memilih push + PR (deskripsinya disusun dari tiket), merge lokal, atau biarkan dulu.</p>
 
@@ -227,7 +227,11 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <div class="tbl"><table>
         <thead><tr><th>Agent</th><th>Peran</th><th>Ubah kode</th><th>Model</th></tr></thead>
         <tbody>
-          <tr><td><code>developer</code></td><td>Mengerjakan satu tiket atau bug. Menyusun rencana dulu, memakai helper yang ada, menulis test (bukti RED), lalu menjalankan quality gate.</td><td>Ya</td><td>Model sesi</td></tr>
+          <tr><td><code>product-manager</code></td><td>Product Manager. Menyusun pertanyaan klarifikasi, lalu menulis PRD dari jawaban Anda (atau Reverse-PRD dari kode).</td><td>Tidak</td><td>Model sesi</td></tr>
+          <tr><td><code>cto</code></td><td>CTO. Me-review arsitektur setelah PRD disetujui dan menulis ADR (<code>GO</code>, <code>GO_WITH_NOTES</code>, <code>NO_GO</code>), lalu memberi sign-off akhir seluruh branch sebelum PR (<code>SIGN_OFF</code> atau <code>CONCERNS</code>).</td><td>Tidak</td><td>Model sesi</td></tr>
+          <tr><td><code>backend-developer</code></td><td>Mengerjakan tiket <code>layer: be</code>: API, service, migration. Rencana dulu, helper yang ada, test RED, quality gate.</td><td>Ya</td><td>Model sesi</td></tr>
+          <tr><td><code>frontend-developer</code></td><td>Mengerjakan tiket <code>layer: fe</code>: halaman, komponen, state, sesuai Kontrak API.</td><td>Ya</td><td>Model sesi</td></tr>
+          <tr><td><code>developer</code></td><td>Developer fullstack untuk tiket tanpa <code>layer</code> (monolith, mobile, script, tiket lama).</td><td>Ya</td><td>Model sesi</td></tr>
           <tr><td><code>ticket-reviewer</code></td><td>Mengecek kesesuaian dengan AC, scope, reuse, kesederhanaan, efisiensi, dan test. Hasilnya <code>APPROVED</code>, <code>CHANGES_REQUESTED</code>, atau <code>BLOCKED</code>.</td><td>Tidak</td><td>Sonnet</td></tr>
           <tr><td><code>qa-tester</code></td><td>Menjalankan test positif, negatif, dan batas terhadap AC dan TC. Hasilnya <code>PASS</code> atau <code>FAIL</code> dengan bug report.</td><td>Tidak</td><td>Sonnet</td></tr>
           <tr><td><code>brd-tracer</code></td><td>Menurunkan PRD menjadi BR, PROC, US, AC, TECH, dan TC.</td><td>Tidak</td><td>Sonnet</td></tr>

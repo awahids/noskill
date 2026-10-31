@@ -2,6 +2,17 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.8.0 — 2026-10-31
+
+### Ditambahkan
+- **Tim engineering lengkap.** Agent baru: `product-manager` (pertanyaan klarifikasi → PRD, atau Reverse-PRD), `cto` (review arsitektur + ADR setelah PRD, dan sign-off akhir seluruh branch sebelum PR), `backend-developer`, dan `frontend-developer`.
+- **Field tiket `layer`** (`be` / `fe` / `—`) memilih agent developer. Tiket lama tanpa `layer` tetap dikerjakan `developer`.
+- **ADR** di `<docs>/adr/`. Keputusannya mengikat `brd-tracer`, `task-planner`, developer, dan reviewer.
+
+### Diubah
+- `feature-flow` Stage 1–2 sekarang dijalankan `product-manager` (orkestrator meneruskan pertanyaan ke user). Ada Stage 2b (CTO `ARCH_REVIEW`) dan sign-off CTO di Stage 6. Mode cepat tidak berubah.
+- Prosedur developer dipindah ke skill internal `ticket-implementation` dan dipakai bersama oleh ketiga agent developer. Perilaku `developer` tidak berubah.
+
 ## 1.7.4 — 2026-10-29
 
 ### Diperbaiki

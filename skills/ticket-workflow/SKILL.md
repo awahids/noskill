@@ -71,6 +71,7 @@ id: WMS-BE-004
 title: Validasi outstanding quantity saat Goods Receipt
 type: task            # task | bug
 complexity: simple    # simple | complex — menentukan model developer (lihat di bawah)
+layer: be             # be | fe | — — menentukan agent developer (lihat di bawah)
 repo: api             # opsional, hanya untuk fitur multi-repo: nama repo dari bagian Repo di project-profile
 status: TODO
 trace: US-INV-001 / TECH-003   # dari dokumen BRD (erp-requirements), "—" kalau tidak ada
@@ -119,6 +120,8 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
 **complexity** is set when the ticket is created:
 - `simple` — bug with a clear cause, CRUD endpoint without special business rules, UI change without complex state logic, roughly ≤ 4 files.
 - `complex` — business rules (stock, money, approval/workflow status), transactions or concurrency, many tables, or bug cause still unknown. If unsure, use `complex`.
+
+**layer** is set when the ticket is created and picks the developer agent: `be` → `backend-developer` (API, service, migration, job), `fe` → `frontend-developer` (pages, components, state), `—` or empty → `developer` (fullstack monolith, mobile, scripts, config, or tickets made before this field existed). "developer" elsewhere in this skill means whichever of the three the ticket's `layer` picks.
 
 **Riwayat** is append-only, one line per status change: `- <YYYY-MM-DD HH:MM> <STATUS> — <ringkasan alasan>` (time from `date '+%Y-%m-%d %H:%M'`, used by `/noskill:tiket board` to compute each stage's duration). For changes to BUG/HOLD/IN_PROGRESS (revision), add a 1–3 line summary beneath it (indented) with the agent report path, or the question for the user.
 

@@ -8,10 +8,10 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 1.7.3" src="https://img.shields.io/badge/version-1.7.3-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 1.8.0" src="https://img.shields.io/badge/version-1.8.0-1d6b57?style=flat-square&logo=github" />
 </div>
 
-Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk alur tiket lengkap (develop → review → QA) dengan agent.
+Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, reviewer, dan QA.
 
 📖 **Dokumentasi lengkap:** [awahids.github.io/noskill](https://awahids.github.io/noskill/) (sumber: [`docs/index.html`](docs/index.html)) — cara install, cara kerja alur tiket, semua skill & agent.
 
@@ -23,7 +23,7 @@ Yang muncul di menu `/`: `feature-flow`, `tiket`, `lazy`, `project-profile`, `pr
 
 | Skill | Fungsi |
 |---|---|
-| [`feature-flow`](skills/feature-flow/) | Orkestrator: tiket → developer → reviewer → QA → DONE (atau BUG/HOLD). Mode cepat dan lengkap, paralel, multi-repo, branch dan PR |
+| [`feature-flow`](skills/feature-flow/) | Orkestrator (engineering manager): PM → CTO → analyst → tech lead → developer BE/FE → reviewer → QA → sign-off CTO → DONE (atau BUG/HOLD). Mode cepat dan lengkap, paralel, multi-repo, branch dan PR |
 | [`ticket-workflow`](skills/ticket-workflow/) *internal* | Format file tiket, arti tiap status, aturan transisi, verdict agent, dan board |
 | [`project-profile`](skills/project-profile/) | Scan repo sekali → `docs/noskill/project-profile.md` (stack, command, struktur, helper, aturan) yang dibaca semua agent |
 | [`tiket`](skills/tiket/) | Shortcut tiket dalam satu perintah: lihat board, lanjutkan tiket dari sesi sebelumnya, bug fix lewat mode cepat, rapikan tiket lama atau review ulang tiket DONE |
@@ -32,6 +32,7 @@ Yang muncul di menu `/`: `feature-flow`, `tiket`, `lazy`, `project-profile`, `pr
 | [`erp-requirements`](skills/erp-requirements/) *internal* | ERP/WMS: (A) checklist desain domain — master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP; (B) rantai requirement traceability |
 | [`task-breakdown`](skills/task-breakdown/) *internal* | PRD/BRD → tiket: satu per endpoint (BE, dengan Kontrak API), per fitur (FE), atau per bug |
 | [`coding-standards`](skills/coding-standards/) *internal* | Naming, struktur folder, ORM, API, dokumentasi Swagger/OpenAPI, TDD, quality gate, dan checklist review untuk NestJS/Laravel/Golang/Vue/Next.js |
+| [`ticket-implementation`](skills/ticket-implementation/) *internal* | Prosedur bersama ketiga agent developer: scope, reuse, rencana, test RED, quality gate, laporan |
 | [`debug-assistant`](skills/debug-assistant/) | Debugging terstruktur: reproduce → isolasi → root cause → fix → verifikasi dengan bukti |
 
 ### Plugin tambahan `noskill-extras` (opsional)
@@ -51,9 +52,13 @@ Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field 
 
 | Agent | Peran | Skill yang dimuat | Bisa ubah kode? |
 |---|---|---|---|
+| [`product-manager`](agents/product-manager.md) | Product Manager: menyusun pertanyaan klarifikasi, lalu menulis PRD (atau Reverse-PRD dari kode) | `prd-writer`, `erp-requirements` | Tidak (hanya tulis PRD) |
+| [`cto`](agents/cto.md) | CTO: review arsitektur setelah PRD (ADR, GO / GO_WITH_NOTES / NO_GO) dan sign-off akhir seluruh branch (SIGN_OFF / CONCERNS) | `coding-standards` | Tidak (hanya tulis ADR & laporan) |
 | [`brd-tracer`](agents/brd-tracer.md) | PRD → BR/PROC/US/AC/TECH/TC di `docs/noskill/01..05` | `erp-requirements` | Tidak (hanya tulis dokumen) |
 | [`task-planner`](agents/task-planner.md) | BRD → file tiket `docs/noskill/tickets/*.md` status TODO | `task-breakdown`, `ticket-workflow` | Tidak (hanya tulis tiket) |
-| [`developer`](agents/developer.md) | Kerjakan satu tiket / fix BUG sampai Cara Verifikasi lolos | `coding-standards`, `debug-assistant`, `ticket-workflow` | Ya |
+| [`backend-developer`](agents/backend-developer.md) | Tiket `layer: be` — API, service, migration (NestJS/Laravel/Go) | `ticket-implementation`, `coding-standards` | Ya |
+| [`frontend-developer`](agents/frontend-developer.md) | Tiket `layer: fe` — halaman, komponen, state (Vue/Next.js) | `ticket-implementation`, `coding-standards` | Ya |
+| [`developer`](agents/developer.md) | Fullstack: tiket tanpa `layer` (monolith, mobile, script, tiket lama) | `ticket-implementation`, `coding-standards` | Ya |
 | [`ticket-reviewer`](agents/ticket-reviewer.md) | Cek perubahan sesuai AC tiket & standar → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
 | [`qa-tester`](agents/qa-tester.md) | Jalankan test terhadap AC & TC → PASS / FAIL (bug report) / BLOCKED | `ticket-workflow` | Tidak |
 
@@ -119,15 +124,16 @@ Opsional: isi `tracker: github` atau `tracker: notion` di `docs/noskill/project-
 Mode lengkap:
 
 ```
-[sesi utama, interaktif]           [agent]
-requirements → prd-writer ──► brd-tracer ──► task-planner ──► tiket TODO
+product-manager ──► cto (ADR) ──► brd-tracer ──► task-planner ──► tiket TODO
+ (pertanyaan → kamu jawab → PRD)
 
 Per tiket:
 TODO ─► IN_PROGRESS ─► REVIEW ─► QA ─► DONE (commit lokal)
-     (developer)   (reviewer)  (qa-tester)
+  (backend-/frontend-/developer)  (reviewer)  (qa-tester)
           ▲           │          │
           └─ revisi ──┘          └─► BUG ─► developer (debug-assistant)
 Blocker / 3x gagal ─► HOLD ─► ditanyakan ke user
+Semua DONE ─► full check ─► cto SIGN_OFF ─► PR
 ```
 
 Agent tidak berbicara langsung satu sama lain. Mereka terhubung lewat file di `docs/noskill/`, dan hanya `feature-flow` yang memindahkan status tiket. Hasil setiap tahap jadi bisa direview, diedit, dan di-cek ulang.

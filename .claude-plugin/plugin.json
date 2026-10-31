@@ -1,7 +1,7 @@
 {
   "name": "noskill",
-  "version": "1.7.4",
-  "description": "Alur kerja seperti tim engineering di Claude: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu DONE — dengan aturan scope, reuse, solusi sederhana, dan test positif/negatif/batas.",
+  "version": "1.8.0",
+  "description": "Tim engineering lengkap di Claude: PM menulis PRD, CTO me-review arsitektur, tiket dikerjakan developer BE/FE, dicek reviewer, diuji QA, lalu DONE dan sign-off CTO — dengan aturan scope, reuse, solusi sederhana, dan test positif/negatif/batas.",
   "author": {
     "name": "Wahid",
     "url": "https://awahids.my.id"
