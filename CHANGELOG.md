@@ -2,6 +2,14 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.10.1 — 2026-10-31
+
+### Diperbaiki
+- **Halaman Kantor di 1.10.0 masih versi lama.** Rilis 1.10.0 membawa izin dan dokumentasi baru, tetapi file `skills/kantor/kantor-noskill.html`-nya belum ikut ter-update, jadi metrik, klik tiket, replay, filter proyek, ikuti tiket, dan daftar orang yang melihat belum ada. Rilis ini membawa halaman yang benar. Jalankan `/noskill:kantor` dan pilih perbarui.
+
+### Ditambahkan
+- **Kantor noskill:** setiap meja agent (dan meja Eng. Manager) punya lampu kerja yang menyala hangat saat **Mode malam** dan mati saat siang.
+
 ## 1.10.0 — 2026-10-31
 
 ### Ditambahkan

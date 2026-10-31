@@ -161,6 +161,29 @@
   .info dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; align-items: baseline; }
   .info dd { margin: 0; font-size: 0.92rem; min-width: 0; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .row-filter { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); }
+  .row-filter[hidden], .viewers[hidden] { display: none; }
+  .row-filter select { font: 0.85rem var(--font-mono); padding: 4px 8px; border-radius: 10px; border: 1px solid var(--edge); background: var(--panel); color: var(--ink); min-width: 0; flex: 1; }
+  .row-filter select:focus-visible { outline: 3px solid var(--btn); outline-offset: 1px; }
+  .viewers { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); }
+  .viewer { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 2px; border-radius: 999px; border: 1px solid var(--edge); color: var(--ink); }
+  .viewer img { width: 20px; height: 20px; border-radius: 50%; }
+  .tbody { display: grid; gap: 12px; font-size: 0.92rem; }
+  .tbody h3 { margin: 0; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  .tbody ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+  .tbody li { line-height: 1.35; }
+  .tbody .mono { font-family: var(--font-mono); font-size: 0.8rem; }
+  .tbody .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .tbody .ac-done { color: var(--muted); }
+  .tbody .tk-btn { text-align: left; font-weight: 500; font-size: 0.85rem; padding: 6px 10px; border-radius: 10px; width: 100%; }
+  .stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr)); gap: 8px; }
+  .stat div { background: var(--log); border-radius: 10px; padding: 6px 8px; }
+  .stat b { display: block; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 0.75rem; color: var(--muted); }
+  .bar { display: grid; grid-template-columns: 112px 1fr auto; gap: 8px; align-items: center; font-size: 0.85rem; }
+  .bar i { display: block; height: 10px; border-radius: 6px; background: var(--btn); min-width: 2px; }
+  .bar .val { font-family: var(--font-mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .bar.top i { background: #d9682a; }
   .chip { font-family: var(--font-mono); font-size: 0.78rem; padding: 2px 8px; border-radius: 8px; background: var(--btn-soft); border: 1px solid var(--edge); }
   @media (max-width: 520px) {
     .info { left: 10px; right: 10px; width: auto; top: calc(10px + env(safe-area-inset-top, 0px)); max-height: 52%; padding: 12px; }
@@ -209,6 +232,15 @@
     <button type="button" data-floor="1" aria-pressed="false">L2</button>
     <button type="button" data-floor="2" aria-pressed="false">L3</button>
   </div>
+  <div class="row-filter" id="projRow" hidden>
+    <label for="projFilter">Proyek</label>
+    <select id="projFilter"><option value="">Semua proyek</option></select>
+  </div>
+  <div class="controls">
+    <button type="button" id="btnMetrics" aria-expanded="false" aria-controls="metrics">Metrik</button>
+    <button type="button" id="btnFollow" aria-pressed="false">Ikuti tiket</button>
+  </div>
+  <div class="viewers" id="viewers" hidden aria-live="polite"></div>
   <div class="controls">
     <button id="btnNight" aria-pressed="false">Mode malam</button>
     <button id="btnPause" aria-pressed="false">Jeda</button>
@@ -236,6 +268,24 @@
     <dt>Ubah kode</dt><dd id="infoCode"></dd>
     <dt>Verdict</dt><dd id="infoVerdict"></dd>
   </dl>
+</aside>
+
+<aside class="info" id="tinfo" hidden aria-labelledby="tTitle">
+  <header>
+    <span class="dot" id="tDot"></span>
+    <div><h2 id="tTitle">Tiket</h2><div class="agent" id="tSub"></div></div>
+    <button class="close" id="tClose" aria-label="Tutup detail tiket">×</button>
+  </header>
+  <div id="tBody" class="tbody"></div>
+</aside>
+
+<aside class="info" id="metrics" hidden aria-labelledby="mTitle">
+  <header>
+    <span class="dot" style="background: var(--btn)"></span>
+    <div><h2 id="mTitle">Metrik tim</h2><div class="agent" id="mSub"></div></div>
+    <button class="close" id="mClose" aria-label="Tutup metrik">×</button>
+  </header>
+  <div id="mBody" class="tbody"></div>
 </aside>
 
 <div class="err" id="err" hidden>Browser ini belum bisa menampilkan 3D (WebGL tidak aktif). Coba buka di Chrome, Safari, atau Firefox versi terbaru.</div>
@@ -308,6 +358,21 @@
   }
   const windowMat = new THREE.MeshStandardMaterial({ color: 0x9fcde3, emissive: 0xffcf73, emissiveIntensity: 0, roughness: 0.4, flatShading: true });
   const lampMat = new THREE.MeshStandardMaterial({ color: 0xfff4d6, emissive: 0xffd27a, emissiveIntensity: 0, flatShading: true });
+  // Desk lamps: dark by day, warm at night (see applyNight)
+  const deskLampMat = new THREE.MeshStandardMaterial({ color: 0xf3e3c0, emissive: 0xffc56b, emissiveIntensity: 0, flatShading: true });
+  const deskLights = [];
+  function deskLamp(parent, x, y, z) {
+    box(0.26, 0.04, 0.26, 0x3b4048, x, y + 0.02, z, { parent: parent, cast: false });
+    box(0.04, 0.42, 0.04, 0x3b4048, x, y + 0.23, z, { parent: parent, cast: false });
+    box(0.04, 0.04, 0.3, 0x3b4048, x, y + 0.44, z - 0.13, { parent: parent, cast: false });
+    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.18, 10, 1, true), deskLampMat);
+    shade.position.set(x, y + 0.36, z - 0.28); parent.add(shade);
+    const bulb = box(0.08, 0.05, 0.08, 0, x, y + 0.3, z - 0.28, { parent: parent, cast: false, material: deskLampMat });
+    const light = new THREE.PointLight(0xffc56b, 0, 5.5, 2);
+    light.position.set(x, y + 0.25, z - 0.35); parent.add(light);
+    deskLights.push(light);
+    return bulb;
+  }
   const glassMat = new THREE.MeshStandardMaterial({ color: 0xbfe6f5, transparent: true, opacity: 0.28, roughness: 0.1, depthWrite: false });
 
   function box(w, h, d, color, x, y, z, o) {
@@ -351,7 +416,7 @@
   const BX0 = -13, BX1 = 13.6, BZ0 = -10, BZ1 = 10;           // building footprint
   const HOLE = [null, { x0: 10.2, x1: 11.6 }, { x0: 11.8, x1: 13.2 }];  // stairwell openings, z -3.4..7.6
   const floors = [0, 1, 2].map(function () { const g = new THREE.Group(); scene.add(g); return g; });
-  let focus = -1, targetY = 6;
+  let focus = -1, targetY = 6, targetX = 0, targetZ = 0;
   function shown(y) { return focus < 0 || y < FY[focus] + FLOOR_H - 0.6; }
 
   function slab(k) {
@@ -517,6 +582,7 @@
       box(0.08, 0.3, 0.08, 0x2a2f36, mx, 0.98, 1.32, { parent: g });
     });
     box(0.7, 0.03, 0.25, 0xdedede, 0, 0.87, 0.75, { parent: g, cast: false });
+    if (a.extra === 'dual') deskLamp(g, 1.05, 0.85, 0.95); else deskLamp(g, 0.85, 0.85, 1.25);
 
     // per-role details
     if (a.extra === 'glass') {
@@ -592,6 +658,7 @@
   const boardBack = new THREE.Mesh(new THREE.PlaneGeometry(6.3, 3.3), boardMat);
   boardBack.position.set(0, 2.55, -1.51); boardBack.rotation.y = Math.PI; centre.add(boardBack);
   box(1.1, 1.0, 0.6, 0xb88a5a, 1.6, 0.5, 0.4, { parent: centre });
+  deskLamp(centre, 1.85, 1.0, 0.6);
 
   const em = makePerson({ skin: pick(SKIN), hair: pick(HAIR), shirt: 0x55606e, pants: 0x2b2d42, parent: centre });
   em.userData.key = 'em';
@@ -644,6 +711,7 @@
     c.stripe.color.setHex(job.color); c.stripe.emissive.setHex(job.color);
     scene.attach(p);
     p.userData.legL.rotation.x = 0; p.userData.legR.rotation.x = 0;
+    lastWalker = job.from;
     walkers[job.from] = { job: job, path: route(job.from, job.to), i: 0, back: false, wait: 0, ph: 0, card: c, carrying: true };
     p.position.copy(walkers[job.from].path[0]);
     if (selected === job.from) renderInfo();
@@ -705,6 +773,8 @@
     { id: 'WMS-FE-002', layer: 'fe', color: 0x5aa83a, status: null },
     { id: 'FIX-007',    layer: '—',  color: 0x2b7569, status: null }
   ];
+  // Demo tickets carry the same fields as live ones so detail, metrics and replay work on them too
+  TICKETS.forEach(function (tk) { tk.project = 'demo'; tk.title = ''; tk.rounds = '0'; tk.last = ''; tk.ac = []; tk.riw = []; tk.hist = []; });
   const COLS = ['TODO', 'IN_PROGRESS', 'REVIEW', 'QA', 'BUG', 'HOLD', 'DONE'];
   // s: station, t: ticket index (null = document), st: status shown/applied at start, after: status after the step
   const SCRIPT = [
@@ -735,8 +805,10 @@
     { s: 'em', t: null, st: 'PR', w: 'Push feat/wms-gr dan buka PR' }
   ];
 
+  let boardList = TICKETS;
   function drawBoard(phase, list) {
     list = list || TICKETS;
+    boardList = list;
     const x = boardCv.getContext('2d');
     x.fillStyle = '#f7f5ef'; x.fillRect(0, 0, 1024, 540);
     x.fillStyle = '#2f6b4f'; x.fillRect(0, 0, 1024, 78);
@@ -800,17 +872,22 @@
 
   function resetTickets() { TICKETS.forEach(function (t) { t.status = null; }); }
   function startStep(i) {
-    if (i === 0) resetTickets();
+    if (i === 0) { resetTickets(); TICKETS.forEach(function (tk) { tk.hist = []; tk.riw = []; tk.rounds = '0'; tk.last = ''; }); }
     const step = SCRIPT[i];
     const station = ST[step.s];
     const prev = curKey;
     curKey = step.s;
     stepT = 0;
-    if (step.all) TICKETS.forEach(function (t) { t.status = step.all; });
+    if (step.all) TICKETS.forEach(function (t) { t.status = step.all; t.hist = [['', step.all]]; });
     let color = 0x3b7fc4;
     if (step.t !== null) {
       const tk = TICKETS[step.t];
       tk.status = step.st === 'BUG' ? 'BUG' : step.st;
+      const ts = new Date().toTimeString().slice(0, 5);
+      tk.hist.push(['', tk.status]);
+      tk.riw.push(ts + ' ' + tk.status + ' — ' + step.w);
+      tk.last = ts + ' ' + tk.status + ' — ' + step.w;
+      if (step.st === 'REVIEW' && /CHANGES_REQUESTED/.test(step.w)) tk.rounds = String(Number(tk.rounds) + 1);
       color = tk.color;
       phase = 'Ticket loop';
     } else {
@@ -846,7 +923,12 @@
   }
   function endStep(i) {
     const step = SCRIPT[i];
-    if (step.after && step.t !== null) { TICKETS[step.t].status = step.after; drawBoard(phase); }
+    if (step.after && step.t !== null) {
+      const tk = TICKETS[step.t];
+      tk.status = step.after; tk.hist.push(['', step.after]);
+      if (step.after === 'BUG' || step.after === 'IN_PROGRESS') tk.rounds = String(Number(tk.rounds) + (step.after === 'BUG' ? 1 : 0));
+      drawBoard(phase);
+    }
   }
 
   // ---------- Agent details (click an agent) ----------
@@ -914,35 +996,51 @@
     }
   }
   function openInfo(key) {
+    closeSide();
     selected = key;
     infoEl.hidden = false;
     renderInfo();
   }
   function closeInfo() { selected = null; infoEl.hidden = true; }
   el('infoClose').addEventListener('click', closeInfo);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeInfo(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeInfo(); closeSide(); } });
 
   // Click picking: ignore drags so orbiting doesn't open the card
   const ray = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
   const pickables = [];
   Object.keys(ST).forEach(function (k) { pickables.push(ST[k].g, ST[k].person); });
+  boardFront.userData.board = true; boardBack.userData.board = true;
   function visibleChain(o) { for (; o; o = o.parent) if (!o.visible) return false; return true; }
   function keyAt(ev) {
     const r = renderer.domElement.getBoundingClientRect();
     ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, camera);
     const hit = ray.intersectObjects(pickables, true).find(function (h) { return visibleChain(h.object); });
+    if (hit && hit.object.userData.board && hit.uv) return boardAt(hit.uv) || null;
     let o = hit && hit.object;
     while (o && !o.userData.key) o = o.parent;
     return o ? o.userData.key : null;
+  }
+  // Board texture coordinates -> the ticket (or the "+N lagi" overflow cell) drawn there
+  function boardAt(uv) {
+    const x = uv.x * 1024, y = (1 - uv.y) * 540, cw = 1024 / COLS.length;
+    const col = COLS[Math.min(COLS.length - 1, Math.max(0, Math.floor(x / cw)))];
+    const row = Math.floor((y - 132) / 108);
+    if (y < 132 || row > 2 || (y - 132) % 108 > 92) return null;
+    const inCol = boardList.filter(function (tk) { return tk.status === col; });
+    if (row === 2 && inCol.length > 3) return { column: col };
+    return inCol[row] ? { ticket: inCol[row] } : null;
   }
   let downAt = null;
   renderer.domElement.addEventListener('pointerdown', function (e) { downAt = { x: e.clientX, y: e.clientY }; });
   renderer.domElement.addEventListener('pointerup', function (e) {
     if (!downAt || Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 6) return;
     const k = keyAt(e);
-    if (k) openInfo(k);
+    if (!k) return;
+    if (typeof k === 'string') openInfo(k);
+    else if (k.ticket) openTicket(k.ticket);
+    else if (k.column) openColumn(k.column);
   });
   let hoverQueued = false;
   renderer.domElement.addEventListener('pointermove', function (e) {
@@ -992,11 +1090,21 @@
     const hist = (md.split(/^## Riwayat\s*$/m)[1] || '').split('\n').filter(function (l) { return /^- \d{4}-\d{2}-\d{2}/.test(l); });
     // tickets made before the layer field: fall back to the BE/FE part of the ID
     const layer = (f.layer || (/-BE-/i.test(f.id) ? 'be' : /-FE-/i.test(f.id) ? 'fe' : '')).toLowerCase();
+    const acPart = (md.split(/^## Acceptance Criteria\s*$/m)[1] || '').split(/^## /m)[0];
+    const ac = acPart.split('\n').map(function (l) { return l.match(/^\s*- \[( |x|X)\]\s*(.+)$/); }).filter(Boolean).slice(0, 15)
+      .map(function (m) { return [m[1] !== ' ', m[2].slice(0, 160)]; });
     return {
       id: f.id, title: f.title || '', status: f.status.toUpperCase(),
       layer: layer === 'be' || layer === 'fe' ? layer : '—', rounds: f.rounds || '0',
       last: hist.length ? hist[hist.length - 1].replace(/^- /, '') : '',
-      color: LAYER_COLOR[layer] || 0x2b7569
+      color: LAYER_COLOR[layer] || 0x2b7569,
+      // [timestamp, STATUS] per Riwayat line; timestamp is "YYYY-MM-DD HH:MM" or just the date
+      hist: hist.map(function (l) {
+        const m = l.match(/^- (\d{4}-\d{2}-\d{2}(?: \d{2}:\d{2})?)\s+([A-Z_]+)/);
+        return m ? [m[1], m[2]] : null;
+      }).filter(Boolean),
+      ac: ac,
+      riw: hist.slice(-8).map(function (l) { return l.replace(/^- /, '').slice(0, 160); })
     };
   }
   // Which desk a ticket sits on, from its status (same mapping feature-flow uses)
@@ -1113,16 +1221,18 @@
     before.forEach(function (tk) { old[tk.project + '/' + tk.id] = tk; });
     now.forEach(function (tk) {
       const o = old[tk.project + '/' + tk.id];
-      if (!o || o.status === tk.status) return;
+      if (!o || o.status === tk.status || (projFilter && tk.project !== projFilter)) return;
       const from = stationFor(o) || (o.status === 'TODO' ? 'lead' : null);
       const dest = stationFor(tk) || (tk.status === 'DONE' ? 'em' : null);
       if (from && dest && from !== dest) sendCourier(from, dest, tk.color, null);
     });
   }
   function applyLive() {
+    syncProjects();
+    const shownTk = view();
     liveBy = {};
-    live.forEach(function (tk) { const k = stationFor(tk); if (k) (liveBy[k] = liveBy[k] || []).push(tk); });
-    drawBoard((liveSource === 'db' ? 'Snapshot ' : 'Live ') + hhmm(liveAt), live);
+    shownTk.forEach(function (tk) { const k = stationFor(tk); if (k) (liveBy[k] = liveBy[k] || []).push(tk); });
+    drawBoard((liveSource === 'db' ? 'Snapshot ' : 'Live ') + hhmm(liveAt), shownTk);
     card.visible = false;
     Object.keys(ST).forEach(function (k) {
       const tks = liveBy[k];
@@ -1131,9 +1241,10 @@
       c.g.visible = !!tks;
       if (tks) { c.stripe.color.setHex(tks[0].color); c.stripe.emissive.setHex(tks[0].color); }
     });
-    const active = live.filter(stationFor).length;
-    const latest = live.filter(function (tk) { return tk.last; }).sort(function (a, b) { return b.last.localeCompare(a.last); })[0];
-    logStatus.textContent = (liveSource === 'db' ? 'SNAPSHOT · ' : 'LIVE · ') + live.length + ' tiket · ' + active + ' aktif';
+    const active = shownTk.filter(stationFor).length;
+    const latest = shownTk.filter(function (tk) { return tk.last; }).sort(function (a, b) { return b.last.localeCompare(a.last); })[0];
+    if (replaying) { renderInfo(); refreshSide(); return; }   // keep the replay narration in the log
+    logStatus.textContent = (liveSource === 'db' ? 'SNAPSHOT · ' : 'LIVE · ') + shownTk.length + ' tiket · ' + active + ' aktif';
     logStep.textContent = liveSource === 'db' ? liveAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + hhmm(liveAt) : hhmm(liveAt);
     if (latest) {
       logWho.textContent = (multi ? latest.project + ' / ' : '') + latest.id;
@@ -1147,6 +1258,7 @@
     if (ST.qa.a.qaLight) { ST.qa.a.qaLight.color.setHex(0x3a3f46); ST.qa.a.qaLight.emissive.setHex(0x3a3f46); }
     renderInfo();
     renderMini();
+    refreshSide();
   }
   function renderLiveInfo(pill) {
     const tks = liveBy[selected] || [];
@@ -1189,12 +1301,15 @@
     const sig = boardSig(tks);
     if (sig === dbLastSig) return;               // write only when a ticket actually changed
     dbSaving = true;
+    // keep the document well under the 256 KiB limit: drop AC and Riwayat text on very large boards
+    const lean = JSON.stringify(tks).length > 200000;
     try {
       await dbNs.doc(BOARD_DOC).set({
         at: new Date().toISOString(),
         projects: projects,
         tickets: tks.map(function (t) {
-          return { id: t.id, title: t.title.slice(0, 200), status: t.status, layer: t.layer, rounds: t.rounds, last: t.last.slice(0, 300), project: t.project, color: t.color };
+          return { id: t.id, title: t.title.slice(0, 200), status: t.status, layer: t.layer, rounds: t.rounds, last: t.last.slice(0, 300), project: t.project, color: t.color,
+            hist: (t.hist || []).slice(-30), ac: lean ? [] : (t.ac || []), riw: lean ? [] : (t.riw || []) };
         })
       });
       dbLastSig = sig;
@@ -1206,7 +1321,10 @@
     const before = mode === 'live' ? live : [];
     live = (dbBoard.tickets || []).filter(function (t) { return t && t.id && t.status; }).map(function (t) {
       return { id: String(t.id), title: String(t.title || ''), status: String(t.status).toUpperCase(), layer: t.layer === 'be' || t.layer === 'fe' ? t.layer : '—',
-        rounds: String(t.rounds || '0'), last: String(t.last || ''), project: String(t.project || ''), color: Number(t.color) || 0x2b7569 };
+        rounds: String(t.rounds || '0'), last: String(t.last || ''), project: String(t.project || ''), color: Number(t.color) || 0x2b7569,
+        hist: Array.isArray(t.hist) ? t.hist.filter(function (h) { return Array.isArray(h) && h.length === 2; }).map(function (h) { return [String(h[0]), String(h[1])]; }) : [],
+        ac: Array.isArray(t.ac) ? t.ac.filter(Array.isArray).map(function (a) { return [!!a[0], String(a[1] || '')]; }) : [],
+        riw: Array.isArray(t.riw) ? t.riw.map(String) : [] };
     });
     liveAt = new Date(dbBoard.at || Date.now());
     multi = (dbBoard.projects || []).length > 1;
@@ -1332,6 +1450,271 @@
   const savedDir = load(PATH_KEY);
   if (savedDir) { srcPath.value = savedDir; startLive(savedDir.split('\n').filter(Boolean)); }
 
+  // ---------- Project filter ----------
+  let projFilter = load('noskill-project') || '';
+  const projSel = el('projFilter'), projRow = el('projRow');
+  function view() {
+    if (mode !== 'live') return TICKETS;
+    return projFilter ? live.filter(function (t) { return t.project === projFilter; }) : live;
+  }
+  function syncProjects() {
+    const names = [];
+    live.forEach(function (t) { if (t.project && names.indexOf(t.project) < 0) names.push(t.project); });
+    projRow.hidden = mode !== 'live' || names.length < 2;
+    if (names.indexOf(projFilter) < 0) projFilter = '';
+    const want = [''].concat(names).join('|');
+    if (projSel.dataset.opts !== want) {
+      projSel.textContent = '';
+      [''].concat(names).forEach(function (n) {
+        const o = document.createElement('option'); o.value = n; o.textContent = n || 'Semua proyek'; projSel.appendChild(o);
+      });
+      projSel.dataset.opts = want;
+    }
+    projSel.value = projFilter;
+  }
+  projSel.addEventListener('change', function () {
+    projFilter = projSel.value;
+    store('noskill-project', projFilter || null);
+    if (mode === 'live') applyLive();
+  });
+
+  // ---------- Side panels: ticket detail, column list, metrics ----------
+  const tinfo = el('tinfo'), tBody = el('tBody'), metricsEl = el('metrics'), mBody = el('mBody'), btnMetrics = el('btnMetrics');
+  let sideTicket = null, sideColumn = null;
+  function closeSide() {
+    tinfo.hidden = true; metricsEl.hidden = true; sideTicket = null; sideColumn = null;
+    btnMetrics.setAttribute('aria-expanded', 'false');
+  }
+  el('tClose').addEventListener('click', closeSide);
+  el('mClose').addEventListener('click', closeSide);
+  function refreshSide() {
+    if (!metricsEl.hidden) renderMetrics();
+    if (sideTicket) {
+      const fresh = view().find(function (t) { return t.id === sideTicket.id && t.project === sideTicket.project; });
+      if (fresh) { sideTicket = fresh; renderTicket(); }
+    } else if (sideColumn) renderColumn();
+  }
+  function node(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function holderOf(tk) { const k = stationFor(tk) || (tk.status === 'TODO' ? 'lead' : null); return k ? ROLE[k] + ' (' + ST[k].a.agent + ')' : 'Tidak ada, tiket selesai'; }
+  function openTicket(tk) {
+    closeInfo(); closeSide();
+    sideTicket = tk; tinfo.hidden = false; renderTicket();
+  }
+  function renderTicket() {
+    const tk = sideTicket;
+    el('tDot').style.background = hex(tk.color);
+    el('tTitle').textContent = tk.id;
+    el('tSub').textContent = (tk.project && tk.project !== 'demo' ? tk.project + ' · ' : '') + 'layer ' + tk.layer;
+    tBody.textContent = '';
+    if (tk.title) tBody.appendChild(node('p', 'desc', tk.title));
+    const st = node('div', 'row');
+    const pill = node('span', 'pill on', tk.status || '—'); st.appendChild(pill);
+    if (Number(tk.rounds) > 0) st.appendChild(node('span', 'pill', 'ronde ' + tk.rounds));
+    tBody.appendChild(st);
+    const who = node('div'); who.appendChild(node('h3', null, 'Dipegang')); who.appendChild(node('div', null, holderOf(tk))); tBody.appendChild(who);
+    const acBox = node('div'); acBox.appendChild(node('h3', null, 'Acceptance Criteria'));
+    if (tk.ac && tk.ac.length) {
+      const ul = node('ul');
+      tk.ac.forEach(function (a) { ul.appendChild(node('li', a[0] ? 'ac-done' : null, (a[0] ? '☑ ' : '☐ ') + a[1])); });
+      acBox.appendChild(ul);
+    } else acBox.appendChild(node('div', 'ac-done', mode === 'live' ? 'Tidak ada AC yang terbaca.' : 'AC hanya tersedia untuk tiket asli.'));
+    tBody.appendChild(acBox);
+    const rw = node('div'); rw.appendChild(node('h3', null, 'Riwayat'));
+    const ul2 = node('ul', 'mono');
+    (tk.riw && tk.riw.length ? tk.riw : ['Belum ada.']).forEach(function (r) { ul2.appendChild(node('li', null, r)); });
+    rw.appendChild(ul2); tBody.appendChild(rw);
+    const acts = node('div', 'controls');
+    const b = node('button', null, replaying ? 'Replay sedang berjalan…' : 'Putar ulang perjalanan');
+    b.type = 'button'; b.disabled = replaying;
+    b.addEventListener('click', function () { replayTicket(tk); });
+    acts.appendChild(b); tBody.appendChild(acts);
+  }
+  function openColumn(col) {
+    closeInfo(); closeSide();
+    sideColumn = col; tinfo.hidden = false; renderColumn();
+  }
+  function renderColumn() {
+    const list = view().filter(function (t) { return t.status === sideColumn; });
+    el('tDot').style.background = 'var(--btn)';
+    el('tTitle').textContent = sideColumn;
+    el('tSub').textContent = list.length + ' tiket';
+    tBody.textContent = '';
+    const ul = node('ul');
+    list.forEach(function (tk) {
+      const b = node('button', 'tk-btn', (multi ? tk.project + ' / ' : '') + tk.id + (tk.title ? ' · ' + tk.title.slice(0, 60) : ''));
+      b.type = 'button'; b.addEventListener('click', function () { openTicket(tk); });
+      const li = node('li'); li.appendChild(b); ul.appendChild(li);
+    });
+    tBody.appendChild(ul);
+  }
+
+  // Metrics from Riwayat: minutes between consecutive timestamped lines, grouped by the stage being left
+  function minutesBetween(a, b) {
+    if (a.length < 16 || b.length < 16) return null;
+    const ta = Date.parse(a.replace(' ', 'T')), tb = Date.parse(b.replace(' ', 'T'));
+    return isNaN(ta) || isNaN(tb) || tb < ta ? null : (tb - ta) / 60000;
+  }
+  const STAGE_OF = { IN_PROGRESS: 'Develop', BUG: 'Develop', REVIEW: 'Review', QA: 'QA', HOLD: 'HOLD' };
+  function computeMetrics(list) {
+    const stages = {}, agents = {};
+    list.forEach(function (tk) {
+      const h = tk.hist || [];
+      for (let i = 0; i < h.length - 1; i++) {
+        const stg = STAGE_OF[h[i][1]];
+        const m = minutesBetween(h[i][0], h[i + 1][0]);
+        if (!stg || m == null) continue;
+        (stages[stg] = stages[stg] || []).push(m);
+        const desk = stationFor({ status: h[i][1], layer: tk.layer });
+        if (desk) (agents[desk] = agents[desk] || []).push(m);
+      }
+    });
+    function avg(a) { return a.reduce(function (x, y) { return x + y; }, 0) / a.length; }
+    const stageRows = Object.keys(stages).map(function (k) { return { name: k, avg: avg(stages[k]), n: stages[k].length }; });
+    const agentRows = Object.keys(agents).map(function (k) { return { name: ROLE[k], avg: avg(agents[k]), n: agents[k].length }; });
+    return { stageRows: stageRows, agentRows: agentRows.sort(function (a, b) { return b.avg - a.avg; }) };
+  }
+  function fmtMin(m) { return m < 60 ? Math.round(m) + ' mnt' : m < 1440 ? (m / 60).toFixed(1) + ' jam' : (m / 1440).toFixed(1) + ' hari'; }
+  function bars(title, rows, host) {
+    const box = node('div'); box.appendChild(node('h3', null, title));
+    if (!rows.length) { box.appendChild(node('div', 'ac-done', 'Belum ada Riwayat dengan jam (HH:MM) untuk dihitung.')); host.appendChild(box); return; }
+    const max = Math.max.apply(null, rows.map(function (r) { return r.avg; }));
+    rows.forEach(function (r, i) {
+      const row = node('div', 'bar' + (r.avg === max ? ' top' : ''));
+      row.appendChild(node('span', null, r.name));
+      const track = node('span'); const fill = node('i'); fill.style.width = Math.max(2, r.avg / max * 100) + '%'; track.appendChild(fill); row.appendChild(track);
+      row.appendChild(node('span', 'val', fmtMin(r.avg) + ' · ' + r.n + '×'));
+      box.appendChild(row);
+    });
+    host.appendChild(box);
+  }
+  function renderMetrics() {
+    const list = view();
+    el('mSub').textContent = mode === 'live' ? (liveSource === 'db' ? 'Snapshot' : 'Live') + (projFilter ? ' · ' + projFilter : '') : 'Demo';
+    mBody.textContent = '';
+    const count = function (s) { return list.filter(function (t) { return t.status === s; }).length; };
+    const stat = node('div', 'stat');
+    [['Tiket', list.length], ['DONE', count('DONE')], ['Aktif', list.filter(stationFor).length - count('HOLD')], ['HOLD', count('HOLD')], ['BUG', count('BUG')]].forEach(function (s) {
+      const d = node('div'); d.appendChild(node('b', null, String(s[1]))); d.appendChild(node('span', null, s[0])); stat.appendChild(d);
+    });
+    mBody.appendChild(stat);
+    const m = computeMetrics(list);
+    const order = ['Develop', 'Review', 'QA', 'HOLD'];
+    bars('Rata-rata durasi per tahap', m.stageRows.sort(function (a, b) { return order.indexOf(a.name) - order.indexOf(b.name); }), mBody);
+    bars('Rata-rata durasi per agent', m.agentRows, mBody);
+    if (m.agentRows.length) mBody.appendChild(node('p', 'desc', 'Paling lama: ' + m.agentRows[0].name + ' (' + fmtMin(m.agentRows[0].avg) + ' per tiket).'));
+    const top = list.filter(function (t) { return Number(t.rounds) > 0; }).sort(function (a, b) { return Number(b.rounds) - Number(a.rounds); }).slice(0, 5);
+    const rb = node('div'); rb.appendChild(node('h3', null, 'Ronde revisi terbanyak'));
+    if (!top.length) rb.appendChild(node('div', 'ac-done', 'Belum ada tiket yang direvisi.'));
+    top.forEach(function (tk) {
+      const b = node('button', 'tk-btn', (multi ? tk.project + ' / ' : '') + tk.id + ' · ' + tk.rounds + ' ronde');
+      b.type = 'button'; b.addEventListener('click', function () { openTicket(tk); }); rb.appendChild(b);
+    });
+    mBody.appendChild(rb);
+    const hold = list.filter(function (t) { return t.status === 'HOLD'; });
+    if (hold.length) {
+      const hb = node('div'); hb.appendChild(node('h3', null, 'Menunggu keputusan (HOLD)'));
+      hold.forEach(function (tk) { const b = node('button', 'tk-btn', (multi ? tk.project + ' / ' : '') + tk.id + (tk.title ? ' · ' + tk.title.slice(0, 60) : '')); b.type = 'button'; b.addEventListener('click', function () { openTicket(tk); }); hb.appendChild(b); });
+      mBody.appendChild(hb);
+    }
+  }
+  btnMetrics.addEventListener('click', function () {
+    const open = metricsEl.hidden;
+    closeInfo(); closeSide();
+    if (open) { metricsEl.hidden = false; btnMetrics.setAttribute('aria-expanded', 'true'); renderMetrics(); }
+  });
+
+  // ---------- Replay one ticket's journey from its Riwayat ----------
+  let replaying = false;
+  function deskFor(status, layer) { return stationFor({ status: status, layer: layer }) || (status === 'TODO' ? 'lead' : status === 'DONE' ? 'em' : null); }
+  function replayTicket(tk) {
+    if (replaying) return;
+    const seq = [];
+    (tk.hist || []).forEach(function (h) { if (!seq.length || seq[seq.length - 1][1] !== h[1]) seq.push(h); });
+    const hops = [];
+    for (let i = 0; i < seq.length - 1; i++) {
+      const a = deskFor(seq[i][1], tk.layer), b = deskFor(seq[i + 1][1], tk.layer);
+      if (a && b && a !== b) hops.push({ from: a, to: b, label: seq[i][1] + ' → ' + seq[i + 1][1], at: seq[i + 1][0] });
+    }
+    if (!hops.length) { logWho.textContent = tk.id; logWhat.textContent = 'Riwayat tiket ini belum punya perpindahan meja untuk diputar.'; renderMini(); return; }
+    replaying = true; renderTicket();
+    if (!followOn) setFollow(true);
+    let i = 0;
+    (function next() {
+      if (i >= hops.length) {
+        replaying = false;
+        logWhat.textContent = 'Replay selesai: ' + hops.length + ' perpindahan.'; renderMini();
+        if (sideTicket) renderTicket();
+        return;
+      }
+      const h = hops[i++];
+      logStatus.textContent = 'REPLAY · ' + tk.id + ' · ' + i + '/' + hops.length;
+      logWho.textContent = ST[h.from].a.agent; logWho.style.color = hex(ST[h.from].a.color);
+      logWhat.textContent = h.label + (h.at ? ' (' + h.at + ')' : '') + ': ' + ROLE[h.from] + ' mengantar ke ' + ROLE[h.to];
+      renderMini();
+      sendCourier(h.from, h.to, tk.color, function () { setTimeout(next, 500); });
+    })();
+  }
+
+  // ---------- Follow the ticket being carried ----------
+  let followOn = false, lastWalker = null;
+  const btnFollow = el('btnFollow');
+  function setFollow(on) {
+    followOn = on;
+    btnFollow.setAttribute('aria-pressed', String(on));
+    if (!on) { targetX = 0; targetZ = 0; setFocus(-1); }
+  }
+  btnFollow.addEventListener('click', function () { setFollow(!followOn); });
+
+  // ---------- Who else has the office open (room presence) ----------
+  const viewersEl = el('viewers');
+  const visitors = {};       // peer -> { person, label }
+  const LOBBY = [[-11.2, 6.4], [-10, 7.6], [-11.6, 8.6], [-9.2, 8.8], [-12, 5.2], [-8.4, 7.2]];
+  (async function initPresence() {
+    const room = window.claude && window.claude.use ? await window.claude.use('room') : null;
+    const user = window.claude && window.claude.use ? await window.claude.use('user') : null;
+    if (!room) return;
+    try { await room.presence({ here: true }); } catch (e) {}
+    room.onPeers(async function (ch) {
+      const people = ch.peers.filter(function (p) { return p.kind === 'viewer'; });
+      const ids = people.map(function (p) { return p.by; }).filter(Boolean);
+      const prof = user && ids.length ? await user.profiles(ids) : {};
+      viewersEl.textContent = '';
+      viewersEl.hidden = people.length < 2;
+      if (people.length >= 2) viewersEl.appendChild(node('span', null, 'Sedang melihat:'));
+      const seen = {};
+      people.forEach(function (p) {
+        const pr = p.by && prof[p.by];
+        const name = (pr && pr.name) || 'Seseorang';
+        if (people.length >= 2) {
+          const chip = node('span', 'viewer');
+          if (pr && pr.avatarUrl) { const img = document.createElement('img'); img.src = pr.avatarUrl; img.alt = ''; chip.appendChild(img); }
+          chip.appendChild(node('span', null, p.isMe ? name + ' (kamu)' : name));
+          viewersEl.appendChild(chip);
+        }
+        if (p.isMe) return;
+        seen[p.peer] = true;
+        if (!visitors[p.peer] && Object.keys(visitors).length < LOBBY.length) {
+          const spot = LOBBY[Object.keys(visitors).length];
+          let col = 0x8a6fbf;
+          try { if (pr && pr.color) col = new THREE.Color(pr.color).getHex(); } catch (e) {}
+          const person = makePerson({ skin: pick(SKIN), hair: pick(HAIR), shirt: col, pants: pick(PANTS), parent: floors[0] });
+          person.position.set(spot[0], FY[0], spot[1]);
+          person.rotation.y = Math.atan2(4 - spot[0], 0.5 - spot[1]);
+          const label = makeLabel(name.slice(0, 18), 'sedang melihat', col);
+          label.position.set(spot[0], FY[0] + 2.6, spot[1]);
+          label.scale.set(2.8, 0.92, 1);
+          floors[0].add(label);
+          visitors[p.peer] = { person: person, label: label };
+        }
+      });
+      Object.keys(visitors).forEach(function (k) {
+        if (seen[k]) return;
+        floors[0].remove(visitors[k].person); floors[0].remove(visitors[k].label);
+        delete visitors[k];
+      });
+    }, function () { viewersEl.hidden = true; });
+  })();
+
   // ---------- Trees outside the office ----------
   const GREENS = [0x5e9e47, 0x4f8a3e, 0x7bb35a, 0x3f7a45, 0x6aa84f];
   function makeTree(x, z, s, kind) {
@@ -1412,6 +1795,8 @@
     lampMat.emissiveIntensity = 0.4 + n * 1.0;
     boardMat.emissiveIntensity = 0.12 + n * 0.45;
     lampLights.forEach(function (l) { l.intensity = n * 1.3; });
+    deskLampMat.emissiveIntensity = n * 1.6;
+    deskLights.forEach(function (l) { l.intensity = n * 1.3; });
     starMat.opacity = n;
     clouds.forEach(function (c) { c.g.visible = n < 0.95; });
   }
@@ -1433,14 +1818,15 @@
     btnPause.setAttribute('aria-pressed', String(paused));
     btnPause.textContent = paused ? 'Lanjutkan' : 'Jeda';
   });
+  function setFocus(n) {
+    focus = n;
+    document.querySelectorAll('[data-floor]').forEach(function (o) { o.setAttribute('aria-pressed', String(Number(o.dataset.floor) === n)); });
+    floors.forEach(function (g, k) { g.visible = focus < 0 || k <= focus; });
+    targetY = focus < 0 ? 6 : FY[focus] + 1.5;
+    if (reduceMotion) { camera.position.y += targetY - controls.target.y; controls.target.y = targetY; }
+  }
   document.querySelectorAll('[data-floor]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      focus = Number(b.dataset.floor);
-      document.querySelectorAll('[data-floor]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
-      floors.forEach(function (g, k) { g.visible = focus < 0 || k <= focus; });
-      targetY = focus < 0 ? 6 : FY[focus] + 1.5;
-      if (reduceMotion) { camera.position.y += targetY - controls.target.y; controls.target.y = targetY; }
-    });
+    b.addEventListener('click', function () { setFollow(false); setFocus(Number(b.dataset.floor)); });
   });
   btnSpin.addEventListener('click', function () {
     controls.autoRotate = !controls.autoRotate;
@@ -1453,7 +1839,7 @@
 
   function update(dt) {
     t += dt;
-    if (mode === 'demo') {
+    if (mode === 'demo' && !replaying) {
       if (!waiting) stepT += dt;
       if (stepIdx < 0 || (!waiting && stepT >= WORK)) {
         if (stepIdx >= 0) endStep(stepIdx);
@@ -1498,9 +1884,22 @@
       if (s.label) s.label.position.y = s.labelY + (isAct ? Math.sin(t * 4) * 0.08 + 0.15 : 0);
     });
 
-    // floor focus: glide the camera to the chosen storey
-    const dy = (targetY - controls.target.y) * Math.min(1, dt * 3);
-    controls.target.y += dy; camera.position.y += dy;
+    // follow: keep the walking courier in view, on its own storey
+    if (followOn) {
+      const wk = lastWalker && walkers[lastWalker] ? lastWalker : Object.keys(walkers)[0];
+      if (wk) {
+        lastWalker = wk;
+        const pp = ST[wk].person.position;
+        const fl = Math.max(0, Math.min(2, Math.round((pp.y - FY[0]) / FLOOR_H)));
+        if (focus !== fl) setFocus(fl);
+        targetX = pp.x; targetZ = pp.z; targetY = pp.y + 1.2;
+      }
+    }
+    // glide the camera target (floor focus or follow), dragging the camera along
+    const kk = Math.min(1, dt * 3);
+    const dx = (targetX - controls.target.x) * kk, dy = (targetY - controls.target.y) * kk, dz = (targetZ - controls.target.z) * kk;
+    controls.target.x += dx; controls.target.y += dy; controls.target.z += dz;
+    camera.position.x += dx; camera.position.y += dy; camera.position.z += dz;
 
     clouds.forEach(function (c) {
       c.g.position.x += c.speed * dt;

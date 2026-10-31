@@ -8,7 +8,7 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 1.10.0" src="https://img.shields.io/badge/version-1.10.0-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 1.10.1" src="https://img.shields.io/badge/version-1.10.1-1d6b57?style=flat-square&logo=github" />
 </div>
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, reviewer, dan QA.
