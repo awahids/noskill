@@ -303,7 +303,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <p>Isi <code>tracker: github</code> atau <code>tracker: notion</code> di profil project supaya board tercermin di GitHub Issues atau database Notion. Sinkronnya satu arah dari file ke tracker, bukan sebaliknya.</p>
 
       <h2 id="eval">Eval</h2>
-      <p>Repo ini menyertakan 16 case uji perilaku:</p>
+      <p>Repo ini menyertakan 19 case uji perilaku:</p>
       <ul>
         <li>developer memakai helper yang ada dan menulis test negatif/batas</li>
         <li>reviewer menolak duplikasi</li>
@@ -319,6 +319,9 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
         <li>QA menolak implementasi yang AC negatifnya gagal, dan meloloskan implementasi yang benar</li>
         <li>QA langsung BLOCKED tanpa menyalakan DB/server sendiri kalau URL environment tidak diberikan</li>
         <li><code>brd-tracer</code> menurunkan PRD jadi dokumen BRD ringkas dengan ID traceable</li>
+        <li>tiket <code>layer: be</code> dikerjakan <code>backend-developer</code></li>
+        <li><code>product-manager</code> mengajukan minimal 5 pertanyaan dan belum menulis PRD</li>
+        <li><code>cto</code> memberi verdict arsitektur dan menyoroti risiko checkout bersamaan</li>
       </ul>
       <p>Jalankan setelah mengubah skill atau agent:</p>
       <div class="cmd"><pre>claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash</pre><button type="button" data-copy>Salin</button></div>

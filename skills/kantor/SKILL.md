@@ -10,7 +10,10 @@ Write everything the user reads in Bahasa Indonesia unless the user writes in an
 
 The page is `kantor-noskill.html` in this skill's base directory. It is written for the claude.ai Artifact runtime: no doctype/head/body of its own (the Artifact tool adds them), three.js from cdnjs, and two runtime capabilities:
 - `mcp` → `host:filesystem` (`list_directory`, `read_multiple_files`) to read ticket files on the viewer's computer, only inside the Claude desktop app;
-- `db` → document `boards/latest`, a copy of the board the desktop writes so a browser or phone can show it as "Snapshot".
+- `db` → document `boards/latest`, a copy of the board the desktop writes so a browser or phone can show it as "Snapshot";
+- `room` + `user` (scope `profile`) → shows who else has the office open, as chips and as visitors in the ground-floor lobby.
+
+Features on the page: click an agent (role, skills, current ticket), click a ticket on the board (AC, Riwayat, who holds it, replay its journey), **Metrik** (time per stage and per agent, most revised tickets, HOLD list), project filter, **Ikuti tiket** (camera follows the agent carrying a ticket), floor buttons, and a collapsible panel.
 
 ## 1. If the Artifact tool is available (Cowork, claude.ai)
 
@@ -22,7 +25,9 @@ The page is `kantor-noskill.html` in this skill's base directory. It is written 
    - `capabilities`:
      ```json
      {"mcp": {"servers": [{"server": "host:filesystem", "tools": ["list_directory", "read_multiple_files"]}]},
-      "db": {"rules": [{"path": "boards", "read": "view", "write": "admin"}]}}
+      "db": {"rules": [{"path": "boards", "read": "view", "write": "admin"}]},
+      "room": {},
+      "user": {"scopes": ["profile"]}}
      ```
    Do not change the page source while publishing.
 3. Tell the user, briefly, how to turn on live data:
@@ -37,6 +42,7 @@ The page is `kantor-noskill.html` in this skill's base directory. It is written 
    - Open the artifact in the Claude desktop app → **Folder tiket** → paste one `docs/noskill` (or `.../tickets`) path per line → **Pakai data live** → allow access.
    - In a browser or on a phone the page shows the last copy the desktop saved (label **Snapshot**), or the demo if none exists yet.
    - Local servers only work on artifacts the user owns.
+   - Optional: offer a weekday-morning scheduled task that summarises HOLD and BUG tickets (from the ticket folders, or from the artifact's `boards/latest` document when the computer is off).
 
 ## 2. If there is no Artifact tool (plain Claude Code terminal)
 
