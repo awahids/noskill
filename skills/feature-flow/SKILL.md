@@ -31,6 +31,20 @@ The team:
 | QA Engineer | `qa-tester` | QA report |
 | Engineering Manager | you (this session) | ticket status, Riwayat, commits, PR |
 
+## Activity File
+
+Keep `<docs>/activity.json` current so `/noskill:kantor` can show who is working right now — including stages before tickets exist (PRD, ADR, BRD). One small JSON object, overwritten each time (never appended):
+
+```json
+{"agent": "product-manager", "status": "working", "stage": "Stage 1–2 PRD", "task": "Menulis PRD SO sample ke QAD", "ticket": null, "at": "2026-10-31T09:15:00Z"}
+```
+
+- `agent`: the agent name you are about to call (`product-manager`, `cto`, `brd-tracer`, `task-planner`, `backend-developer`, `frontend-developer`, `developer`, `ticket-reviewer`, `qa-tester`), or `feature-flow` for yourself.
+- `status`: `working` right before you call an agent; `waiting_user` when you ask the user something or wait at a gate (`agent: "feature-flow"`, `task` = what you asked); `done` at the end of Stage 6.
+- `ticket`: the ticket ID during Stage 5, otherwise `null`. `task`: one short line in the user's language. `at`: `date -u +%Y-%m-%dT%H:%M:%SZ`.
+
+Write it with one `cat > <docs>/activity.json <<'EOF' … EOF` (or the Write tool) — no reads, no extra checks. Multi-repo: only in the docs repo. It is a display aid only; if writing it fails, continue the flow.
+
 ## Choose a Mode
 
 | Mode | When | Stages run |
@@ -49,7 +63,7 @@ Before starting, make sure you know the following (ask all at once if unclear). 
 - BRD level: **lengkap** (BR→UAT, for cross-division features or ones needing formal sign-off/UAT), **ringkas** (US→AC→TECH + TC), or **tanpa BRD** (PRD is detailed enough; tickets are created directly from the PRD)
 - Which stage to start from. If `<docs>/prd.md`, BRD documents, or `<docs>/tickets/` already exist, continue from the next stage — don't rewrite. If old tickets were made under different rules (e.g. split per layer), suggest `/noskill:tiket rapikan` first.
 - **Project profile.** Full mode: if `<docs>/project-profile.md` doesn't exist, run skill `project-profile` first (once per project). Quick mode: use it if present; if not, just continue and offer to create it at the end. If it exists, just use it; refresh only if a manifest/lockfile changed since the commit in its header or a command in the profile fails.
-- **Working branch.** If the project is a git repo, create a new branch from the current branch before the first code is written: `feat/<prefix-atau-slug>` for features, `fix/<slug>` for bugs. All ticket commits go to this branch. Multi-repo: same branch name in every repo that has tickets. If the working tree isn't clean, ask the user first (commit, stash, or continue on the current branch). Add `.noskill-cache/` to `.git/info/exclude` (cache for fast typecheck/lint).
+- **Working branch.** If the project is a git repo, create a new branch from the current branch before the first code is written: `feat/<prefix-atau-slug>` for features, `fix/<slug>` for bugs. All ticket commits go to this branch. Multi-repo: same branch name in every repo that has tickets. If the working tree isn't clean, ask the user first (commit, stash, or continue on the current branch). Add `.noskill-cache/` and `<docs>/activity.json` to `.git/info/exclude` (cache for fast typecheck/lint, and the Activity file below).
 
 ## Quick Mode — One Ticket Directly
 

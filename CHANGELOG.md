@@ -2,6 +2,13 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.11.0 — 2026-10-31
+
+### Ditambahkan
+- **`activity.json`.** `feature-flow` menulis `<docs>/activity.json` setiap kali memanggil agent, menunggu jawaban user, atau selesai: agent, status (`working` / `waiting_user` / `done`), tahap, tugas, tiket, dan waktu. File ini masuk `.git/info/exclude` sehingga tidak ikut commit.
+- **Kantor noskill** membaca `activity.json` bersama file tiket. Product Manager, CTO, dan Analyst sekarang terlihat bekerja saat menulis PRD, ADR, atau BRD, sebelum tiket ada. Agent sebelumnya berjalan mengantar pekerjaan saat tahap berpindah, dan Eng. Manager menyala saat menunggu jawabanmu.
+- Folder fitur yang baru punya `prd.md` atau `activity.json` (belum ada `tickets/`) ikut terbaca, dan fitur baru terdeteksi dalam 2 menit.
+
 ## 1.10.1 — 2026-10-31
 
 ### Diperbaiki

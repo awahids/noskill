@@ -1059,6 +1059,13 @@
   const LAYER_COLOR = { be: 0x2f8a4e, fe: 0x5aa83a };
   const PATH_KEY = 'noskill-ticket-dir';
   let multi = false;
+  let acts = [], actBy = {};
+  // An activity counts while it is in progress and not older than 6 hours
+  function activeAct(a) {
+    if (a.status !== 'working' && a.status !== 'waiting_user') return false;
+    const t = Date.parse(a.at);
+    return isNaN(t) || Date.now() - t < 6 * 3600000;
+  }
   let mode = 'demo', live = [], liveBy = {}, liveAt = null, liveTimer = null, liveRun = 0, mcpNs = null;
   const srcPill = el('srcPill'), srcText = el('srcText'), srcForm = el('srcForm'), srcPath = el('srcPath'), btnSrc = el('btnSrc');
   const liveCards = {};
@@ -1157,56 +1164,88 @@
   function dirsIn(listing) {
     return listing.split('\n').map(function (l) { return l.match(/^\[DIR\]\s+(.+?)\s*$/); }).filter(Boolean).map(function (m) { return m[1]; });
   }
-  // A configured path may be a tickets folder or a docs/noskill folder; for the latter find
-  // <path>/tickets and <path>/<feature>/tickets. Cached for 5 minutes to keep calls low.
+  function filesIn(listing) {
+    return listing.split('\n').map(function (l) { return l.match(/^\[FILE\]\s+(.+?)\s*$/); }).filter(Boolean).map(function (m) { return m[1]; });
+  }
+  // A configured path may be a tickets folder or a docs/noskill folder. For the latter, every folder that
+  // holds tickets/, prd.md or activity.json counts as one feature: the root itself and <root>/<feature>.
+  // Cached for 2 minutes so a feature started mid-session shows up soon.
   const SKIP = /^(0\d-|reports$|adr$|tickets$|\.)/;
   const found = {};
-  async function ticketDirs(path) {
+  function isFeature(listing) {
+    return dirsIn(listing).indexOf('tickets') >= 0 || /(^|\n)\[FILE\] (prd\.md|activity\.json)\s*(\n|$)/.test(listing);
+  }
+  async function featureDirs(path) {
     const root = path.replace(/\/+$/, '');
-    if (/\/tickets$/.test(root)) return [root];
+    if (/\/tickets$/.test(root)) return [{ base: root.replace(/\/tickets$/, ''), tickets: true }];
     const c = found[root];
-    if (c && Date.now() - c.at < 300000) return c.dirs;
-    const top = dirsIn(textOf(await mcpNs.callTool(FS, 'list_directory', { path: root }, { cache: false })));
-    const dirs = top.indexOf('tickets') >= 0 ? [root + '/tickets'] : [];
-    for (const d of top.filter(function (x) { return !SKIP.test(x); })) {
-      const sub = dirsIn(textOf(await mcpNs.callTool(FS, 'list_directory', { path: root + '/' + d }, { cache: false })));
-      if (sub.indexOf('tickets') >= 0) dirs.push(root + '/' + d + '/tickets');
+    if (c && Date.now() - c.at < 120000) return c.dirs;
+    const topList = textOf(await mcpNs.callTool(FS, 'list_directory', { path: root }, { cache: false }));
+    const dirs = [];
+    if (isFeature(topList)) dirs.push({ base: root, tickets: dirsIn(topList).indexOf('tickets') >= 0 });
+    for (const d of dirsIn(topList).filter(function (x) { return !SKIP.test(x); })) {
+      const sub = textOf(await mcpNs.callTool(FS, 'list_directory', { path: root + '/' + d }, { cache: false }));
+      if (isFeature(sub)) dirs.push({ base: root + '/' + d, tickets: dirsIn(sub).indexOf('tickets') >= 0 });
     }
     found[root] = { at: Date.now(), dirs: dirs };
     return dirs;
   }
-  async function readLive(dir) {
-    const list = textOf(await mcpNs.callTool(FS, 'list_directory', { path: dir }, { cache: false }));
-    const names = list.split('\n').map(function (l) { return l.match(/^\[FILE\]\s+(.+\.md)\s*$/); }).filter(Boolean).map(function (m) { return m[1]; });
-    const base = dir.replace(/\/+$/, '') + '/';
-    const out = [];
-    for (let i = 0; i < names.length; i += 40) {     // one call per 40 files keeps us under the host rate limit
-      const paths = names.slice(i, i + 40).map(function (n) { return base + n; });
+  // activity.json is written by feature-flow (noskill 1.11+) at every stage: who is working on what right now
+  const AGENT_DESK = { 'product-manager': 'pm', 'cto': 'cto', 'brd-tracer': 'analyst', 'task-planner': 'lead', 'backend-developer': 'be',
+    'frontend-developer': 'fe', 'developer': 'dev', 'ticket-reviewer': 'reviewer', 'qa-tester': 'qa', 'feature-flow': 'em' };
+  function parseActivity(text, project) {
+    let a;
+    try { a = JSON.parse(text); } catch (e) { return null; }
+    if (!a || typeof a !== 'object') return null;
+    const agent = String(a.agent || '').replace(/^noskill:/, '');
+    const key = AGENT_DESK[agent];
+    if (!key) return null;
+    return { project: project, agent: agent, key: key, status: String(a.status || 'working'), stage: String(a.stage || '').slice(0, 80),
+      task: String(a.task || '').slice(0, 240), ticket: a.ticket ? String(a.ticket).slice(0, 40) : '', at: String(a.at || '') };
+  }
+  async function readBase(f) {
+    const project = projectOf(f.base + '/tickets');
+    let names = [];
+    if (f.tickets) {
+      const list = textOf(await mcpNs.callTool(FS, 'list_directory', { path: f.base + '/tickets' }, { cache: false }));
+      names = list.split('\n').map(function (l) { return l.match(/^\[FILE\]\s+(.+\.md)\s*$/); }).filter(Boolean).map(function (m) { return f.base + '/tickets/' + m[1]; });
+    }
+    const actPath = f.base + '/activity.json';
+    const all = names.concat([actPath]);
+    const out = [], acts = [];
+    for (let i = 0; i < all.length; i += 40) {     // one call per 40 files keeps us under the host rate limit
+      const paths = all.slice(i, i + 40);
       const parts = splitMulti(textOf(await mcpNs.callTool(FS, 'read_multiple_files', { paths: paths }, { cache: false })), paths);
       paths.forEach(function (pth) {
-        const tk = parts[pth] && parseTicket(parts[pth]);
-        if (tk) { tk.project = projectOf(dir); out.push(tk); }
+        if (!parts[pth]) return;
+        if (pth === actPath) { const a = parseActivity(parts[pth].trim(), project); if (a) acts.push(a); return; }
+        const tk = parseTicket(parts[pth]);
+        if (tk) { tk.project = project; out.push(tk); }
       });
     }
-    return out;
+    return { tickets: out, activities: acts, project: project };
   }
   // Reads every folder; one failing folder doesn't hide the others
   async function readAll(paths) {
-    const all = [], failed = [], ok = [];
+    const all = [], acts = [], failed = [], ok = [];
     for (const pth of paths) {
       try {
-        const dirs = await ticketDirs(pth);
-        if (!dirs.length) { failed.push(pth.split('/').slice(-2).join('/') + ' (tidak ada folder tickets)'); continue; }
-        for (const d of dirs) { all.push.apply(all, await readLive(d)); ok.push(projectOf(d)); }
+        const feats = await featureDirs(pth);
+        if (!feats.length) { failed.push(pth.split('/').slice(-2).join('/') + ' (tidak ada tiket atau PRD)'); continue; }
+        for (const f of feats) {
+          const r = await readBase(f);
+          all.push.apply(all, r.tickets); acts.push.apply(acts, r.activities);
+          if (ok.indexOf(r.project) < 0) ok.push(r.project);
+        }
       } catch (e) {
         if (e && e.code !== 'tool_error') throw e;   // connection-level problems apply to every folder
         failed.push(pth.split('/').slice(-2).join('/'));
       }
     }
-    if (!ok.length) throw { code: 'tool_error', message: 'tidak ada folder tiket yang terbaca (' + failed.join(', ') + ')' };
+    if (!ok.length) throw { code: 'tool_error', message: 'tidak ada folder noskill yang terbaca (' + failed.join(', ') + ')' };
     all.sort(function (a, b) { return (a.project + a.id).localeCompare(b.project + b.id); });
     multi = ok.length > 1;
-    return { tickets: all, failed: failed, projects: ok };
+    return { tickets: all, activities: acts, failed: failed, projects: ok };
   }
   function liveCard(k) {
     if (!liveCards[k]) {
@@ -1214,6 +1253,15 @@
       liveCards[k].g.position.copy(ST[k].work);
     }
     return liveCards[k];
+  }
+  // When feature-flow moves to another agent for the same project, the previous agent walks the work over
+  function walkActivities(before, now) {
+    now.forEach(function (a) {
+      if (projFilter && a.project !== projFilter) return;
+      const o = before.find(function (b) { return b.project === a.project; });
+      if (!o || o.key === a.key || o.at === a.at) return;
+      sendCourier(o.key, a.status === 'waiting_user' ? 'em' : a.key, 0x3b7fc4, null);
+    });
   }
   // A ticket that changed desk since the last read is carried there by the agent who had it
   function walkTransfers(before, now) {
@@ -1232,21 +1280,30 @@
     const shownTk = view();
     liveBy = {};
     shownTk.forEach(function (tk) { const k = stationFor(tk); if (k) (liveBy[k] = liveBy[k] || []).push(tk); });
+    actBy = {};
+    acts.filter(function (a) { return activeAct(a) && (!projFilter || a.project === projFilter); }).forEach(function (a) {
+      actBy[a.status === 'waiting_user' ? 'em' : a.key] = a;
+    });
     drawBoard((liveSource === 'db' ? 'Snapshot ' : 'Live ') + hhmm(liveAt), shownTk);
     card.visible = false;
     Object.keys(ST).forEach(function (k) {
-      const tks = liveBy[k];
-      if (!tks && !liveCards[k]) return;
+      const tks = liveBy[k], ac = actBy[k];
+      if (!tks && !ac && !liveCards[k]) return;
       const c = liveCard(k);
-      c.g.visible = !!tks;
-      if (tks) { c.stripe.color.setHex(tks[0].color); c.stripe.emissive.setHex(tks[0].color); }
+      const col = tks ? tks[0].color : 0x3b7fc4;
+      c.stripe.color.setHex(col); c.stripe.emissive.setHex(col);
     });
-    const active = shownTk.filter(stationFor).length;
+    const active = shownTk.filter(stationFor).length + Object.keys(actBy).filter(function (k) { return !liveBy[k]; }).length;
     const latest = shownTk.filter(function (tk) { return tk.last; }).sort(function (a, b) { return b.last.localeCompare(a.last); })[0];
+    const latestAct = Object.keys(actBy).map(function (k) { return actBy[k]; }).sort(function (a, b) { return b.at.localeCompare(a.at); })[0];
     if (replaying) { renderInfo(); refreshSide(); return; }   // keep the replay narration in the log
     logStatus.textContent = (liveSource === 'db' ? 'SNAPSHOT · ' : 'LIVE · ') + shownTk.length + ' tiket · ' + active + ' aktif';
     logStep.textContent = liveSource === 'db' ? liveAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + hhmm(liveAt) : hhmm(liveAt);
-    if (latest) {
+    if (latestAct) {
+      logWho.textContent = (multi ? latestAct.project + ' / ' : '') + latestAct.agent;
+      logWho.style.color = hex(ST[latestAct.key].a.color);
+      logWhat.textContent = (latestAct.status === 'waiting_user' ? 'Menunggu jawaban kamu: ' : '') + (latestAct.stage ? latestAct.stage + ' · ' : '') + latestAct.task;
+    } else if (latest) {
       logWho.textContent = (multi ? latest.project + ' / ' : '') + latest.id;
       logWho.style.color = hex(latest.color);
       logWhat.textContent = latest.last;
@@ -1261,11 +1318,14 @@
     refreshSide();
   }
   function renderLiveInfo(pill) {
-    const tks = liveBy[selected] || [];
+    const tks = liveBy[selected] || [], ac = actBy[selected];
     const before = { pm: 'PRD', cto: 'ADR dan sign-off', analyst: 'BRD', lead: 'pembuatan tiket' }[selected];
-    pill.textContent = tks.length ? 'Aktif' : 'Menunggu';
-    pill.classList.toggle('on', tks.length > 0);
-    if (tks.length) {
+    pill.textContent = tks.length || ac ? 'Aktif' : 'Menunggu';
+    pill.classList.toggle('on', tks.length > 0 || !!ac);
+    if (ac) {
+      el('infoTicket').textContent = (multi ? ac.project + ' · ' : '') + (ac.stage || ac.agent) + (ac.ticket ? ' · ' + ac.ticket : '') + (ac.at && !isNaN(Date.parse(ac.at)) ? ' · sejak ' + new Date(ac.at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + hhmm(new Date(ac.at)) : '');
+      el('infoTask').textContent = (ac.status === 'waiting_user' ? 'Menunggu jawaban kamu: ' : '') + ac.task;
+    } else if (tks.length) {
       el('infoTicket').textContent = tks.map(function (tk) { return (multi ? tk.project + ' / ' : '') + tk.id + ' · ' + tk.status + (tk.rounds !== '0' ? ' · ronde ' + tk.rounds : ''); }).join('\n');
       el('infoTask').textContent = (tks[0].title ? tks[0].title + '. ' : '') + (tks[0].last ? 'Terakhir: ' + tks[0].last : '');
     } else if (selected === 'lead') {
@@ -1274,7 +1334,7 @@
       el('infoTask').textContent = 'Tiket dibuat oleh agent ini; statusnya kini dipegang developer, reviewer, dan QA.';
     } else if (before) {
       el('infoTicket').textContent = '';
-      el('infoTask').textContent = 'Agent ini bekerja di tahap ' + before + ', jadi tidak terbaca dari folder tiket.';
+      el('infoTask').textContent = 'Belum ada aktivitas di tahap ' + before + '. Aktivitas tahap ini terbaca dari activity.json yang ditulis feature-flow (noskill 1.11 ke atas).';
     } else {
       el('infoTicket').textContent = '';
       el('infoTask').textContent = selected === 'em' ? 'Tidak ada tiket HOLD yang menunggu jawaban user.' : 'Tidak ada tiket di meja ini sekarang.';
@@ -1283,7 +1343,7 @@
   function stopLive(msg) {
     liveRun++;
     clearTimeout(liveTimer);
-    mode = 'demo'; live = []; liveBy = {}; liveSource = null;
+    mode = 'demo'; live = []; liveBy = {}; liveSource = null; acts = []; actBy = {};
     Object.keys(liveCards).forEach(function (k) { liveCards[k].g.visible = false; });
     card.visible = true;
     stepIdx = -1; stepT = 0; waiting = false; curKey = null; active = null;
@@ -1296,9 +1356,9 @@
   function boardSig(tks) {
     return JSON.stringify(tks.map(function (t) { return [t.project, t.id, t.status, t.layer, t.rounds, t.last, t.title]; }));
   }
-  async function saveSnapshot(tks, projects) {
+  async function saveSnapshot(tks, projects, activities) {
     if (!dbNs || dbSaving) return;
-    const sig = boardSig(tks);
+    const sig = boardSig(tks) + JSON.stringify(activities || []);
     if (sig === dbLastSig) return;               // write only when a ticket actually changed
     dbSaving = true;
     // keep the document well under the 256 KiB limit: drop AC and Riwayat text on very large boards
@@ -1307,6 +1367,7 @@
       await dbNs.doc(BOARD_DOC).set({
         at: new Date().toISOString(),
         projects: projects,
+        activities: activities || [],
         tickets: tks.map(function (t) {
           return { id: t.id, title: t.title.slice(0, 200), status: t.status, layer: t.layer, rounds: t.rounds, last: t.last.slice(0, 300), project: t.project, color: t.color,
             hist: (t.hist || []).slice(-30), ac: lean ? [] : (t.ac || []), riw: lean ? [] : (t.riw || []) };
@@ -1326,6 +1387,11 @@
         ac: Array.isArray(t.ac) ? t.ac.filter(Array.isArray).map(function (a) { return [!!a[0], String(a[1] || '')]; }) : [],
         riw: Array.isArray(t.riw) ? t.riw.map(String) : [] };
     });
+    const actsBefore = mode === 'live' ? acts : [];
+    acts = (Array.isArray(dbBoard.activities) ? dbBoard.activities : []).map(function (a) {
+      return a && parseActivity(JSON.stringify(a), String(a.project || ''));
+    }).filter(Boolean);
+    walkActivities(actsBefore, acts);
     liveAt = new Date(dbBoard.at || Date.now());
     multi = (dbBoard.projects || []).length > 1;
     liveSource = 'db'; mode = 'live';
@@ -1348,7 +1414,7 @@
         const d = snap.data();
         if (!d || !Array.isArray(d.tickets)) return;
         dbBoard = d;
-        dbLastSig = boardSig(d.tickets.map(function (t) { return { project: t.project, id: t.id, status: t.status, layer: t.layer, rounds: t.rounds, last: t.last, title: t.title }; }));
+        dbLastSig = boardSig(d.tickets.map(function (t) { return { project: t.project, id: t.id, status: t.status, layer: t.layer, rounds: t.rounds, last: t.last, title: t.title }; })) + JSON.stringify(d.activities || []);
         if (liveSource !== 'local' && !preferDemo) applySnapshot();
       }, function () { /* store unreachable: keep whatever is shown */ });
     } catch (e) { if (unsub) unsub(); }
@@ -1383,8 +1449,10 @@
         const res = await readAll(dirs);
         if (run !== liveRun) return;
         const before = mode === 'live' ? live : [];
-        live = res.tickets; liveAt = new Date(); mode = 'live'; liveSource = 'local';
-        saveSnapshot(live, res.projects);
+        const actsBefore = mode === 'live' ? acts : [];
+        live = res.tickets; acts = res.activities; liveAt = new Date(); mode = 'live'; liveSource = 'local';
+        walkActivities(actsBefore, acts);
+        saveSnapshot(live, res.projects, acts);
         walkTransfers(before, live);
         const projects = res.projects;
         setSource('Live', live.length + ' tiket dari ' + projects.join(', ') + (res.failed.length ? '. Gagal dibaca: ' + res.failed.join(', ') + ', cek path dan folder yang diizinkan server filesystem.' : ''));
@@ -1857,7 +1925,7 @@
     Object.keys(liveCards).forEach(function (k, i) {
       const g = liveCards[k].g;
       g.position.y = ST[k].work.y + Math.sin(t * 3 + i) * 0.12;
-      g.visible = mode === 'live' && !!liveBy[k] && shown(ST[k].work.y);
+      g.visible = mode === 'live' && (!!liveBy[k] || !!actBy[k]) && shown(ST[k].work.y);
       g.rotation.y += dt * 1.2;
     });
 
@@ -1866,7 +1934,7 @@
     // stations: the active agent types fast, others idle
     Object.keys(ST).forEach(function (k) {
       const s = ST[k], u = s.person.userData;
-      const isAct = mode === 'live' ? !!liveBy[k] : s === active;
+      const isAct = mode === 'live' ? !!(liveBy[k] || actBy[k]) : s === active;
       const on = isAct && !walkers[k];
       const glowTo = isAct ? 0.9 : k === selected ? 0.45 : 0;
       s.glow.opacity += (glowTo - s.glow.opacity) * Math.min(1, dt * 6);
