@@ -118,7 +118,7 @@
         <div class="eyebrow">Plugin Claude Code</div>
         <h1>noskill</h1>
         <div align="center">
-          <img alt="Version 1.8.0" src="https://img.shields.io/badge/version-1.8.0-1d6b57?style=flat-square&logo=github" />
+          <img alt="Version 1.9.0" src="https://img.shields.io/badge/version-1.9.0-1d6b57?style=flat-square&logo=github" />
         </div>
         <p class="lede">Skill dan agent untuk kerja development seperti tim engineering: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu masuk DONE. Kodenya hanya mengubah yang diminta, bukan refactor tanpa alasan. Cocok untuk bug fix, fitur kecil, fitur besar, dan multi-repo.</p>
         <div class="cmd"><pre>/plugin install noskill --marketplace awahids/noskill</pre><button type="button" data-copy>Salin</button></div>
@@ -241,12 +241,13 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
 
       <h2 id="skill">Semua skill</h2>
       <p>Penjelasan lengkap tiap skill — kapan dipakai, langkah kerja, hasil, dan aturan penting — ada di halaman <a href="skills.html">Detail skill</a>.</p>
-      <p>Yang muncul di menu <code>/</code> hanya <code>feature-flow</code>, <code>tiket</code>, <code>lazy</code>, <code>project-profile</code>, <code>prd-writer</code>, dan <code>debug-assistant</code>. Skill internal dipakai otomatis oleh agent dan orkestrator.</p>
+      <p>Yang muncul di menu <code>/</code> hanya <code>feature-flow</code>, <code>tiket</code>, <code>lazy</code>, <code>kantor</code>, <code>project-profile</code>, <code>prd-writer</code>, dan <code>debug-assistant</code>. Skill internal dipakai otomatis oleh agent dan orkestrator.</p>
       <h3>Alur kerja</h3>
       <div class="tbl"><table><tbody>
         <tr><td><code>feature-flow</code></td><td>Orkestrator mode cepat, lengkap, dan paralel: tiket → developer → reviewer → QA → DONE, termasuk branch dan PR.</td></tr>
         <tr><td><code>ticket-workflow</code> <em>internal</em></td><td>Format file tiket, alur status, verdict agent, dan board.</td></tr>
         <tr><td><code>project-profile</code></td><td>Men-scan repo sekali menjadi profil yang dibaca semua agent: command, struktur, helper, aturan project, dan tracker.</td></tr>
+        <tr><td><code>kantor</code></td><td>Kantor noskill: kantor 3D tiga lantai tempat agent bekerja dan berjalan mengantar tiket, dengan board live dari tiket <code>docs/noskill</code>, metrik, detail dan replay tiket.</td></tr>
       </tbody></table></div>
       <h3>Requirement &amp; desain</h3>
       <div class="tbl"><table><tbody>
@@ -256,6 +257,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       </tbody></table></div>
       <h3>Standar &amp; kualitas</h3>
       <div class="tbl"><table><tbody>
+        <tr><td><code>ticket-implementation</code> <em>internal</em></td><td>Prosedur bersama <code>developer</code>, <code>backend-developer</code>, dan <code>frontend-developer</code>: scope, reuse, rencana, test RED, quality gate, dan laporan.</td></tr>
         <tr><td><code>coding-standards</code> <em>internal</em></td><td>Naming, struktur folder, ORM dan migration, format response API, dokumentasi Swagger/OpenAPI, TDD, quality gate, dan checklist review.</td></tr>
         <tr><td><code>debug-assistant</code></td><td>Debugging terstruktur: reproduce → isolasi → root cause → verifikasi dengan bukti.</td></tr>
       </tbody></table></div>
@@ -275,6 +277,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
           <tr><td><code>/noskill:tiket fix &lt;deskripsi&gt;</code></td><td>Bug fix atau perubahan kecil lewat mode cepat.</td></tr>
           <tr><td><code>/noskill:tiket lanjut [jawaban]</code></td><td>Melanjutkan tiket yang tertunda dari sesi sebelumnya.</td></tr>
           <tr><td><code>/noskill:tiket rapikan [ID]</code></td><td>Rapikan tiket lama agar sesuai aturan tiket terbaru. Usulan ditampilkan dulu, diterapkan setelah kamu setujui.</td></tr>
+          <tr><td><code>/noskill:kantor</code></td><td>Buka Kantor noskill. Di Cowork/claude.ai diterbitkan sebagai artifact milikmu; di Claude Code terminal disalin ke folder docs dan berjalan dalam mode demo.</td></tr>
           <tr><td><code>/noskill:lazy &lt;permintaan&gt;</code></td><td>Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan, tanpa tiket, review, atau QA.</td></tr>
           <tr><td><code>/noskill:feature-flow</code></td><td>Alur kerja lengkap, mode cepat atau dari PRD.</td></tr>
           <tr><td><code>/noskill:project-profile</code></td><td>Membuat atau me-refresh profil project.</td></tr>
