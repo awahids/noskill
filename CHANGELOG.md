@@ -2,6 +2,11 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.12.0 — 2026-11-01
+
+### Ditambahkan
+- **Ruang ngopi di Kantor noskill.** Satu ruang ngopi bersama di Lantai 3 (meja bundar, mesin kopi, papan nama). Agent dari lantai mana pun yang tidak punya pekerjaan sekitar 20 detik berjalan ke sana, naik tangga kalau perlu, lalu berdiri melingkari meja sambil memegang cangkir. Mereka kembali ke mejanya begitu mendapat tiket, tahap baru, atau harus mengantar tiket. Kartu agent menyebut kalau ia sedang ngopi. Eng. Manager tetap di board.
+
 ## 1.11.1 — 2026-11-01
 
 ### Diperbaiki

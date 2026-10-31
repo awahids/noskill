@@ -15,6 +15,8 @@ The page is `kantor-noskill.html` in this skill's base directory. It is written 
 
 The live board reads ticket files and `activity.json` (written by `feature-flow`), so the Product Manager, CTO and Analyst light up while they write the PRD, ADR or BRD, before any ticket exists.
 
+Idle agents from every floor walk to the shared coffee corner ("Ruang ngopi") on floor 3 and come back to their desk when work arrives.
+
 Features on the page: click an agent (role, skills, current ticket), click a ticket on the board (AC, Riwayat, who holds it, replay its journey), **Metrik** (time per stage and per agent, most revised tickets, HOLD list), project filter, **Ikuti tiket** (camera follows the agent carrying a ticket), floor buttons, and a collapsible panel.
 
 ## 1. If the Artifact tool is available (Cowork, claude.ai)

@@ -630,15 +630,35 @@
     ST[a.key] = { a: a, g: g, f: a.f, person: person, glow: glowMat, screen: screenMat, work: work, label: label, labelY: 3.3 };
   });
 
-  // Lounges so each storey reads as its own room
-  plant(floors[0], -11.8, 8.6, FY[0]); plant(floors[0], 8.4, -8.6, FY[0]);
-  plant(floors[1], -11.8, 8.6, FY[1]); plant(floors[1], 8.4, -8.6, FY[1]);
-  box(3.2, 0.5, 1.2, 0x3d5a80, -3, FY[1] + 0.35, 7.8, { parent: floors[1] });
-  box(3.2, 0.8, 0.3, 0x3d5a80, -3, FY[1] + 0.6, 8.4, { parent: floors[1] });
-  box(1.4, 0.45, 0.8, 0xb88a5a, -3, FY[1] + 0.25, 6.2, { parent: floors[1] });
-  plant(floors[2], -11.8, 8.6, FY[2]); plant(floors[2], 8.4, -8.6, FY[2]); plant(floors[2], 6, 8.4, FY[2]);
-  box(2.6, 1.0, 0.8, 0x8d6e63, -3, FY[2] + 0.5, 7.9, { parent: floors[2] });
-  cyl(0.18, 0.18, 0.35, 10, 0x2a2f36, -3.6, FY[2] + 1.18, 7.9, { parent: floors[2] });
+  // Plants so each storey reads as its own room
+  [0, 1, 2].forEach(function (k) { plant(floors[k], -11.8, 8.6, FY[k]); plant(floors[k], 8.4, -8.6, FY[k]); });
+
+  // ---------- Ruang ngopi: one shared coffee corner on the top floor, where idle agents from every storey meet ----------
+  const LOUNGE_FLOOR = 2;
+  const LOUNGE = { x: -2.6, z: 6.8 };
+  // nine standing spots in a ring around the table, one for every agent that can be idle
+  const LOUNGE_SPOTS = [];
+  for (let i = 0; i < 9; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 9; LOUNGE_SPOTS.push([Math.cos(a) * 1.55, Math.sin(a) * 1.55]); }
+  const loungeTaken = {};
+  const mugMat = new THREE.MeshStandardMaterial({ color: 0xf7f5ef, flatShading: true });
+  [LOUNGE_FLOOR].forEach(function (k) {
+    const g = floors[k], y = FY[k], x = LOUNGE.x, z = LOUNGE.z;
+    const rug = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 0.03, 32), new THREE.MeshStandardMaterial({ color: 0x8d6e63, roughness: 0.95, transparent: true, opacity: 0.45 }));
+    rug.position.set(x, y + 0.02, z); rug.receiveShadow = true; g.add(rug);
+    cyl(0.55, 0.55, 0.08, 18, 0xb88a5a, x, y + 0.72, z, { parent: g });             // round table
+    cyl(0.07, 0.12, 0.68, 8, 0x5c4a3a, x, y + 0.36, z, { parent: g });
+    for (let m = 0; m < 3; m++) cyl(0.07, 0.06, 0.12, 8, 0, x - 0.2 + m * 0.2, y + 0.82, z + (m - 1) * 0.12, { parent: g, material: mugMat });
+    // coffee counter against the front railing with a machine and a jar
+    box(1.8, 0.95, 0.6, 0x6b4430, x + 1.9, y + 0.48, 9.2, { parent: g });
+    box(1.9, 0.06, 0.66, 0xd8c3a5, x + 1.9, y + 0.98, 9.2, { parent: g });
+    box(0.45, 0.55, 0.4, 0x2a2f36, x + 1.5, y + 1.29, 9.2, { parent: g });
+    box(0.1, 0.06, 0.1, 0, x + 1.5, y + 1.2, 8.98, { parent: g, cast: false, material: lampMat });
+    cyl(0.13, 0.13, 0.3, 10, 0xc8553d, x + 2.35, y + 1.16, 9.2, { parent: g });
+    plant(g, x - 2.2, 9.2, y);
+    const sign = makeLabel('Ruang ngopi', 'untuk semua lantai', 0x6b4430);
+    sign.position.set(x, y + 3.1, z + 2.0); sign.scale.set(3.0, 0.98, 1);
+    g.add(sign);
+  });
 
   // ---------- Ground floor: Engineering Manager (feature-flow) + ticket board ----------
   const centre = new THREE.Group();
@@ -703,6 +723,61 @@
   }
 
   const walkers = {}, queue = [], courierCards = {};
+  const hang = {};          // agent key -> { floor, spot, mug } while it is in the coffee corner
+  function loungeSpot() {
+    for (let i = 0; i < LOUNGE_SPOTS.length; i++) if (!loungeTaken[i]) { loungeTaken[i] = true; return i; }
+    return -1;
+  }
+  // desk -> corridor -> stairs (when on another storey) -> corridor of the lounge floor -> spot
+  function loungePath(k, spot) {
+    const f = ST[k].f, L = LOUNGE_FLOOR, exit = nav(k, -1.5, 2.4);
+    const pts = [nav(k, 0, 0), nav(k, -1.5, 0.1), exit, V(exit.x, FY[f], CORR_Z)];
+    if (f !== L) { pts.push(V(STAIR_X, FY[f], CORR_Z)); pts.push.apply(pts, floorRoute(f, L)); }
+    // spots on the far side of the table are reached around it, not through it
+    const ax = spot.z > LOUNGE.z ? spot.x + (spot.x < LOUNGE.x ? -1.05 : 1.05) : spot.x;
+    pts.push(V(ax, FY[L], CORR_Z));
+    if (ax !== spot.x) pts.push(V(ax, FY[L], spot.z));
+    pts.push(spot);
+    return pts;
+  }
+  function goLounge(k) {
+    const s = ST[k], i = loungeSpot();
+    if (i < 0) return false;
+    const spot = V(LOUNGE.x + LOUNGE_SPOTS[i][0], FY[LOUNGE_FLOOR], LOUNGE.z + LOUNGE_SPOTS[i][1]);
+    const path = loungePath(k, spot);
+    const p = s.person;
+    scene.attach(p);
+    p.userData.legL.rotation.x = 0; p.userData.legR.rotation.x = 0;
+    p.position.copy(path[0]);
+    if (!courierCards[k]) courierCards[k] = makeCard();
+    walkers[k] = { job: { from: k, to: null }, mode: 'lounge', path: path, i: 0, back: true, wait: 0, ph: 0, card: courierCards[k], carrying: false, spot: i };
+    if (selected === k) renderInfo();
+    return true;
+  }
+  function comeBack(k) {
+    const h = hang[k], s = ST[k], p = s.person;
+    if (!h) return;
+    if (h.mug) h.mug.visible = false;
+    const path = loungePath(k, p.position.clone()).reverse();
+    loungeTaken[h.spot] = false;
+    delete hang[k];
+    walkers[k] = { job: { from: k, to: null }, mode: 'home', path: path, i: 0, back: true, wait: 0, ph: 0, card: courierCards[k] || makeCard(), carrying: false };
+    if (selected === k) renderInfo();
+  }
+  function arriveLounge(k, w) {
+    const p = ST[k].person, u = p.userData;
+    delete walkers[k];
+    p.rotation.y = Math.atan2(LOUNGE.x - p.position.x, LOUNGE.z - p.position.z);   // face the table
+    let mug = p.userData.mug;
+    if (!mug) {
+      mug = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.18, 8), mugMat);
+      mug.position.set(0, -0.82, 0.1); u.armR.add(mug); p.userData.mug = mug;
+    }
+    mug.visible = true;
+    u.legL.rotation.x = u.legR.rotation.x = 0;
+    hang[k] = { floor: LOUNGE_FLOOR, spot: w.spot, mug: mug, since: t };
+    if (selected === k) renderInfo();
+  }
   function sendCourier(from, toKey, color, onArrive) { queue.push({ from: from, to: toKey, color: color, onArrive: onArrive }); }
   function startWalk(job) {
     const s = ST[job.from], p = s.person;
@@ -729,7 +804,10 @@
   const seg = new THREE.Vector3();
   function stepWalkers(dt) {
     for (let qi = 0; qi < queue.length;) {
-      if (!walkers[queue[qi].from]) startWalk(queue.splice(qi, 1)[0]); else qi++;
+      const from = queue[qi].from;
+      if (hang[from] && !walkers[from]) { comeBack(from); qi++; }
+      else if (!walkers[from] && !hang[from]) startWalk(queue.splice(qi, 1)[0]);
+      else qi++;
     }
     Object.keys(walkers).forEach(function (k) {
       const w = walkers[k], p = ST[k].person, u = p.userData;
@@ -752,6 +830,8 @@
         u.legR.rotation.x = -Math.sin(w.ph) * 0.6;
         if (!w.back) { u.armL.rotation.x = u.armR.rotation.x = -1.25; }
         else { u.armL.rotation.x = -Math.sin(w.ph) * 0.5; u.armR.rotation.x = Math.sin(w.ph) * 0.5; }
+        if (w.i >= w.path.length - 1 && w.mode === 'lounge') { arriveLounge(k, w); return; }
+        if (w.i >= w.path.length - 1 && w.mode === 'home') { sitDown(k); return; }
         if (w.i >= w.path.length - 1) {
           if (!w.back) { w.back = true; w.wait = 0.7; w.path = w.path.slice().reverse(); w.i = 0; }
           else { w.card.g.visible = false; sitDown(k); return; }
@@ -965,7 +1045,10 @@
     if (!selected) return;
     renderInfoBody();
     const w = walkers[selected];
-    if (w) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya. ' : 'Sedang berjalan mengantar tiket ke ' + ROLE[w.job.to] + '. ') + el('infoTask').textContent;
+    if (w && w.mode === 'lounge') el('infoTask').textContent = 'Tidak ada pekerjaan, sedang ke ruang ngopi. ' + el('infoTask').textContent;
+    else if (w && w.mode === 'home') el('infoTask').textContent = 'Kembali ke mejanya dari ruang ngopi. ' + el('infoTask').textContent;
+    else if (w) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya. ' : 'Sedang berjalan mengantar tiket ke ' + ROLE[w.job.to] + '. ') + el('infoTask').textContent;
+    else if (hang[selected]) el('infoTask').textContent = 'Sedang ngopi di ruang ngopi (lantai ' + (LOUNGE_FLOOR + 1) + ') karena tidak ada pekerjaan. ' + el('infoTask').textContent;
   }
   function renderInfoBody() {
     const s = ST[selected], d = INFO[selected], cur = SCRIPT[stepIdx];
@@ -1922,6 +2005,9 @@
   // ---------- Animation ----------
   const clock = new THREE.Clock();
   let t = 0;
+  // agents wait this long with nothing to do before going for coffee (plus a per-agent offset)
+  const IDLE_S = 20, lastBusy = {}, idleJitter = {};
+  Object.keys(ST).forEach(function (k, i) { idleJitter[k] = (i * 7.3) % 15; });
 
   function update(dt) {
     t += dt;
@@ -1953,11 +2039,26 @@
     Object.keys(ST).forEach(function (k) {
       const s = ST[k], u = s.person.userData;
       const isAct = mode === 'live' ? !!(liveBy[k] || actBy[k]) : s === active;
-      const on = isAct && !walkers[k];
+      const on = isAct && !walkers[k] && !hang[k];
+      // Idle agents drift to the coffee corner; work (or a ticket to carry) brings them back
+      if (k !== 'em') {
+        const busy = isAct || walkers[k] || queue.some(function (j) { return j.from === k; });
+        if (busy) lastBusy[k] = t;
+        if (isAct && hang[k] && !walkers[k]) comeBack(k);
+        else if (!busy && !hang[k] && !walkers[k] && !replaying && t - (lastBusy[k] || 0) > IDLE_S + idleJitter[k]) {
+          if (!goLounge(k)) lastBusy[k] = t;
+        }
+      }
+      if (hang[k] && !walkers[k]) {
+        const ph = t * 0.7 + idleJitter[k];
+        u.armR.rotation.x = Math.sin(ph) > 0.85 ? -2.3 : -1.0;           // sip now and then
+        u.armL.rotation.x = -0.2 + Math.sin(t * 1.3 + idleJitter[k]) * 0.25; // talking with the hand
+        s.person.visible = shown(s.person.position.y);
+      }
       const glowTo = isAct ? 0.9 : k === selected ? 0.45 : 0;
       s.glow.opacity += (glowTo - s.glow.opacity) * Math.min(1, dt * 6);
       if (s.screen) s.screen.emissiveIntensity += ((on ? 1.1 : 0.15) - s.screen.emissiveIntensity) * Math.min(1, dt * 5);
-      if (!walkers[k]) {
+      if (!walkers[k] && !hang[k]) {
         if (s.standing) {
           u.armR.rotation.x = on ? -1.6 + Math.sin(t * 5) * 0.4 : -0.1;
           u.armL.rotation.x = on ? -0.4 : 0;
@@ -1972,7 +2073,7 @@
 
     // follow: keep the walking courier in view, on its own storey
     if (followOn) {
-      const wk = lastWalker && walkers[lastWalker] ? lastWalker : Object.keys(walkers)[0];
+      const wk = lastWalker && walkers[lastWalker] && !walkers[lastWalker].mode ? lastWalker : Object.keys(walkers).find(function (x) { return !walkers[x].mode; });
       if (wk) {
         lastWalker = wk;
         const pp = ST[wk].person.position;
