@@ -2,6 +2,14 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.14.0 — 2026-11-01
+
+### Ditambahkan
+- **Agent lebih mirip orang.** Setiap agent punya wajah (mata, alis, hidung, mulut, telinga), leher, sepatu, ikat pinggang, kerah, ID card, dan tangan. Gaya rambut berbeda per agent, beberapa berjenggot atau berkacamata, dan hijab Zahra, Alya, dan Naura kini membingkai wajah dengan warna masing-masing.
+- **Fasilitas kantor.** Pantri di Lantai 1 (kulkas, microwave, dispenser, meja berdiri), toilet pria dan wanita serta musholla di Lantai 2, dan kantin beratap di halaman timur dengan meja panjang dan bangku. Lantai 1 punya pintu keluar ke kantin.
+- **Kegiatan saat tidak ada kerjaan.** Agent yang menganggur bergantian ngopi, ke pantri, ke toilet, ke kantin, atau mampir ke meja rekan untuk ngobrol, lalu kembali ke mejanya. Pada waktu salat (sekitar Zuhur, Asar, Magrib, Isya) mereka ke musholla, dan saat jam makan siang ke kantin.
+- **Agent saling berinteraksi.** Agent yang mampir saling menyapa dan menjawab, penerima tiket membalas kurir ("Siap!", "Bismillah, saya kerjakan"), dan agent yang berkumpul di ruang ngopi, pantri, atau kantin mengobrol lewat gelembung bicara.
+
 ## 1.13.0 — 2026-11-01
 
 ### Ditambahkan

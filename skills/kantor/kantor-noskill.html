@@ -463,9 +463,13 @@
     box(0.3, H, d, C.wall, BX0, y + H / 2, 0, { parent: g });
     for (let z = BZ0 + 2.4; z < BZ1 - 1.5; z += 3.4) box(0.06, 1.5, 2.2, 0, BX0 + 0.17, y + 2.2, z, { parent: g, cast: false, material: windowMat });
     box(len, 1.0, 0.06, 0, (BX0 + BX1) / 2, y + 0.5, BZ1, { parent: g, material: glassMat, cast: false });
-    box(0.06, 1.0, d, 0, BX1, y + 0.5, 0, { parent: g, material: glassMat, cast: false });
+    if (k === 0) {   // a door gap at z -0.6..1.6 leads out to the canteen
+      box(0.06, 1.0, 9.4, 0, BX1, y + 0.5, -5.3, { parent: g, material: glassMat, cast: false });
+      box(0.06, 1.0, 8.4, 0, BX1, y + 0.5, 5.8, { parent: g, material: glassMat, cast: false });
+    } else box(0.06, 1.0, d, 0, BX1, y + 0.5, 0, { parent: g, material: glassMat, cast: false });
     box(len, 0.08, 0.1, 0x3b4048, (BX0 + BX1) / 2, y + 1.02, BZ1, { parent: g });
-    box(0.1, 0.08, d, 0x3b4048, BX1, y + 1.02, 0, { parent: g });
+    if (k === 0) { box(0.1, 0.08, 9.4, 0x3b4048, BX1, y + 1.02, -5.3, { parent: g }); box(0.1, 0.08, 8.4, 0x3b4048, BX1, y + 1.02, 5.8, { parent: g }); }
+    else box(0.1, 0.08, d, 0x3b4048, BX1, y + 1.02, 0, { parent: g });
     [[BX1, BZ1], [BX1, BZ0], [BX0, BZ1]].forEach(function (c) { box(0.4, FLOOR_H, 0.4, C.trim, c[0], y + FLOOR_H / 2 - 0.15, c[1], { parent: g }); });
     if (k === 2) { box(len, 0.25, 0.5, C.trim, (BX0 + BX1) / 2, y + H, BZ0, { parent: g }); box(0.5, 0.25, d, C.trim, BX0, y + H, 0, { parent: g }); }
   }
@@ -485,39 +489,90 @@
   const HAIR = [0x2b1d14, 0x3a2a1e, 0x1a1410, 0x5a3a22];
   const PANTS = [0x2b2d42, 0x3d5a80, 0x5c4033, 0x8d99ae];
 
+  // People: shoes, belt, tapered torso, neck, face (eyes, brows, nose, mouth, ears), hair styles,
+  // optional beard, glasses, tie, ID card, and a hijab that frames the face. Pivots stay where the
+  // poses expect them: legs at the hip, arms at the shoulder, the hand 0.75 below the shoulder.
   function makePerson(o) {
     const g = new THREE.Group();
-    const hip = 0.95;
-    function limb(w, h, d, color, px, py) {
-      const p = new THREE.Group();
-      p.position.set(px, py, 0);
-      box(w, h, d, color, 0, -h / 2, 0, { parent: p });
-      g.add(p);
-      return p;
+    const hip = 0.95, hair = o.hair, skin = o.skin, dark = 0x1a1410;
+    const o2 = function (extra) { const r = { parent: g, cast: false }; for (const k in extra) r[k] = extra[k]; return r; };
+    function limb(px, py) { const p = new THREE.Group(); p.position.set(px, py, 0); g.add(p); return p; }
+    // legs: trousers + shoes
+    const legL = limb(0.14, hip), legR = limb(-0.14, hip);
+    [legL, legR].forEach(function (leg) {
+      box(0.22, 0.8, 0.24, o.pants, 0, -0.4, 0, { parent: leg });
+      box(0.23, 0.11, 0.34, o.shoes || 0x2a2320, 0, -0.85, 0.05, { parent: leg });
+    });
+    // hips, belt, torso, collar
+    box(0.52, 0.16, 0.28, o.pants, 0, hip + 0.02, 0, { parent: g });
+    box(0.54, 0.05, 0.3, 0x3b2a1e, 0, hip + 0.1, 0, o2());
+    box(0.5, 0.34, 0.28, o.shirt, 0, hip + 0.28, 0, { parent: g });
+    box(0.62, 0.36, 0.32, o.shirt, 0, hip + 0.6, 0, { parent: g });
+    if (!o.hijab) box(0.26, 0.07, 0.06, o.collar || 0xf7f5ef, 0, hip + 0.8, 0.15, o2());
+    if (o.tie) box(0.08, 0.42, 0.02, o.tie, 0, hip + 0.56, 0.165, o2());
+    else if (!o.hijab) box(0.05, 0.3, 0.02, 0xf7f5ef, 0, hip + 0.62, 0.162, o2({ material: undefined }));
+    if (o.card) { box(0.13, 0.17, 0.02, 0xf7f5ef, 0.15, hip + 0.48, 0.17, o2()); box(0.13, 0.04, 0.021, o.card, 0.15, hip + 0.55, 0.172, o2()); }
+    // arms: sleeves + hands (long sleeves, office style)
+    const armL = limb(0.38, hip + 0.74), armR = limb(-0.38, hip + 0.74);
+    [armL, armR].forEach(function (arm) {
+      box(0.16, 0.66, 0.18, o.shirt, 0, -0.33, 0, { parent: arm });
+      box(0.17, 0.05, 0.19, o.cuff || o.shirt, 0, -0.64, 0, { parent: arm, cast: false });
+      box(0.13, 0.14, 0.15, skin, 0, -0.74, 0.01, { parent: arm });
+    });
+    // neck + head
+    cyl(0.085, 0.095, 0.14, 8, skin, 0, hip + 0.86, 0, { parent: g });
+    const hy = hip + 1.13;
+    box(0.4, 0.44, 0.4, skin, 0, hy, 0, { parent: g });
+    box(0.05, 0.1, 0.08, skin, 0.215, hy, 0, o2());
+    box(0.05, 0.1, 0.08, skin, -0.215, hy, 0, o2());
+    // face
+    [0.095, -0.095].forEach(function (ex) {
+      box(0.09, 0.055, 0.015, 0xffffff, ex, hy + 0.03, 0.2, o2());
+      box(0.045, 0.05, 0.016, dark, ex, hy + 0.03, 0.208, o2());
+      box(0.11, 0.025, 0.02, o.hijab ? 0x2b1d14 : hair, ex, hy + 0.1, 0.205, o2());
+    });
+    box(0.05, 0.08, 0.05, skin, 0, hy - 0.03, 0.22, o2());
+    box(0.12, 0.025, 0.015, 0x9a4f45, 0, hy - 0.12, 0.202, o2());
+    if (o.glasses) {
+      [0.095, -0.095].forEach(function (ex) {
+        box(0.13, 0.015, 0.012, 0x22262c, ex, hy + 0.065, 0.214, o2());
+        box(0.13, 0.015, 0.012, 0x22262c, ex, hy - 0.005, 0.214, o2());
+        box(0.012, 0.08, 0.012, 0x22262c, ex - 0.065, hy + 0.03, 0.214, o2());
+        box(0.012, 0.08, 0.012, 0x22262c, ex + 0.065, hy + 0.03, 0.214, o2());
+      });
+      box(0.06, 0.015, 0.012, 0x22262c, 0, hy + 0.04, 0.214, o2());
     }
-    const legL = limb(0.24, 0.9, 0.26, o.pants, 0.15, hip);
-    const legR = limb(0.24, 0.9, 0.26, o.pants, -0.15, hip);
-    box(0.62, 0.8, 0.36, o.shirt, 0, hip + 0.4, 0, { parent: g });
-    const armL = limb(0.17, 0.7, 0.2, o.shirt, 0.4, hip + 0.75);
-    const armR = limb(0.17, 0.7, 0.2, o.shirt, -0.4, hip + 0.75);
-    box(0.15, 0.15, 0.17, o.skin, 0, -0.75, 0, { parent: armL });
-    box(0.15, 0.15, 0.17, o.skin, 0, -0.75, 0, { parent: armR });
-    box(0.46, 0.46, 0.44, o.skin, 0, hip + 1.05, 0, { parent: g });
-    box(0.06, 0.07, 0.02, 0x1a1410, 0.1, hip + 1.08, 0.225, { parent: g, cast: false });
-    box(0.06, 0.07, 0.02, 0x1a1410, -0.1, hip + 1.08, 0.225, { parent: g, cast: false });
     if (o.hijab) {
-      box(0.54, 0.54, 0.46, o.hijab, 0, hip + 1.08, -0.03, { parent: g });
-      box(0.62, 0.3, 0.44, o.hijab, 0, hip + 0.8, 0, { parent: g });
+      // a wrap that frames the face, falls over the shoulders, and covers the hair
+      box(0.48, 0.5, 0.34, o.hijab, 0, hy + 0.04, -0.06, { parent: g });
+      box(0.48, 0.09, 0.44, o.hijab, 0, hy + 0.26, 0, { parent: g });
+      box(0.05, 0.48, 0.38, o.hijab, 0.235, hy - 0.01, 0.02, { parent: g });
+      box(0.05, 0.48, 0.38, o.hijab, -0.235, hy - 0.01, 0.02, { parent: g });
+      box(0.46, 0.14, 0.42, o.hijab, 0, hy - 0.27, 0.01, { parent: g });
+      box(0.7, 0.2, 0.4, o.hijab, 0, hip + 0.76, 0, { parent: g });
+      box(0.4, 0.28, 0.06, o.hijab, 0, hip + 0.58, 0.16, { parent: g });
     } else {
-      box(0.5, 0.16, 0.48, o.hair, 0, hip + 1.3, -0.01, { parent: g });
-      box(0.5, 0.3, 0.1, o.hair, 0, hip + 1.15, -0.22, { parent: g });
+      const style = o.style || 'short';
+      box(0.42, 0.1, 0.42, hair, 0, hy + 0.26, 0, { parent: g });
+      box(0.42, 0.3, 0.07, hair, 0, hy + 0.1, -0.2, o2());
+      box(0.05, 0.16, 0.36, hair, 0.205, hy + 0.15, -0.02, o2());
+      box(0.05, 0.16, 0.36, hair, -0.205, hy + 0.15, -0.02, o2());
+      if (style === 'side') box(0.24, 0.07, 0.12, hair, 0.08, hy + 0.3, 0.12, o2());
+      if (style === 'curly') for (let i = 0; i < 5; i++) box(0.12, 0.08, 0.12, hair, -0.16 + i * 0.08, hy + 0.32, (i % 2) * 0.1 - 0.05, o2());
+      if (style === 'quiff') box(0.3, 0.12, 0.14, hair, 0, hy + 0.33, 0.12, o2());
+      if (o.beard) {
+        box(0.4, 0.1, 0.06, hair, 0, hy - 0.17, 0.18, o2());
+        box(0.05, 0.22, 0.2, hair, 0.19, hy - 0.08, 0.1, o2());
+        box(0.05, 0.22, 0.2, hair, -0.19, hy - 0.08, 0.1, o2());
+        box(0.16, 0.03, 0.02, hair, 0, hy - 0.08, 0.205, o2());
+      }
     }
-    if (o.tie) box(0.1, 0.5, 0.02, o.tie, 0, hip + 0.5, 0.19, { parent: g, cast: false });
     g.scale.setScalar(o.scale || 0.75);
-    g.userData = { legL: legL, legR: legR, armL: armL, armR: armR };
+    g.userData = { legL: legL, legR: legR, armL: armL, armR: armR, female: !!o.hijab };
     (o.parent || scene).add(g);
     return g;
   }
+
 
   // ---------- Name labels (always face the camera) ----------
   function makeLabel(title, sub, color) {
@@ -563,6 +618,19 @@
     { key: 'qa', name: 'Naura',       role: 'QA',              agent: 'qa-tester',          color: 0xd9682a, extra: 'rack',   f: 2, x: 2,    z: -5, rot: 0 }
   ];
   const ST = {};
+  // How each agent looks: skin, hair style, beard, glasses, hijab colour
+  const LOOKS = {
+    pm:       { skin: 0xd9a47c, hair: 0x2b1d14, style: 'side', pants: 0x3d5a80 },
+    cto:      { skin: 0xc68e66, hair: 0x1a1410, style: 'short', beard: true, glasses: true, tie: 0x1d2530, pants: 0x2b2d42 },
+    analyst:  { skin: 0xf1c9a5, hijab: 0xb9a3dc, pants: 0x5c4033 },
+    lead:     { skin: 0xb67a52, hair: 0x1a1410, style: 'curly', beard: true, pants: 0x2b2d42 },
+    be:       { skin: 0xd9a47c, hair: 0x3a2a1e, style: 'quiff', glasses: true, pants: 0x3d5a80 },
+    fe:       { skin: 0xe8b894, hijab: 0xe9b9c3, pants: 0x8d99ae },
+    dev:      { skin: 0x8d5a3b, hair: 0x1a1410, style: 'short', beard: true, pants: 0x5c4033 },
+    reviewer: { skin: 0xc68e66, hair: 0x2b1d14, style: 'side', beard: true, glasses: true, pants: 0x2b2d42 },
+    qa:       { skin: 0xd9a47c, hijab: 0x2e3a59, pants: 0x3d5a80 },
+    em:       { skin: 0xb67a52, hair: 0x2b1d14, style: 'short', beard: true, pants: 0x2b2d42 }
+  };
   ['Produk & Arsitektur', 'Engineering', 'Quality'].forEach(function (name, k) {
     const lb = makeLabel('Lantai ' + (k + 1), name, 0x2f6b4f);
     lb.position.set(BX0 - 1.2, FY[k] + 2.4, BZ1 + 1.2);
@@ -632,10 +700,11 @@
     if (a.extra === 'plant' || a.extra === 'dual') plant(g, 1.8, -0.6);
 
     // the agent at the desk, seated
+    const look = LOOKS[a.key] || {};
     const person = makePerson({
-      skin: pick(SKIN), hair: pick(HAIR), shirt: a.color, pants: pick(PANTS),
-      hijab: (a.key === 'analyst' || a.key === 'qa' || a.key === 'fe') ? 0x3a3f46 : null,
-      tie: a.key === 'cto' ? 0x1d2530 : null, parent: g
+      skin: look.skin || pick(SKIN), hair: look.hair || pick(HAIR), shirt: a.color, pants: look.pants || pick(PANTS),
+      hijab: look.hijab || null, style: look.style, beard: look.beard, glasses: look.glasses,
+      tie: look.tie || null, card: a.color, parent: g
     });
     person.userData.key = a.key;
     person.position.set(0, -0.18, 0);
@@ -652,7 +721,8 @@
   });
 
   // Plants so each storey reads as its own room
-  [0, 1, 2].forEach(function (k) { plant(floors[k], -11.8, 8.6, FY[k]); plant(floors[k], 8.4, -8.6, FY[k]); });
+  plant(floors[0], -11.8, 8.6, FY[0]); plant(floors[0], 8.4, -8.6, FY[0]);
+  plant(floors[2], -11.8, 8.6, FY[2]); plant(floors[2], 8.4, -8.6, FY[2]);
 
   // ---------- Ruang ngopi: one shared coffee corner on the top floor, where idle agents from every storey meet ----------
   const LOUNGE_FLOOR = 2;
@@ -696,6 +766,66 @@
     sign.position.set(x, y + 3.1, z + 1.7); sign.scale.set(3.0, 0.98, 1); g.add(sign);
   })();
 
+  // ---------- Pantry (floor 1), toilets and musholla (floor 2), canteen (outside, east) ----------
+  const PANTRY = { x: -2.2, z: 7.3 }, TOILET = { x: -10.7, z: 8.1 }, MUSHOLLA = { x: 10.9, z: -7.3 }, KANTIN = { x: 18.6, z: 0.6 };
+  function sign(g, title, sub, color, x, y, z, sc) { const l = makeLabel(title, sub, color); l.position.set(x, y, z); l.scale.set(sc || 2.8, (sc || 2.8) * 0.33, 1); g.add(l); return l; }
+  (function buildPantry() {
+    const g = floors[0], y = FY[0], x = PANTRY.x, z = PANTRY.z;
+    box(4.4, 0.92, 0.6, 0xe9e2d0, x, y + 0.46, 9.35, { parent: g });                     // counter
+    box(4.5, 0.06, 0.66, 0x55606e, x, y + 0.95, 9.35, { parent: g });
+    box(0.5, 0.06, 0.36, 0x9aa0a6, x - 0.8, y + 0.99, 9.35, { parent: g, cast: false });   // sink
+    box(0.04, 0.25, 0.04, 0x9aa0a6, x - 0.8, y + 1.12, 9.55, { parent: g, cast: false });
+    box(0.55, 0.32, 0.38, 0x2a2f36, x + 0.6, y + 1.14, 9.35, { parent: g });              // microwave
+    box(0.8, 1.9, 0.7, 0xdfe6ea, x - 2.65, y + 0.95, 9.2, { parent: g });                 // fridge
+    box(0.04, 0.5, 0.04, 0x9aa0a6, x - 2.3, y + 1.3, 8.84, { parent: g, cast: false });
+    box(0.4, 1.2, 0.4, 0xf7f5ef, x + 1.75, y + 0.6, 9.3, { parent: g });                  // water dispenser
+    cyl(0.17, 0.17, 0.4, 10, 0x8fd3f4, x + 1.75, y + 1.4, 9.3, { parent: g });
+    cyl(0.45, 0.45, 0.06, 16, 0xb88a5a, x, y + 1.05, z, { parent: g });                   // standing table
+    cyl(0.05, 0.08, 1.02, 8, 0x3b4048, x, y + 0.52, z, { parent: g });
+    sign(g, 'Pantri', 'lantai 1', 0x8d6e63, x, y + 3.0, 9.0);
+  })();
+  (function buildToilets() {
+    const g = floors[1], y = FY[1], H = 2.6;
+    // front wall with two doors (pria at x -11.8, wanita at x -9.6), side wall, divider
+    [[-12.85, -12.3], [-11.3, -10.1], [-9.1, -8.45]].forEach(function (seg) {
+      box(seg[1] - seg[0], H, 0.12, 0xdfe6ea, (seg[0] + seg[1]) / 2, y + H / 2, 6.3, { parent: g });
+    });
+    box(0.12, H, 3.6, 0xdfe6ea, -8.45, y + H / 2, 8.1, { parent: g });
+    box(0.08, H, 3.6, 0xc9d1d6, -10.7, y + H / 2, 8.1, { parent: g });
+    box(4.4, 0.15, 0.2, 0xdfe6ea, -10.65, y + H, 6.3, { parent: g });
+    box(0.5, 0.45, 0.4, 0xf7f5ef, -12.2, y + 0.25, 9.3, { parent: g });                    // fixtures
+    box(0.5, 0.45, 0.4, 0xf7f5ef, -9.2, y + 0.25, 9.3, { parent: g });
+    sign(g, 'Pria', 'toilet', 0x3d5a80, -11.8, y + 3.0, 6.2, 1.9);
+    sign(g, 'Wanita', 'toilet', 0xc0617a, -9.6, y + 3.0, 6.2, 1.9);
+  })();
+  (function buildMusholla() {
+    const g = floors[1], y = FY[1], x = MUSHOLLA.x, z = MUSHOLLA.z;
+    const carpet = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.04, 4.2), new THREE.MeshStandardMaterial({ color: 0x2f7a5a, roughness: 1 }));
+    carpet.position.set(x, y + 0.03, z); carpet.receiveShadow = true; g.add(carpet);
+    for (let i = 0; i < 4; i++) box(0.12, 0.02, 4.0, 0xe0c27a, x - 1.6 + i * 1.1, y + 0.06, z, { parent: g, cast: false });
+    box(0.12, 1.3, 4.4, 0xdfe6ea, x - 2.3, y + 0.65, z, { parent: g });                   // partition on the qibla side
+    box(4.6, 1.3, 0.12, 0xdfe6ea, x, y + 0.65, z - 2.2, { parent: g });
+    box(1.2, 0.5, 0.35, 0x8d6e63, x + 1.4, y + 0.25, -4.85, { parent: g });              // shoe rack
+    sign(g, 'Musholla', 'lantai 2', 0x2f7a5a, x, y + 2.6, z + 1.6, 2.6);
+  })();
+  (function buildKantin() {
+    const g = new THREE.Group(); scene.add(g);
+    const x = KANTIN.x, z = KANTIN.z;
+    box(7.2, 0.12, 12, 0xcfc6b4, x, 0.06, z, { parent: g, cast: false });                // paving
+    box(1.8, 0.06, 1.6, 0xcfc6b4, 14.6, 0.05, 0.5, { parent: g, cast: false });           // path to the door
+    [[-3.4, -5.8], [3.4, -5.8], [-3.4, 5.8], [3.4, 5.8]].forEach(function (pp) { box(0.18, 3.1, 0.18, 0x5c4a3a, x + pp[0], 1.6, z + pp[1], { parent: g }); });
+    box(7.6, 0.16, 12.4, 0x2f6b4f, x, 3.2, z, { parent: g });                              // roof
+    [17.4, 20.0].forEach(function (tx) {
+      box(0.9, 0.08, 5.2, 0xb88a5a, tx, 0.78, z + 0.5, { parent: g });                     // long table
+      box(0.08, 0.74, 0.08, 0x3b4048, tx, 0.4, z - 1.8, { parent: g }); box(0.08, 0.74, 0.08, 0x3b4048, tx, 0.4, z + 2.8, { parent: g });
+      [-0.75, 0.75].forEach(function (bx) { box(0.35, 0.06, 5.2, 0x8d6e63, tx + bx, 0.46, z + 0.5, { parent: g }); });
+    });
+    box(0.7, 1.0, 5.0, 0xc8553d, 21.6, 0.5, z + 0.5, { parent: g });                       // food counter
+    box(0.8, 0.06, 5.1, 0xf3ead6, 21.6, 1.03, z + 0.5, { parent: g });
+    for (let i = 0; i < 5; i++) cyl(0.18, 0.16, 0.12, 10, [0xf3a712, 0xe63946, 0x8ac926][i % 3], 21.6, 1.12, z - 1.3 + i * 0.9, { parent: g });
+    const lb = makeLabel('Kantin', 'makan siang', 0xc8553d); lb.position.set(x, 4.1, z + 2.0); lb.scale.set(3.0, 0.99, 1); g.add(lb);
+  })();
+
   // ---------- Ground floor: Engineering Manager (feature-flow) + ticket board ----------
   const centre = new THREE.Group();
   centre.userData.key = 'em';
@@ -716,7 +846,7 @@
   box(1.1, 1.0, 0.6, 0xb88a5a, 1.6, 0.5, 0.4, { parent: centre });
   deskLamp(centre, 1.85, 1.0, 0.6);
 
-  const em = makePerson({ skin: pick(SKIN), hair: pick(HAIR), shirt: 0x55606e, pants: 0x2b2d42, parent: centre });
+  const em = makePerson({ skin: LOOKS.em.skin, hair: LOOKS.em.hair, style: LOOKS.em.style, beard: true, shirt: 0x55606e, pants: LOOKS.em.pants, card: 0x55606e, parent: centre });
   em.userData.key = 'em';
   const emLabel = makeLabel('Hafiz', 'Eng. Manager', 0x55606e);
   emLabel.position.set(0, 4.55, -1.2);
@@ -763,10 +893,17 @@
   // Places agents can walk to: the shared coffee corner and the meeting room
   const PLACES = {
     lounge: { floor: LOUNGE_FLOOR, x: LOUNGE.x, z: LOUNGE.z, spots: LOUNGE_SPOTS, taken: loungeTaken },
-    meeting: { floor: MEETING_FLOOR, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {} }
+    meeting: { floor: MEETING_FLOOR, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {} },
+    pantry: { floor: 0, x: PANTRY.x, z: PANTRY.z, spots: [[0, -0.85], [0.85, 0], [-0.85, 0], [0, 0.85]], taken: {}, stay: [18, 35] },
+    toilet: { floor: 1, x: TOILET.x, z: TOILET.z, spots: [[-1.1, 0.4], [1.1, 0.4]], taken: {}, stay: [7, 11], hide: true },
+    musholla: { floor: 1, x: MUSHOLLA.x, z: MUSHOLLA.z, spots: [[-1.3, 0, -Math.PI / 2], [0.2, -1.1, -Math.PI / 2], [0.2, 0, -Math.PI / 2], [0.2, 1.1, -Math.PI / 2], [1.4, -1.1, -Math.PI / 2], [1.4, 0, -Math.PI / 2], [1.4, 1.1, -Math.PI / 2]], taken: {}, stay: [22, 35] },
+    kantin: { floor: 0, x: KANTIN.x, z: KANTIN.z, y: 0.12, via: [[12.9, FY[0], 0.5], [14.8, 0.12, 0.5]], seat: true, taken: {}, stay: [40, 80],
+      spots: [[-1.95, -1.2, Math.PI / 2], [-1.95, 0.4, Math.PI / 2], [-1.95, 2.0, Math.PI / 2], [-0.45, -1.2, -Math.PI / 2], [-0.45, 0.4, -Math.PI / 2], [-0.45, 2.0, -Math.PI / 2],
+        [0.65, -1.2, Math.PI / 2], [0.65, 0.4, Math.PI / 2], [0.65, 2.0, Math.PI / 2], [2.15, -1.2, -Math.PI / 2], [2.15, 0.4, -Math.PI / 2]] }
   };
-  function takeSpot(pl) {
-    for (let i = 0; i < pl.spots.length; i++) if (!pl.taken[i]) { pl.taken[i] = true; return i; }
+  PLACES.lounge.stay = [30, 60];
+  function takeSpot(pl, only) {
+    for (let i = 0; i < pl.spots.length; i++) if (!pl.taken[i] && (only == null || only === i)) { pl.taken[i] = true; return i; }
     return -1;
   }
   // desk -> corridor -> stairs (when on another storey) -> corridor of that floor -> around the table -> spot
@@ -774,16 +911,20 @@
     const pl = PLACES[name], f = ST[k].f, L = pl.floor, exit = nav(k, -1.5, 2.4);
     const pts = [nav(k, 0, 0), nav(k, -1.5, 0.1), exit, V(exit.x, FY[f], CORR_Z)];
     if (f !== L) { pts.push(V(STAIR_X, FY[f], CORR_Z)); pts.push.apply(pts, floorRoute(f, L)); }
+    (pl.via || []).forEach(function (v) { pts.push(V(v[0], v[1], v[2])); });
+    const yL = pl.y != null ? pl.y : FY[L];
+    if (pl.hide) { pts.push(V(spot.x, yL, CORR_Z), V(spot.x, yL, spot.z)); return pts; }   // straight through the door
     const ax = spot.z > pl.z ? spot.x + (spot.x < pl.x ? -1.05 : 1.05) : spot.x;
-    pts.push(V(ax, FY[L], CORR_Z));
-    if (ax !== spot.x) pts.push(V(ax, FY[L], spot.z));
+    pts.push(V(ax, yL, CORR_Z));
+    if (ax !== spot.x) pts.push(V(ax, yL, spot.z));
     pts.push(spot);
     return pts;
   }
   function goPlace(k, name) {
-    const pl = PLACES[name], s = ST[k], i = takeSpot(pl);
+    const pl = PLACES[name], s = ST[k];
+    const i = takeSpot(pl, name === 'toilet' ? (ST[k].person.userData.female ? 1 : 0) : null);
     if (i < 0) return false;
-    const spot = V(pl.x + pl.spots[i][0], FY[pl.floor], pl.z + pl.spots[i][1]);
+    const spot = V(pl.x + pl.spots[i][0], pl.y != null ? pl.y : FY[pl.floor], pl.z + pl.spots[i][1]);
     const path = placePath(k, name, spot);
     const p = s.person;
     scene.attach(p);
@@ -799,6 +940,8 @@
     const h = hang[k], s = ST[k], p = s.person;
     if (!h) return;
     if (h.mug) h.mug.visible = false;
+    p.visible = true;
+    if (PLACES[h.place].seat) { p.position.y += 0.12; p.userData.legL.rotation.x = p.userData.legR.rotation.x = 0; }
     const path = placePath(k, h.place, p.position.clone()).reverse();
     PLACES[h.place].taken[h.spot] = false;
     delete hang[k];
@@ -808,15 +951,19 @@
   function arrivePlace(k, w) {
     const p = ST[k].person, u = p.userData, pl = PLACES[w.place];
     delete walkers[k];
-    p.rotation.y = Math.atan2(pl.x - p.position.x, pl.z - p.position.z);   // face the table
+    const sp = pl.spots[w.spot];
+    p.rotation.y = sp.length > 2 ? sp[2] : Math.atan2(pl.x - p.position.x, pl.z - p.position.z);   // face the table (or qibla)
     let mug = p.userData.mug;
     if (!mug) {
       mug = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.18, 8), mugMat);
       mug.position.set(0, -0.82, 0.1); u.armR.add(mug); p.userData.mug = mug;
     }
-    mug.visible = w.place === 'lounge';
-    u.legL.rotation.x = u.legR.rotation.x = 0;
-    hang[k] = { place: w.place, floor: pl.floor, spot: w.spot, mug: mug, since: t };
+    mug.visible = w.place === 'lounge' || w.place === 'pantry';
+    u.legL.rotation.x = u.legR.rotation.x = pl.seat ? -Math.PI / 2 : 0;
+    if (pl.seat) p.position.y -= 0.12;
+    if (pl.hide) p.visible = false;
+    const st = pl.stay ? pl.stay[0] + Math.random() * (pl.stay[1] - pl.stay[0]) : 0;
+    hang[k] = { place: w.place, floor: pl.floor, spot: w.spot, mug: mug, since: t, until: st ? t + st : 0 };
     if (selected === k) renderInfo();
   }
 
@@ -845,6 +992,47 @@
     scene.add(sp);
     return sp;
   }
+  // say(): a bubble over any agent for a few seconds, wherever it is
+  const says = {};
+  function say(k, text, secs) {
+    if (!ST[k] || !text) return;
+    if (says[k]) { scene.remove(says[k].sp); says[k].sp.material.map.dispose(); says[k].sp.material.dispose(); }
+    says[k] = { sp: makeBubble(text), ttl: secs || 2.4 };
+  }
+  const wp = new THREE.Vector3();
+  function stepSays(dt) {
+    Object.keys(says).forEach(function (k) {
+      const b = says[k], p = ST[k].person;
+      p.getWorldPosition(wp);
+      b.sp.position.set(wp.x, wp.y + (hang[k] && PLACES[hang[k].place].seat || (!walkers[k] && !hang[k] && !ST[k].standing) ? 2.5 : 2.9), wp.z);
+      b.sp.visible = p.visible && shown(wp.y);
+      b.ttl -= dt;
+      if (b.ttl <= 0) { scene.remove(b.sp); b.sp.material.map.dispose(); b.sp.material.dispose(); delete says[k]; }
+    });
+  }
+  const TALK = {
+    lounge: ['Kopinya enak nih', 'Sudah push belum?', 'Deploy aman kan?', 'Nanti zuhur bareng ya', 'Ada meeting jam 3?', 'Alhamdulillah, lancar', 'Mantap, PR sudah merge', 'Teh atau kopi?', 'Bismillah, lanjut lagi', 'Test-nya hijau semua'],
+    pantry: ['Ada yang mau air hangat?', 'Kulkasnya penuh nih', 'Mie instan lagi?', 'Jangan lupa cuci gelas', 'Kopi sachet tinggal dua'],
+    kantin: ['Nasi goreng enak hari ini', 'Pesan apa?', 'Es teh satu ya', 'Alhamdulillah kenyang', 'Habis ini lanjut review', 'Sambalnya pedas banget'],
+    meeting: ['Kita tunggu keputusan dulu', 'Opsi A atau B ya?', 'Saya catat di Riwayat']
+  };
+  const OPENERS = ['Assalamualaikum, sibuk?', 'Ada waktu sebentar?', 'Mau tanya soal tiket', 'Ngopi yuk nanti', 'Sudah makan siang?', 'Review-nya aman?'];
+  const REPLIES = ['Waalaikumsalam, boleh', 'Bentar ya, lagi fokus', 'Boleh, kenapa?', 'Siap, nanti nyusul', 'Aman, insyaAllah', 'Belum, yuk ke kantin'];
+  const ACK = ['Siap!', 'Oke, saya cek', 'Terima kasih', 'Bismillah, saya kerjakan', 'Noted'];
+  function anyOf(a) { return a[Math.floor(Math.random() * a.length)]; }
+  let talkT = 0;
+  function smallTalk(dt) {
+    talkT -= dt;
+    if (talkT > 0) return;
+    talkT = 3 + Math.random() * 3;
+    const groups = {};
+    Object.keys(hang).forEach(function (k) { const pl = hang[k].place; if (TALK[pl] && !walkers[k]) (groups[pl] = groups[pl] || []).push(k); });
+    const busy = Object.keys(groups).filter(function (pl) { return groups[pl].length >= 2; });
+    if (!busy.length) return;
+    const pl = anyOf(busy), k = anyOf(groups[pl]);
+    if (!says[k]) say(k, anyOf(TALK[pl]), 2.6);
+  }
+
   function dropBubble(w) {
     if (!w.bubble) return;
     scene.remove(w.bubble); w.bubble.material.map.dispose(); w.bubble.material.dispose(); w.bubble = null;
@@ -857,7 +1045,7 @@
     scene.attach(p);
     p.userData.legL.rotation.x = 0; p.userData.legR.rotation.x = 0;
     lastWalker = job.from;
-    walkers[job.from] = { job: job, path: route(job.from, job.to), i: 0, back: false, wait: 0, ph: 0, card: c, carrying: true, bubble: job.say ? makeBubble(job.say) : null, bubbleTTL: 0 };
+    walkers[job.from] = { job: job, path: route(job.from, job.to), i: 0, back: false, wait: 0, ph: 0, card: c, carrying: !job.chat, chat: !!job.chat, bubble: job.say ? makeBubble(job.say) : null, bubbleTTL: 0 };
     p.position.copy(walkers[job.from].path[0]);
     if (selected === job.from) renderInfo();
   }
@@ -885,7 +1073,7 @@
       if (w.wait > 0) {          // handing the ticket over
         w.wait -= dt;
         u.legL.rotation.x = u.legR.rotation.x = 0;
-        u.armR.rotation.x = -1.4; u.armL.rotation.x = 0;
+        u.armR.rotation.x = w.chat ? -0.9 + Math.sin(t * 4) * 0.3 : -1.4; u.armL.rotation.x = 0;
         if (w.wait <= 0) { w.carrying = false; if (w.job.onArrive) w.job.onArrive(); }
       } else {
         let move = WALK_SPEED * dt;
@@ -899,12 +1087,19 @@
         w.ph += dt * 10;
         u.legL.rotation.x = Math.sin(w.ph) * 0.6;
         u.legR.rotation.x = -Math.sin(w.ph) * 0.6;
-        if (!w.back) { u.armL.rotation.x = u.armR.rotation.x = -1.25; }
+        if (!w.back && !w.chat) { u.armL.rotation.x = u.armR.rotation.x = -1.25; }
+        else if (!w.back) { u.armL.rotation.x = -Math.sin(w.ph) * 0.5; u.armR.rotation.x = Math.sin(w.ph) * 0.5; }
         else { u.armL.rotation.x = -Math.sin(w.ph) * 0.5; u.armR.rotation.x = Math.sin(w.ph) * 0.5; }
         if (w.i >= w.path.length - 1 && w.mode === 'place') { arrivePlace(k, w); return; }
         if (w.i >= w.path.length - 1 && w.mode === 'home') { sitDown(k); return; }
         if (w.i >= w.path.length - 1) {
-          if (!w.back) { w.back = true; w.wait = 0.7; w.bubbleTTL = 2.2; w.path = w.path.slice().reverse(); w.i = 0; }
+          if (!w.back) {
+            w.back = true; w.wait = w.job.chat ? 4.2 : 0.9; w.bubbleTTL = 2.2; w.path = w.path.slice().reverse(); w.i = 0;
+            if (w.job.chat) {
+              say(k, w.job.chat[0], 2);
+              setTimeout(function () { say(w.job.to, w.job.chat[1], 2); }, 1700);
+            } else if (w.job.to) say(w.job.to, anyOf(ACK), 1.6);
+          }
           else { w.card.g.visible = false; sitDown(k); return; }
         }
       }
@@ -1125,11 +1320,12 @@
     if (!selected) return;
     renderInfoBody();
     const w = walkers[selected];
-    if (w && w.mode === 'place') el('infoTask').textContent = (w.place === 'meeting' ? 'Berjalan ke ruang rapat untuk tiket HOLD. ' : 'Tidak ada pekerjaan, sedang ke ruang ngopi. ') + el('infoTask').textContent;
+    if (w && w.mode === 'place') el('infoTask').textContent = ({ meeting: 'Berjalan ke ruang rapat untuk tiket HOLD. ', lounge: 'Tidak ada pekerjaan, ke ruang ngopi. ', pantry: 'Tidak ada pekerjaan, ke pantri. ', toilet: 'Ke toilet. ', musholla: 'Waktu salat, ke musholla. ', kantin: 'Ke kantin. ' }[w.place] || '') + el('infoTask').textContent;
     else if (w && w.mode === 'home') el('infoTask').textContent = 'Kembali ke mejanya. ' + el('infoTask').textContent;
+    else if (w && w.chat) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya setelah ngobrol. ' : 'Mampir ngobrol dengan ' + who(w.job.to) + '. ') + el('infoTask').textContent;
     else if (w) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya. ' : 'Sedang berjalan mengantar tiket ke ' + who(w.job.to) + '. ') + el('infoTask').textContent;
     else if (hang[selected] && hang[selected].place === 'meeting') el('infoTask').textContent = 'Di ruang rapat, menunggu keputusanmu untuk ' + (meetingFor[selected] || []).join(', ') + '. ' + el('infoTask').textContent;
-    else if (hang[selected]) el('infoTask').textContent = 'Sedang ngopi di ruang ngopi (lantai ' + (LOUNGE_FLOOR + 1) + ') karena tidak ada pekerjaan. ' + el('infoTask').textContent;
+    else if (hang[selected]) el('infoTask').textContent = ({ lounge: 'Sedang ngopi di ruang ngopi lantai 3', pantry: 'Sedang di pantri lantai 1', toilet: 'Sedang ke toilet', musholla: 'Sedang salat di musholla lantai 2', kantin: 'Sedang makan di kantin' }[hang[selected].place] || 'Sedang istirahat') + ' karena tidak ada pekerjaan. ' + el('infoTask').textContent;
   }
   function renderInfoBody() {
     const s = ST[selected], d = INFO[selected], cur = SCRIPT[stepIdx];
@@ -2115,6 +2311,7 @@
   for (let tries = 0; tries < 500 && trees.length < 30; tries++) {
     const x = (rand() * 2 - 1) * 22.2, z = (rand() * 2 - 1) * 22.2;
     if (Math.max(Math.abs(x), Math.abs(z)) < 18) continue;
+    if (x > 14 && x < 23.5 && z > -7.5 && z < 8.5) continue;      // canteen
     let ok = true;
     for (const t of trees) if (Math.hypot(t.x - x, t.z - z) < 2.3) { ok = false; break; }
     if (!ok) continue;
@@ -2215,8 +2412,34 @@
   const IDLE_S = 20, lastBusy = {}, idleJitter = {};
   Object.keys(ST).forEach(function (k, i) { idleJitter[k] = (i * 7.3) % 15; });
 
+  // What an idle agent does next, by the viewer's clock: salat times -> musholla, lunch -> canteen,
+  // otherwise coffee, pantry, a chat at a colleague's desk, the toilet, or the canteen.
+  function nowMin() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+  const PRAYER = [[11 * 60 + 55, 12 * 60 + 25], [15 * 60 + 5, 15 * 60 + 30], [17 * 60 + 50, 18 * 60 + 15], [19 * 60 + 5, 19 * 60 + 30]];
+  function pickActivity(k) {
+    const m = nowMin();
+    if (PRAYER.some(function (w) { return m >= w[0] && m <= w[1]; }) && Math.random() < 0.8) return 'musholla';
+    if (m >= 11 * 60 + 45 && m <= 13 * 60 && Math.random() < 0.7) return 'kantin';
+    const r = Math.random();
+    return r < 0.3 ? 'lounge' : r < 0.52 ? 'pantry' : r < 0.74 ? 'chat' : r < 0.84 ? 'toilet' : r < 0.94 ? 'kantin' : 'stay';
+  }
+  function startActivity(k) {
+    const act = pickActivity(k);
+    if (act === 'stay') return false;
+    if (act === 'chat') {
+      const hosts = Object.keys(ST).filter(function (h) { return h !== k && !walkers[h] && !hang[h] && !queue.some(function (j) { return j.from === h || j.to === h; }); });
+      if (!hosts.length) return goPlace(k, 'lounge');
+      const h = anyOf(hosts), i = Math.floor(Math.random() * OPENERS.length);
+      queue.push({ from: k, to: h, color: ST[k].a.color, onArrive: null, say: null, chat: [OPENERS[i], REPLIES[i]] });
+      return true;
+    }
+    return goPlace(k, act) || goPlace(k, 'lounge');
+  }
+
   function update(dt) {
     t += dt;
+    stepSays(dt);
+    smallTalk(dt);
     if (mode === 'demo' && !replaying) {
       if (!waiting) stepT += dt;
       if (stepIdx < 0 || (!waiting && stepT >= WORK)) {
@@ -2262,12 +2485,23 @@
         if (busy) lastBusy[k] = t;
         if (isAct && hang[k] && !walkers[k]) comeBack(k);
         else if (!busy && !hang[k] && !walkers[k] && !replaying && t - (lastBusy[k] || 0) > IDLE_S + idleJitter[k]) {
-          if (!goLounge(k)) lastBusy[k] = t;
+          if (!startActivity(k)) lastBusy[k] = t;
+        } else if (hang[k] && !walkers[k] && hang[k].until && t > hang[k].until && hang[k].place !== 'meeting') {
+          comeBack(k); lastBusy[k] = t - Math.random() * IDLE_S * 0.5;   // back at the desk for a while, then another break
         }
       }
       if (hang[k] && !walkers[k] && hang[k].place === 'meeting') {
         u.armL.rotation.x = -0.6 + Math.sin(t * 0.9 + idleJitter[k]) * 0.15;   // waiting, hands on the table
         u.armR.rotation.x = -0.6 - Math.sin(t * 1.1 + idleJitter[k]) * 0.15;
+        s.person.visible = shown(s.person.position.y);
+      } else if (hang[k] && !walkers[k] && hang[k].place === 'toilet') {
+        s.person.visible = false;
+      } else if (hang[k] && !walkers[k] && hang[k].place === 'musholla') {
+        u.armL.rotation.x = u.armR.rotation.x = -0.9;                         // hands folded
+        s.person.visible = shown(s.person.position.y);
+      } else if (hang[k] && !walkers[k] && hang[k].place === 'kantin') {
+        u.armR.rotation.x = -1.2 - Math.max(0, Math.sin(t * 1.6 + idleJitter[k])) * 0.9;   // eating
+        u.armL.rotation.x = -1.1;
         s.person.visible = shown(s.person.position.y);
       } else if (hang[k] && !walkers[k]) {
         const ph = t * 0.7 + idleJitter[k];
@@ -2293,7 +2527,8 @@
 
     // follow: keep the walking courier in view, on its own storey
     if (followOn) {
-      const wk = lastWalker && walkers[lastWalker] && !walkers[lastWalker].mode ? lastWalker : Object.keys(walkers).find(function (x) { return !walkers[x].mode; });
+      const ticketWalk = function (x) { return walkers[x] && !walkers[x].mode && !walkers[x].chat; };
+      const wk = ticketWalk(lastWalker) ? lastWalker : Object.keys(walkers).find(ticketWalk);
       if (wk) {
         lastWalker = wk;
         const pp = ST[wk].person.position;
