@@ -2,6 +2,15 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.13.0 — 2026-11-01
+
+### Ditambahkan
+- **Jawab HOLD dari Kantor.** Detail tiket HOLD punya kolom jawaban. Jawaban disimpan di database artifact (koleksi `answers`, hanya pemilik dan editor yang bisa menulis), dan `/noskill:tiket lanjut` mengambilnya di sesi Cowork/claude.ai, mencatatnya di Riwayat, lalu melanjutkan tiket.
+- **Token per tiket.** `feature-flow` menambahkan pemakaian agent di akhir baris Riwayat, misalnya `(45.2k token, 3m)`. Panel **Metrik** di Kantor menampilkan token per agent dan tiket paling boros, dan detail tiket menampilkan totalnya.
+- **Ruang rapat** di Lantai 1. Selama ada tiket HOLD, Eng. Manager dan agent yang terakhir memegang tiket itu menunggu di sana sampai keputusanmu masuk.
+- **Gelembung bicara.** Agent yang berjalan mengantar tiket menampilkan verdict-nya (`APPROVED`, `CHANGES_REQUESTED`, `PASS`, `FAIL`, `HOLD`, …) beserta ID tiket.
+- **Timeline hari ini.** Tombol **Timeline** menampilkan semua perpindahan status hari ini di garis 00–24. Klik satu titik untuk membuka tiketnya dan memutar ulang dari momen itu.
+
 ## 1.12.0 — 2026-11-01
 
 ### Ditambahkan

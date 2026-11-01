@@ -115,6 +115,20 @@
   button:focus-visible { outline: 3px solid var(--btn); outline-offset: 2px; }
 
   .err[hidden] { display: none; }
+  .timeline { position: fixed; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(560px, calc(100% - 432px));
+    background: var(--panel); border: 1px solid var(--edge); border-radius: 16px; padding: 10px 14px 8px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: grid; gap: 6px; }
+  .timeline[hidden] { display: none; }
+  .tl-head { display: flex; align-items: center; gap: 10px; }
+  .tl-head h2 { margin: 0; font-size: 1rem; }
+  .tl-head span { flex: 1; font-size: 0.8rem; color: var(--muted); min-width: 0; }
+  .tl-head .close { padding: 0 9px; font-size: 1rem; }
+  .tl-track { position: relative; height: 34px; border-radius: 8px; background: var(--log); }
+  .tl-track button { position: absolute; top: 5px; width: 10px; height: 24px; padding: 0; border-radius: 4px; border: 1px solid var(--panel); transform: translateX(-5px); }
+  .tl-track .tl-now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--btn); }
+  .tl-axis { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
+  @media (max-width: 900px) {
+    .timeline { left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px)); width: auto; top: calc(10px + env(safe-area-inset-top, 0px)); bottom: auto; }
+  }
   .src { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 0.85rem; color: var(--muted); }
   .src span:nth-child(2) { flex: 1 1 160px; min-width: 0; }
   .src button { padding: 2px 10px; font-size: 0.82rem; }
@@ -239,6 +253,7 @@
   <div class="controls">
     <button type="button" id="btnMetrics" aria-expanded="false" aria-controls="metrics">Metrik</button>
     <button type="button" id="btnFollow" aria-pressed="false">Ikuti tiket</button>
+    <button type="button" id="btnTimeline" aria-expanded="false" aria-controls="timeline">Timeline</button>
   </div>
   <div class="viewers" id="viewers" hidden aria-live="polite"></div>
   <div class="controls">
@@ -287,6 +302,12 @@
   </header>
   <div id="mBody" class="tbody"></div>
 </aside>
+
+<section class="timeline" id="timeline" hidden aria-labelledby="tlTitle">
+  <div class="tl-head"><h2 id="tlTitle">Hari ini</h2><span id="tlSub"></span><button class="close" id="tlClose" aria-label="Tutup timeline">×</button></div>
+  <div class="tl-track" id="tlTrack"></div>
+  <div class="tl-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+</section>
 
 <div class="err" id="err" hidden>Browser ini belum bisa menampilkan 3D (WebGL tidak aktif). Coba buka di Chrome, Safari, atau Firefox versi terbaru.</div>
 
@@ -635,6 +656,8 @@
 
   // ---------- Ruang ngopi: one shared coffee corner on the top floor, where idle agents from every storey meet ----------
   const LOUNGE_FLOOR = 2;
+  // Ruang rapat (floor 1): where the Eng. Manager and the agents of HOLD tickets wait for your decision
+  const MEETING = { x: -2.3, z: 7.3 };
   const LOUNGE = { x: -2.6, z: 6.8 };
   // nine standing spots in a ring around the table, one for every agent that can be idle
   const LOUNGE_SPOTS = [];
@@ -659,6 +682,18 @@
     sign.position.set(x, y + 3.1, z + 2.0); sign.scale.set(3.0, 0.98, 1);
     g.add(sign);
   });
+
+  (function buildMeetingRoom() {
+    const g = floors[0], y = FY[0], x = MEETING.x, z = MEETING.z;
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x3d5a80, roughness: 0.95, transparent: true, opacity: 0.35 });
+    const rug = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.03, 3.2), floorMat); rug.position.set(x, y + 0.02, z); g.add(rug);
+    box(2.6, 0.08, 1.2, 0xf3ead6, x, y + 0.76, z, { parent: g });
+    [[-1.1, -0.45], [1.1, -0.45], [-1.1, 0.45], [1.1, 0.45]].forEach(function (l) { box(0.08, 0.72, 0.08, 0x3b4048, x + l[0], y + 0.36, z + l[1], { parent: g }); });
+    box(0.05, 1.2, 1.6, C.white, x - 2.1, y + 1.4, z, { parent: g });                 // small whiteboard
+    box(0.06, 0.06, 1.6, 0x3b4048, x - 2.1, y + 2.02, z, { parent: g, cast: false });
+    const sign = makeLabel('Ruang rapat', 'tiket HOLD', 0x3d5a80);
+    sign.position.set(x, y + 3.1, z + 1.7); sign.scale.set(3.0, 0.98, 1); g.add(sign);
+  })();
 
   // ---------- Ground floor: Engineering Manager (feature-flow) + ticket board ----------
   const centre = new THREE.Group();
@@ -724,61 +759,95 @@
 
   const walkers = {}, queue = [], courierCards = {};
   const hang = {};          // agent key -> { floor, spot, mug } while it is in the coffee corner
-  function loungeSpot() {
-    for (let i = 0; i < LOUNGE_SPOTS.length; i++) if (!loungeTaken[i]) { loungeTaken[i] = true; return i; }
+  // Places agents can walk to: the shared coffee corner and the meeting room
+  const PLACES = {
+    lounge: { floor: LOUNGE_FLOOR, x: LOUNGE.x, z: LOUNGE.z, spots: LOUNGE_SPOTS, taken: loungeTaken },
+    meeting: { floor: 0, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {} }
+  };
+  function takeSpot(pl) {
+    for (let i = 0; i < pl.spots.length; i++) if (!pl.taken[i]) { pl.taken[i] = true; return i; }
     return -1;
   }
-  // desk -> corridor -> stairs (when on another storey) -> corridor of the lounge floor -> spot
-  function loungePath(k, spot) {
-    const f = ST[k].f, L = LOUNGE_FLOOR, exit = nav(k, -1.5, 2.4);
+  // desk -> corridor -> stairs (when on another storey) -> corridor of that floor -> around the table -> spot
+  function placePath(k, name, spot) {
+    const pl = PLACES[name], f = ST[k].f, L = pl.floor, exit = nav(k, -1.5, 2.4);
     const pts = [nav(k, 0, 0), nav(k, -1.5, 0.1), exit, V(exit.x, FY[f], CORR_Z)];
     if (f !== L) { pts.push(V(STAIR_X, FY[f], CORR_Z)); pts.push.apply(pts, floorRoute(f, L)); }
-    // spots on the far side of the table are reached around it, not through it
-    const ax = spot.z > LOUNGE.z ? spot.x + (spot.x < LOUNGE.x ? -1.05 : 1.05) : spot.x;
+    const ax = spot.z > pl.z ? spot.x + (spot.x < pl.x ? -1.05 : 1.05) : spot.x;
     pts.push(V(ax, FY[L], CORR_Z));
     if (ax !== spot.x) pts.push(V(ax, FY[L], spot.z));
     pts.push(spot);
     return pts;
   }
-  function goLounge(k) {
-    const s = ST[k], i = loungeSpot();
+  function goPlace(k, name) {
+    const pl = PLACES[name], s = ST[k], i = takeSpot(pl);
     if (i < 0) return false;
-    const spot = V(LOUNGE.x + LOUNGE_SPOTS[i][0], FY[LOUNGE_FLOOR], LOUNGE.z + LOUNGE_SPOTS[i][1]);
-    const path = loungePath(k, spot);
+    const spot = V(pl.x + pl.spots[i][0], FY[pl.floor], pl.z + pl.spots[i][1]);
+    const path = placePath(k, name, spot);
     const p = s.person;
     scene.attach(p);
     p.userData.legL.rotation.x = 0; p.userData.legR.rotation.x = 0;
     p.position.copy(path[0]);
     if (!courierCards[k]) courierCards[k] = makeCard();
-    walkers[k] = { job: { from: k, to: null }, mode: 'lounge', path: path, i: 0, back: true, wait: 0, ph: 0, card: courierCards[k], carrying: false, spot: i };
+    walkers[k] = { job: { from: k, to: null }, mode: 'place', place: name, path: path, i: 0, back: true, wait: 0, ph: 0, card: courierCards[k], carrying: false, spot: i };
     if (selected === k) renderInfo();
     return true;
   }
+  function goLounge(k) { return goPlace(k, 'lounge'); }
   function comeBack(k) {
     const h = hang[k], s = ST[k], p = s.person;
     if (!h) return;
     if (h.mug) h.mug.visible = false;
-    const path = loungePath(k, p.position.clone()).reverse();
-    loungeTaken[h.spot] = false;
+    const path = placePath(k, h.place, p.position.clone()).reverse();
+    PLACES[h.place].taken[h.spot] = false;
     delete hang[k];
     walkers[k] = { job: { from: k, to: null }, mode: 'home', path: path, i: 0, back: true, wait: 0, ph: 0, card: courierCards[k] || makeCard(), carrying: false };
     if (selected === k) renderInfo();
   }
-  function arriveLounge(k, w) {
-    const p = ST[k].person, u = p.userData;
+  function arrivePlace(k, w) {
+    const p = ST[k].person, u = p.userData, pl = PLACES[w.place];
     delete walkers[k];
-    p.rotation.y = Math.atan2(LOUNGE.x - p.position.x, LOUNGE.z - p.position.z);   // face the table
+    p.rotation.y = Math.atan2(pl.x - p.position.x, pl.z - p.position.z);   // face the table
     let mug = p.userData.mug;
     if (!mug) {
       mug = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.18, 8), mugMat);
       mug.position.set(0, -0.82, 0.1); u.armR.add(mug); p.userData.mug = mug;
     }
-    mug.visible = true;
+    mug.visible = w.place === 'lounge';
     u.legL.rotation.x = u.legR.rotation.x = 0;
-    hang[k] = { floor: LOUNGE_FLOOR, spot: w.spot, mug: mug, since: t };
+    hang[k] = { place: w.place, floor: pl.floor, spot: w.spot, mug: mug, since: t };
     if (selected === k) renderInfo();
   }
-  function sendCourier(from, toKey, color, onArrive) { queue.push({ from: from, to: toKey, color: color, onArrive: onArrive }); }
+
+  function sendCourier(from, toKey, color, onArrive, say) { queue.push({ from: from, to: toKey, color: color, onArrive: onArrive, say: say }); }
+  // Speech bubble above a walking agent: the verdict or note it is carrying
+  function makeBubble(text) {
+    const cv = document.createElement('canvas');
+    cv.width = 640; cv.height = 150;
+    const x = cv.getContext('2d');
+    x.font = '700 46px "Baloo 2", "Trebuchet MS", sans-serif';
+    const w = Math.min(616, x.measureText(text).width + 64);
+    x.fillStyle = '#ffffff'; x.strokeStyle = '#24352a'; x.lineWidth = 5;
+    x.beginPath();
+    if (x.roundRect) x.roundRect((640 - w) / 2, 10, w, 100, 40); else x.rect((640 - w) / 2, 10, w, 100);
+    x.fill(); x.stroke();
+    x.beginPath(); x.moveTo(300, 108); x.lineTo(320, 140); x.lineTo(340, 108); x.closePath(); x.fill();
+    x.fillStyle = /FAIL|CHANGES|HOLD|BUG/.test(text) ? '#b5312a' : /PASS|APPROVED|DONE|GO|SIGN_OFF/.test(text) ? '#2f6b4f' : '#24352a';
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    let tx = text;
+    while (x.measureText(tx).width > 580 && tx.length > 4) tx = tx.slice(0, -2);
+    if (tx !== text) tx = tx.slice(0, -1) + '\u2026';
+    x.fillText(tx, 320, 62);
+    const tex = new THREE.CanvasTexture(cv);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+    sp.scale.set(4.5, 1.05, 1);
+    scene.add(sp);
+    return sp;
+  }
+  function dropBubble(w) {
+    if (!w.bubble) return;
+    scene.remove(w.bubble); w.bubble.material.map.dispose(); w.bubble.material.dispose(); w.bubble = null;
+  }
   function startWalk(job) {
     const s = ST[job.from], p = s.person;
     if (!courierCards[job.from]) courierCards[job.from] = makeCard();
@@ -787,7 +856,7 @@
     scene.attach(p);
     p.userData.legL.rotation.x = 0; p.userData.legR.rotation.x = 0;
     lastWalker = job.from;
-    walkers[job.from] = { job: job, path: route(job.from, job.to), i: 0, back: false, wait: 0, ph: 0, card: c, carrying: true };
+    walkers[job.from] = { job: job, path: route(job.from, job.to), i: 0, back: false, wait: 0, ph: 0, card: c, carrying: true, bubble: job.say ? makeBubble(job.say) : null, bubbleTTL: 0 };
     p.position.copy(walkers[job.from].path[0]);
     if (selected === job.from) renderInfo();
   }
@@ -798,6 +867,7 @@
     p.rotation.set(0, 0, 0);
     u.legL.rotation.x = u.legR.rotation.x = s.standing ? 0 : -Math.PI / 2;
     u.armL.rotation.x = u.armR.rotation.x = 0;
+    if (walkers[k]) dropBubble(walkers[k]);
     delete walkers[k];
     if (selected === k) renderInfo();
   }
@@ -830,10 +900,10 @@
         u.legR.rotation.x = -Math.sin(w.ph) * 0.6;
         if (!w.back) { u.armL.rotation.x = u.armR.rotation.x = -1.25; }
         else { u.armL.rotation.x = -Math.sin(w.ph) * 0.5; u.armR.rotation.x = Math.sin(w.ph) * 0.5; }
-        if (w.i >= w.path.length - 1 && w.mode === 'lounge') { arriveLounge(k, w); return; }
+        if (w.i >= w.path.length - 1 && w.mode === 'place') { arrivePlace(k, w); return; }
         if (w.i >= w.path.length - 1 && w.mode === 'home') { sitDown(k); return; }
         if (w.i >= w.path.length - 1) {
-          if (!w.back) { w.back = true; w.wait = 0.7; w.path = w.path.slice().reverse(); w.i = 0; }
+          if (!w.back) { w.back = true; w.wait = 0.7; w.bubbleTTL = 2.2; w.path = w.path.slice().reverse(); w.i = 0; }
           else { w.card.g.visible = false; sitDown(k); return; }
         }
       }
@@ -844,6 +914,11 @@
       const vis = shown(p.position.y);
       p.visible = vis;
       w.card.g.visible = w.carrying && vis;
+      if (w.bubble) {
+        w.bubble.position.set(p.position.x, p.position.y + 2.9, p.position.z);
+        w.bubble.visible = vis;
+        if (w.back && w.wait <= 0) { w.bubbleTTL -= dt; if (w.bubbleTTL <= 0) dropBubble(w); }
+      }
     });
   }
 
@@ -998,7 +1073,10 @@
       logWho.style.color = hex(ST[prev].a.color);
       logWhat.textContent = 'Mengantar tiket ke ' + ROLE[step.s] + (ST[prev].f !== station.f ? ' di lantai ' + (station.f + 1) : '');
       renderMini();
-      sendCourier(prev, step.s, color, function () { if (mode === 'demo' && SCRIPT[stepIdx] === step) begin(); });
+      const ps = SCRIPT[(i + SCRIPT.length - 1) % SCRIPT.length];
+      const verdict = (ps.w.match(/^(APPROVED|CHANGES_REQUESTED|PASS|FAIL)/) || [])[1];
+      const say = verdict || ({ IN_PROGRESS: 'READY_FOR_REVIEW', BUG: 'Fix siap direview', PRD: 'PRD', GO_WITH_NOTES: 'GO_WITH_NOTES', BRD: 'BRD siap', TIKET: '3 tiket TODO', DONE: 'Commit selesai', SIGN_OFF: 'SIGN_OFF' }[ps.st] || ps.st);
+      sendCourier(prev, step.s, color, function () { if (mode === 'demo' && SCRIPT[stepIdx] === step) begin(); }, say + (step.t !== null ? ' \u00b7 ' + TICKETS[step.t].id : ''));
     } else begin();
   }
   function endStep(i) {
@@ -1045,9 +1123,10 @@
     if (!selected) return;
     renderInfoBody();
     const w = walkers[selected];
-    if (w && w.mode === 'lounge') el('infoTask').textContent = 'Tidak ada pekerjaan, sedang ke ruang ngopi. ' + el('infoTask').textContent;
-    else if (w && w.mode === 'home') el('infoTask').textContent = 'Kembali ke mejanya dari ruang ngopi. ' + el('infoTask').textContent;
+    if (w && w.mode === 'place') el('infoTask').textContent = (w.place === 'meeting' ? 'Berjalan ke ruang rapat untuk tiket HOLD. ' : 'Tidak ada pekerjaan, sedang ke ruang ngopi. ') + el('infoTask').textContent;
+    else if (w && w.mode === 'home') el('infoTask').textContent = 'Kembali ke mejanya. ' + el('infoTask').textContent;
     else if (w) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya. ' : 'Sedang berjalan mengantar tiket ke ' + ROLE[w.job.to] + '. ') + el('infoTask').textContent;
+    else if (hang[selected] && hang[selected].place === 'meeting') el('infoTask').textContent = 'Di ruang rapat, menunggu keputusanmu untuk ' + (meetingFor[selected] || []).join(', ') + '. ' + el('infoTask').textContent;
     else if (hang[selected]) el('infoTask').textContent = 'Sedang ngopi di ruang ngopi (lantai ' + (LOUNGE_FLOOR + 1) + ') karena tidak ada pekerjaan. ' + el('infoTask').textContent;
   }
   function renderInfoBody() {
@@ -1143,6 +1222,7 @@
   const PATH_KEY = 'noskill-ticket-dir';
   let multi = false;
   let acts = [], actBy = {};
+  let meetingFor = {};      // agent key -> HOLD ticket ids it waits on in the meeting room
   // An activity counts while it is in progress and not older than 6 hours
   function activeAct(a) {
     if (a.status !== 'working' && a.status !== 'waiting_user') return false;
@@ -1191,7 +1271,8 @@
       // [timestamp, STATUS] per Riwayat line; timestamp is "YYYY-MM-DD HH:MM" or just the date
       hist: hist.map(function (l) {
         const m = l.match(/^- (\d{4}-\d{2}-\d{2}(?: \d{2}:\d{2})?)\s+([A-Z_]+)/);
-        return m ? [m[1], m[2]] : null;
+        const tok = l.match(/(\d+(?:[.,]\d+)?)\s*k\s*token/i);
+        return m ? [m[1], m[2], tok ? parseFloat(tok[1].replace(',', '.')) : 0] : null;
       }).filter(Boolean),
       ac: ac,
       riw: hist.slice(-8).map(function (l) { return l.replace(/^- /, '').slice(0, 160); })
@@ -1343,7 +1424,7 @@
       if (projFilter && a.project !== projFilter) return;
       const o = before.find(function (b) { return b.project === a.project; });
       if (!o || o.key === a.key || o.at === a.at) return;
-      sendCourier(o.key, a.status === 'waiting_user' ? 'em' : a.key, 0x3b7fc4, null);
+      sendCourier(o.key, a.status === 'waiting_user' ? 'em' : a.key, 0x3b7fc4, null, (o.stage || 'Selesai') + ' \u2192 ' + (a.stage || a.agent));
     });
   }
   // A ticket that changed desk since the last read is carried there by the agent who had it
@@ -1355,7 +1436,9 @@
       if (!o || o.status === tk.status || (projFilter && tk.project !== projFilter)) return;
       const from = stationFor(o) || (o.status === 'TODO' ? 'lead' : null);
       const dest = stationFor(tk) || (tk.status === 'DONE' ? 'em' : null);
-      if (from && dest && from !== dest) sendCourier(from, dest, tk.color, null);
+      const say = tk.status === 'REVIEW' ? 'READY_FOR_REVIEW' : tk.status === 'QA' ? 'APPROVED' : tk.status === 'DONE' ? 'PASS' : tk.status === 'BUG' ? 'FAIL'
+        : tk.status === 'HOLD' ? 'HOLD' : tk.status === 'IN_PROGRESS' ? (o.status === 'REVIEW' ? 'CHANGES_REQUESTED' : 'Kerjakan') : tk.status;
+      if (from && dest && from !== dest) sendCourier(from, dest, tk.color, null, say + ' \u00b7 ' + tk.id);
     });
   }
   function applyLive() {
@@ -1385,6 +1468,15 @@
       if (newest) actBy.lead = { project: newest.tk.project, agent: 'task-planner', key: 'lead', status: 'working', stage: 'Stage 4 Tiket',
         task: 'Menulis tiket, terakhir ' + newest.tk.id + (newest.tk.title ? ': ' + newest.tk.title.slice(0, 80) : ''), ticket: '', at: new Date(newest.t).toISOString() };
     }
+    meetingFor = {};
+    shownTk.filter(function (tk) { return tk.status === 'HOLD'; }).forEach(function (tk) {
+      const h = tk.hist || [];
+      let prev = null;
+      for (let i = h.length - 1; i >= 0; i--) if (h[i][1] !== 'HOLD') { prev = h[i][1]; break; }
+      const who = prev ? deskFor(prev, tk.layer) : null;
+      const label = (multi ? tk.project + '/' : '') + tk.id;
+      ['em'].concat(who && who !== 'em' ? [who] : []).forEach(function (k) { (meetingFor[k] = meetingFor[k] || []).push(label); });
+    });
     drawBoard((liveSource === 'db' ? 'Snapshot ' : 'Live ') + hhmm(liveAt), shownTk);
     card.visible = false;
     Object.keys(ST).forEach(function (k) {
@@ -1444,7 +1536,7 @@
   function stopLive(msg) {
     liveRun++;
     clearTimeout(liveTimer);
-    mode = 'demo'; live = []; liveBy = {}; liveSource = null; acts = []; actBy = {};
+    mode = 'demo'; live = []; liveBy = {}; liveSource = null; acts = []; actBy = {}; meetingFor = {};
     Object.keys(liveCards).forEach(function (k) { liveCards[k].g.visible = false; });
     card.visible = true;
     stepIdx = -1; stepT = 0; waiting = false; curKey = null; active = null;
@@ -1484,7 +1576,7 @@
     live = (dbBoard.tickets || []).filter(function (t) { return t && t.id && t.status; }).map(function (t) {
       return { id: String(t.id), title: String(t.title || ''), status: String(t.status).toUpperCase(), layer: t.layer === 'be' || t.layer === 'fe' ? t.layer : '—',
         rounds: String(t.rounds || '0'), last: String(t.last || ''), project: String(t.project || ''), color: Number(t.color) || 0x2b7569,
-        hist: Array.isArray(t.hist) ? t.hist.filter(function (h) { return Array.isArray(h) && h.length === 2; }).map(function (h) { return [String(h[0]), String(h[1])]; }) : [],
+        hist: Array.isArray(t.hist) ? t.hist.filter(function (h) { return Array.isArray(h) && h.length >= 2; }).map(function (h) { return [String(h[0]), String(h[1]), Number(h[2]) || 0]; }) : [],
         ac: Array.isArray(t.ac) ? t.ac.filter(Array.isArray).map(function (a) { return [!!a[0], String(a[1] || '')]; }) : [],
         riw: Array.isArray(t.riw) ? t.riw.map(String) : [] };
     });
@@ -1518,6 +1610,11 @@
         dbLastSig = boardSig(d.tickets.map(function (t) { return { project: t.project, id: t.id, status: t.status, layer: t.layer, rounds: t.rounds, last: t.last, title: t.title }; })) + JSON.stringify(d.activities || []);
         if (liveSource !== 'local' && !preferDemo) applySnapshot();
       }, function () { /* store unreachable: keep whatever is shown */ });
+      dbNs.collection('answers').onSnapshot(function (qs) {
+        Object.keys(answers).forEach(function (k) { delete answers[k]; });
+        qs.docs.forEach(function (d) { if (d.exists) answers[d.id] = d.data(); });
+        if (sideTicket && sideTicket.status === 'HOLD') renderTicket();
+      }, function () {});
     } catch (e) { if (unsub) unsub(); }
   })();
 
@@ -1658,6 +1755,7 @@
   el('mClose').addEventListener('click', closeSide);
   function refreshSide() {
     if (!metricsEl.hidden) renderMetrics();
+    renderTimeline();
     if (sideTicket) {
       const fresh = view().find(function (t) { return t.id === sideTicket.id && t.project === sideTicket.project; });
       if (fresh) { sideTicket = fresh; renderTicket(); }
@@ -1692,12 +1790,46 @@
     const ul2 = node('ul', 'mono');
     (tk.riw && tk.riw.length ? tk.riw : ['Belum ada.']).forEach(function (r) { ul2.appendChild(node('li', null, r)); });
     rw.appendChild(ul2); tBody.appendChild(rw);
+    if (tk.status === 'HOLD' && mode === 'live') tBody.appendChild(holdBox(tk));
+    const tok = (tk.hist || []).reduce(function (a, e) { return a + (Number(e[2]) || 0); }, 0);
+    if (tok) { const tw = node('div'); tw.appendChild(node('h3', null, 'Token')); tw.appendChild(node('div', null, fmtTok(tok) + ' token tercatat di Riwayat')); tBody.appendChild(tw); }
     const acts = node('div', 'controls');
     const b = node('button', null, replaying ? 'Replay sedang berjalan…' : 'Putar ulang perjalanan');
     b.type = 'button'; b.disabled = replaying;
     b.addEventListener('click', function () { replayTicket(tk); });
     acts.appendChild(b); tBody.appendChild(acts);
   }
+  // ---------- HOLD answers: written to the artifact database, picked up by /noskill:tiket lanjut ----------
+  const answers = {};
+  function answerId(tk) { return ((tk.project || 'x') + '--' + tk.id).replace(/[^A-Za-z0-9_\-.~:@+]/g, '-').slice(0, 180); }
+  function holdBox(tk) {
+    const box = node('div'); box.appendChild(node('h3', null, 'Jawab HOLD'));
+    const a = answers[answerId(tk)];
+    if (a) box.appendChild(node('div', a.status === 'applied' ? 'ac-done' : null,
+      (a.status === 'applied' ? 'Sudah dipakai feature-flow. ' : 'Terkirim, menunggu /noskill:tiket lanjut. ') + 'Jawabanmu: ' + a.answer));
+    if (!dbNs) { box.appendChild(node('div', 'ac-done', 'Jawaban hanya bisa dikirim saat halaman dibuka di claude.ai atau aplikasi Claude.')); return box; }
+    const ta = document.createElement('textarea');
+    ta.id = 'holdAnswer'; ta.rows = 3; ta.placeholder = 'Tulis keputusanmu untuk ' + tk.id;
+    ta.style.cssText = 'width:100%;font:0.9rem var(--font-display);padding:8px;border-radius:10px;border:1px solid var(--edge);background:var(--panel);color:var(--ink)';
+    ta.setAttribute('aria-label', 'Jawaban untuk ' + tk.id);
+    if (a && a.status !== 'applied') ta.value = a.answer;
+    const send = node('button', null, a && a.status !== 'applied' ? 'Perbarui jawaban' : 'Kirim jawaban'); send.type = 'button';
+    const note = node('div', 'ac-done');
+    send.addEventListener('click', async function () {
+      const text = ta.value.trim();
+      if (!text) { note.textContent = 'Tulis jawabannya dulu.'; ta.focus(); return; }
+      send.disabled = true; note.textContent = 'Mengirim…';
+      try {
+        await dbNs.doc('answers/' + answerId(tk)).set({ project: tk.project || '', ticket: tk.id, question: (tk.last || '').slice(0, 300), answer: text.slice(0, 2000), at: new Date().toISOString(), status: 'pending' });
+        note.textContent = 'Terkirim. Jalankan /noskill:tiket lanjut di sesi Claude untuk memakainya.';
+      } catch (e) {
+        note.textContent = e && e.code === 'invalid_argument' ? 'Kamu tidak punya izin menulis jawaban di Kantor ini.' : 'Gagal mengirim (' + ((e && e.code) || 'error') + '). Coba lagi.';
+      } finally { send.disabled = false; }
+    });
+    box.appendChild(ta); box.appendChild(send); box.appendChild(note);
+    return box;
+  }
+
   function openColumn(col) {
     closeInfo(); closeSide();
     sideColumn = col; tinfo.hidden = false; renderColumn();
@@ -1756,6 +1888,25 @@
     });
     host.appendChild(box);
   }
+  // Tokens written in Riwayat ("45.2k token") belong to the agent of the stage that line closes
+  function tokenMetrics(list) {
+    const byAgent = {}, byTicket = [];
+    list.forEach(function (tk) {
+      const h = tk.hist || [];
+      let total = 0;
+      h.forEach(function (e, i) {
+        const k = Number(e[2]) || 0;
+        if (!k) return;
+        total += k;
+        const desk = i === 0 ? 'lead' : deskFor(h[i - 1][1], tk.layer);
+        if (desk) byAgent[desk] = (byAgent[desk] || 0) + k;
+      });
+      if (total) byTicket.push({ tk: tk, total: total });
+    });
+    return { agents: Object.keys(byAgent).map(function (k) { return { name: ROLE[k], avg: byAgent[k], n: 0 }; }).sort(function (a, b) { return b.avg - a.avg; }),
+      tickets: byTicket.sort(function (a, b) { return b.total - a.total; }).slice(0, 5) };
+  }
+  function fmtTok(k) { return k >= 1000 ? (k / 1000).toFixed(2) + 'M' : k.toFixed(k < 10 ? 1 : 0) + 'k'; }
   function renderMetrics() {
     const list = view();
     el('mSub').textContent = mode === 'live' ? (liveSource === 'db' ? 'Snapshot' : 'Live') + (projFilter ? ' · ' + projFilter : '') : 'Demo';
@@ -1771,6 +1922,25 @@
     bars('Rata-rata durasi per tahap', m.stageRows.sort(function (a, b) { return order.indexOf(a.name) - order.indexOf(b.name); }), mBody);
     bars('Rata-rata durasi per agent', m.agentRows, mBody);
     if (m.agentRows.length) mBody.appendChild(node('p', 'desc', 'Paling lama: ' + m.agentRows[0].name + ' (' + fmtMin(m.agentRows[0].avg) + ' per tiket).'));
+    const tm = tokenMetrics(list);
+    const tb = node('div'); tb.appendChild(node('h3', null, 'Token per agent (dari Riwayat)'));
+    if (!tm.agents.length) tb.appendChild(node('div', 'ac-done', 'Belum ada catatan token. Riwayat dari noskill 1.13 ke atas menuliskannya, misalnya "45.2k token".'));
+    else {
+      const max = tm.agents[0].avg;
+      tm.agents.forEach(function (r) {
+        const row = node('div', 'bar' + (r.avg === max ? ' top' : ''));
+        row.appendChild(node('span', null, r.name));
+        const track = node('span'); const fill = node('i'); fill.style.width = Math.max(2, r.avg / max * 100) + '%'; track.appendChild(fill); row.appendChild(track);
+        row.appendChild(node('span', 'val', fmtTok(r.avg)));
+        tb.appendChild(row);
+      });
+      tb.appendChild(node('h3', null, 'Tiket paling boros token'));
+      tm.tickets.forEach(function (x) {
+        const b = node('button', 'tk-btn', (multi ? x.tk.project + ' / ' : '') + x.tk.id + ' \u00b7 ' + fmtTok(x.total));
+        b.type = 'button'; b.addEventListener('click', function () { openTicket(x.tk); }); tb.appendChild(b);
+      });
+    }
+    mBody.appendChild(tb);
     const top = list.filter(function (t) { return Number(t.rounds) > 0; }).sort(function (a, b) { return Number(b.rounds) - Number(a.rounds); }).slice(0, 5);
     const rb = node('div'); rb.appendChild(node('h3', null, 'Ronde revisi terbanyak'));
     if (!top.length) rb.appendChild(node('div', 'ac-done', 'Belum ada tiket yang direvisi.'));
@@ -1792,10 +1962,43 @@
     if (open) { metricsEl.hidden = false; btnMetrics.setAttribute('aria-expanded', 'true'); renderMetrics(); }
   });
 
+  // ---------- Today's timeline: every status change today, click to replay from that moment ----------
+  const tlEl = el('timeline'), tlTrack = el('tlTrack'), btnTimeline = el('btnTimeline');
+  const STATUS_COLOR = { TODO: '#8a9a8e', IN_PROGRESS: '#2f8a4e', REVIEW: '#c79a14', QA: '#d9682a', BUG: '#c8453a', HOLD: '#b7791f', DONE: '#2f6b4f' };
+  function todayYmd() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function renderTimeline() {
+    if (tlEl.hidden) return;
+    tlTrack.textContent = '';
+    const ymd = todayYmd(), events = [];
+    view().forEach(function (tk) {
+      (tk.hist || []).forEach(function (h) { if (h[0].slice(0, 10) === ymd && h[0].length >= 16) events.push({ tk: tk, at: h[0], st: h[1] }); });
+    });
+    el('tlSub').textContent = mode !== 'live' ? 'Tersedia saat data live atau snapshot aktif.' : events.length ? events.length + ' perpindahan status. Klik untuk memutar ulang dari titik itu.' : 'Belum ada perpindahan status hari ini.';
+    const now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes();
+    const line = node('span', 'tl-now'); line.style.left = (nowMin / 1440 * 100) + '%'; tlTrack.appendChild(line);
+    events.forEach(function (ev) {
+      const min = Number(ev.at.slice(11, 13)) * 60 + Number(ev.at.slice(14, 16));
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.style.left = (min / 1440 * 100) + '%';
+      b.style.background = STATUS_COLOR[ev.st] || '#55606e';
+      b.title = ev.at.slice(11) + ' · ' + (multi ? ev.tk.project + ' / ' : '') + ev.tk.id + ' → ' + ev.st;
+      b.setAttribute('aria-label', b.title);
+      b.addEventListener('click', function () { openTicket(ev.tk); replayTicket(ev.tk, ev.at); });
+      tlTrack.appendChild(b);
+    });
+  }
+  btnTimeline.addEventListener('click', function () {
+    tlEl.hidden = !tlEl.hidden;
+    btnTimeline.setAttribute('aria-expanded', String(!tlEl.hidden));
+    renderTimeline();
+  });
+  el('tlClose').addEventListener('click', function () { tlEl.hidden = true; btnTimeline.setAttribute('aria-expanded', 'false'); });
+
   // ---------- Replay one ticket's journey from its Riwayat ----------
   let replaying = false;
   function deskFor(status, layer) { return stationFor({ status: status, layer: layer }) || (status === 'TODO' ? 'lead' : status === 'DONE' ? 'em' : null); }
-  function replayTicket(tk) {
+  function replayTicket(tk, fromAt) {
     if (replaying) return;
     const seq = [];
     (tk.hist || []).forEach(function (h) { if (!seq.length || seq[seq.length - 1][1] !== h[1]) seq.push(h); });
@@ -1804,6 +2007,7 @@
       const a = deskFor(seq[i][1], tk.layer), b = deskFor(seq[i + 1][1], tk.layer);
       if (a && b && a !== b) hops.push({ from: a, to: b, label: seq[i][1] + ' → ' + seq[i + 1][1], at: seq[i + 1][0] });
     }
+    if (fromAt) { const from = hops.findIndex(function (h) { return h.at >= fromAt; }); if (from > 0) hops.splice(0, from); }
     if (!hops.length) { logWho.textContent = tk.id; logWhat.textContent = 'Riwayat tiket ini belum punya perpindahan meja untuk diputar.'; renderMini(); return; }
     replaying = true; renderTicket();
     if (!followOn) setFollow(true);
@@ -1820,7 +2024,7 @@
       logWho.textContent = ST[h.from].a.agent; logWho.style.color = hex(ST[h.from].a.color);
       logWhat.textContent = h.label + (h.at ? ' (' + h.at + ')' : '') + ': ' + ROLE[h.from] + ' mengantar ke ' + ROLE[h.to];
       renderMini();
-      sendCourier(h.from, h.to, tk.color, function () { setTimeout(next, 500); });
+      sendCourier(h.from, h.to, tk.color, function () { setTimeout(next, 500); }, h.label + ' \u00b7 ' + tk.id);
     })();
   }
 
@@ -2041,7 +2245,17 @@
       const isAct = mode === 'live' ? !!(liveBy[k] || actBy[k]) : s === active;
       const on = isAct && !walkers[k] && !hang[k];
       // Idle agents drift to the coffee corner; work (or a ticket to carry) brings them back
-      if (k !== 'em') {
+      // HOLD tickets send the Eng. Manager and the agent who held the ticket to the meeting room
+      const inMeeting = hang[k] && hang[k].place === 'meeting';
+      const wantMeeting = !!meetingFor[k];
+      const deskWork = k === 'em' ? !!actBy.em : isAct;
+      if (!walkers[k] && !replaying) {
+        if (wantMeeting && !deskWork) {
+          if (hang[k] && !inMeeting) comeBack(k);
+          else if (!hang[k] && !queue.some(function (j) { return j.from === k; })) goPlace(k, 'meeting');
+        } else if (inMeeting) comeBack(k);
+      }
+      if (k !== 'em' && !wantMeeting) {
         const busy = isAct || walkers[k] || queue.some(function (j) { return j.from === k; });
         if (busy) lastBusy[k] = t;
         if (isAct && hang[k] && !walkers[k]) comeBack(k);
@@ -2049,7 +2263,11 @@
           if (!goLounge(k)) lastBusy[k] = t;
         }
       }
-      if (hang[k] && !walkers[k]) {
+      if (hang[k] && !walkers[k] && hang[k].place === 'meeting') {
+        u.armL.rotation.x = -0.6 + Math.sin(t * 0.9 + idleJitter[k]) * 0.15;   // waiting, hands on the table
+        u.armR.rotation.x = -0.6 - Math.sin(t * 1.1 + idleJitter[k]) * 0.15;
+        s.person.visible = shown(s.person.position.y);
+      } else if (hang[k] && !walkers[k]) {
         const ph = t * 0.7 + idleJitter[k];
         u.armR.rotation.x = Math.sin(ph) > 0.85 ? -2.3 : -1.0;           // sip now and then
         u.armL.rotation.x = -0.2 + Math.sin(t * 1.3 + idleJitter[k]) * 0.25; // talking with the hand
