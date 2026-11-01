@@ -10,6 +10,9 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - **Kegiatan saat tidak ada kerjaan.** Agent yang menganggur bergantian ngopi, ke pantri, ke toilet, ke kantin, atau mampir ke meja rekan untuk ngobrol, lalu kembali ke mejanya. Pada waktu salat (sekitar Zuhur, Asar, Magrib, Isya) mereka ke musholla, dan saat jam makan siang ke kantin.
 - **Agent saling berinteraksi.** Agent yang mampir saling menyapa dan menjawab, penerima tiket membalas kurir ("Siap!", "Bismillah, saya kerjakan"), dan agent yang berkumpul di ruang ngopi, pantri, atau kantin mengobrol lewat gelembung bicara.
 
+### Diperbaiki
+- Tangga dari Lantai 2 ke Lantai 3 menghadap terbalik, sehingga agent tampak berjalan di luar anak tangga. Tangga sekarang naik ke arah yang sama dengan jalur agent.
+
 ## 1.13.0 — 2026-11-01
 
 ### Ditambahkan
