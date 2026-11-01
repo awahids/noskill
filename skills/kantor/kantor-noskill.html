@@ -750,17 +750,36 @@
     box(0.1, 0.06, 0.1, 0, x + 1.5, y + 1.2, 8.98, { parent: g, cast: false, material: lampMat });
     cyl(0.13, 0.13, 0.3, 10, 0xc8553d, x + 2.35, y + 1.16, 9.2, { parent: g });
     plant(g, x - 2.2, 9.2, y);
+    box(0.8, 0.45, 2.4, 0x6b8f71, x - 3.4, y + 0.25, z, { parent: g });                  // sofa
+    box(0.25, 0.7, 2.4, 0x6b8f71, x - 3.8, y + 0.6, z, { parent: g });
+    box(0.8, 0.6, 0.22, 0x6b8f71, x - 3.4, y + 0.45, z - 1.25, { parent: g });
+    box(0.8, 0.6, 0.22, 0x6b8f71, x - 3.4, y + 0.45, z + 1.25, { parent: g });
     const sign = makeLabel('Ruang ngopi', 'untuk semua lantai', 0x6b4430);
     sign.position.set(x, y + 3.1, z + 2.0); sign.scale.set(3.0, 0.98, 1);
     g.add(sign);
   });
 
+  // an office chair whose seat top is at y + 0.52, backrest on the side facing away from (fx, fz)
+  function chairAt(g, y, x, z, fx, fz, col) {
+    const c = new THREE.Group(); c.position.set(x, y, z); c.rotation.y = Math.atan2(fx - x, fz - z); g.add(c);
+    box(0.62, 0.08, 0.62, col, 0, 0.48, 0, { parent: c });
+    box(0.62, 0.62, 0.08, col, 0, 0.84, -0.32, { parent: c });
+    cyl(0.05, 0.05, 0.44, 6, 0x3b4048, 0, 0.22, 0, { parent: c });
+    cyl(0.28, 0.28, 0.04, 10, 0x3b4048, 0, 0.03, 0, { parent: c, cast: false });
+    return c;
+  }
   (function buildMeetingRoom() {
     const g = floors[MEETING_FLOOR], y = FY[MEETING_FLOOR], x = MEETING.x, z = MEETING.z;
     const floorMat = new THREE.MeshStandardMaterial({ color: 0x3d5a80, roughness: 0.95, transparent: true, opacity: 0.35 });
     const rug = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.03, 3.2), floorMat); rug.position.set(x, y + 0.02, z); g.add(rug);
     box(2.6, 0.08, 1.2, 0xf3ead6, x, y + 0.76, z, { parent: g });
     [[-1.1, -0.45], [1.1, -0.45], [-1.1, 0.45], [1.1, 0.45]].forEach(function (l) { box(0.08, 0.72, 0.08, 0x3b4048, x + l[0], y + 0.36, z + l[1], { parent: g }); });
+    [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]].forEach(function (sp) {   // one chair per spot
+      chairAt(g, y, x + sp[0], z + sp[1], x, z, 0x2b3a55);
+    });
+    box(0.5, 0.03, 0.35, 0xf7f5ef, x - 0.5, y + 0.815, z - 0.1, { parent: g, cast: false });   // papers and a laptop on the table
+    box(0.45, 0.03, 0.32, 0x2a2f36, x + 0.55, y + 0.815, z + 0.1, { parent: g, cast: false });
+    box(0.45, 0.3, 0.02, 0x2a2f36, x + 0.55, y + 0.97, z + 0.27, { parent: g, cast: false }).rotation.x = -0.25;
     box(0.05, 1.2, 1.6, C.white, x + 2.45, y + 1.4, z, { parent: g });                // small whiteboard
     box(0.06, 0.06, 1.6, 0x3b4048, x + 2.45, y + 2.02, z, { parent: g, cast: false });
     const sign = makeLabel('Ruang rapat', 'tiket HOLD', 0x3d5a80);
@@ -796,6 +815,11 @@
     box(4.4, 0.15, 0.2, 0xdfe6ea, -10.65, y + H, 6.3, { parent: g });
     box(0.5, 0.45, 0.4, 0xf7f5ef, -12.2, y + 0.25, 9.3, { parent: g });                    // fixtures
     box(0.5, 0.45, 0.4, 0xf7f5ef, -9.2, y + 0.25, 9.3, { parent: g });
+    [-12.75, -8.55].forEach(function (wx) {
+      const s = wx < -10 ? 1 : -1;
+      box(0.4, 0.12, 0.6, 0xf7f5ef, wx + s * 0.2, y + 0.85, 8.0, { parent: g });         // washbasin
+      box(0.04, 0.7, 0.6, 0xbfe3f2, wx + s * 0.02, y + 1.55, 8.0, { parent: g, cast: false });   // mirror
+    });
     sign(g, 'Pria', 'toilet', 0x3d5a80, -11.8, y + 3.0, 6.2, 1.9);
     sign(g, 'Wanita', 'toilet', 0xc0617a, -9.6, y + 3.0, 6.2, 1.9);
   })();
@@ -803,7 +827,13 @@
     const g = floors[1], y = FY[1], x = MUSHOLLA.x, z = MUSHOLLA.z;
     const carpet = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.04, 4.2), new THREE.MeshStandardMaterial({ color: 0x2f7a5a, roughness: 1 }));
     carpet.position.set(x, y + 0.03, z); carpet.receiveShadow = true; g.add(carpet);
-    for (let i = 0; i < 4; i++) box(0.12, 0.02, 4.0, 0xe0c27a, x - 1.6 + i * 1.1, y + 0.06, z, { parent: g, cast: false });
+    [[-1.3, 0], [0.2, -1.1], [0.2, 0], [0.2, 1.1], [1.4, -1.1], [1.4, 0], [1.4, 1.1]].forEach(function (sp, i) {
+      box(1.1, 0.02, 0.62, [0x8b2e3c, 0x1f5f4a, 0x6b4f9a][i % 3], x + sp[0] - 0.25, y + 0.06, z + sp[1], { parent: g, cast: false });
+      box(0.16, 0.022, 0.5, 0xe0c27a, x + sp[0] - 0.72, y + 0.065, z + sp[1], { parent: g, cast: false });
+    });
+    box(0.9, 0.8, 0.4, 0xdfe6ea, x - 0.4, y + 0.4, -4.85, { parent: g });                 // tempat wudhu
+    box(0.05, 0.2, 0.05, 0x9aa0a6, x - 0.6, y + 0.95, -4.95, { parent: g, cast: false });
+    box(0.05, 0.2, 0.05, 0x9aa0a6, x - 0.2, y + 0.95, -4.95, { parent: g, cast: false });
     box(0.12, 1.3, 4.4, 0xdfe6ea, x - 2.3, y + 0.65, z, { parent: g });                   // partition on the qibla side
     box(4.6, 1.3, 0.12, 0xdfe6ea, x, y + 0.65, z - 2.2, { parent: g });
     box(1.2, 0.5, 0.35, 0x8d6e63, x + 1.4, y + 0.25, -4.85, { parent: g });              // shoe rack
@@ -824,6 +854,14 @@
     box(0.7, 1.0, 5.0, 0xc8553d, 21.6, 0.5, z + 0.5, { parent: g });                       // food counter
     box(0.8, 0.06, 5.1, 0xf3ead6, 21.6, 1.03, z + 0.5, { parent: g });
     for (let i = 0; i < 5; i++) cyl(0.18, 0.16, 0.12, 10, [0xf3a712, 0xe63946, 0x8ac926][i % 3], 21.6, 1.12, z - 1.3 + i * 0.9, { parent: g });
+    [[-1.95, Math.PI / 2], [-0.45, -Math.PI / 2], [0.65, Math.PI / 2], [2.15, -Math.PI / 2]].forEach(function (c) {
+      const tx = c[0] < 0.1 ? 17.4 : 20.0, side = Math.sign(x + c[0] - tx);
+      [-1.2, 0.4, 2.0].forEach(function (dz) {
+        cyl(0.17, 0.14, 0.03, 12, 0xf7f5ef, tx + side * 0.22, 0.835, z + dz, { parent: g, cast: false });
+        cyl(0.11, 0.1, 0.035, 10, [0xf3a712, 0x8ac926, 0xe63946][Math.abs(Math.round(dz)) % 3], tx + side * 0.22, 0.86, z + dz, { parent: g, cast: false });
+        cyl(0.05, 0.045, 0.14, 8, 0xc7e8f3, tx + side * 0.25, 0.89, z + dz + 0.3, { parent: g, cast: false });
+      });
+    });
     const lb = makeLabel('Kantin', 'makan siang', 0xc8553d); lb.position.set(x, 4.1, z + 2.0); lb.scale.set(3.0, 0.99, 1); g.add(lb);
   })();
 
@@ -894,11 +932,11 @@
   // Places agents can walk to: the shared coffee corner and the meeting room
   const PLACES = {
     lounge: { floor: LOUNGE_FLOOR, x: LOUNGE.x, z: LOUNGE.z, spots: LOUNGE_SPOTS, taken: loungeTaken },
-    meeting: { floor: MEETING_FLOOR, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {} },
+    meeting: { floor: MEETING_FLOOR, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {}, seat: 0.18 },
     pantry: { floor: 0, x: PANTRY.x, z: PANTRY.z, spots: [[0, -0.85], [0.85, 0], [-0.85, 0], [0, 0.85]], taken: {}, stay: [18, 35] },
     toilet: { floor: 1, x: TOILET.x, z: TOILET.z, spots: [[-1.1, 0.4], [1.1, 0.4]], taken: {}, stay: [7, 11], hide: true },
     musholla: { floor: 1, x: MUSHOLLA.x, z: MUSHOLLA.z, spots: [[-1.3, 0, -Math.PI / 2], [0.2, -1.1, -Math.PI / 2], [0.2, 0, -Math.PI / 2], [0.2, 1.1, -Math.PI / 2], [1.4, -1.1, -Math.PI / 2], [1.4, 0, -Math.PI / 2], [1.4, 1.1, -Math.PI / 2]], taken: {}, stay: [22, 35] },
-    kantin: { floor: 0, x: KANTIN.x, z: KANTIN.z, y: 0.12, via: [[12.9, FY[0], 0.5], [14.8, 0.12, 0.5]], seat: true, taken: {}, stay: [40, 80],
+    kantin: { floor: 0, x: KANTIN.x, z: KANTIN.z, y: 0.12, via: [[12.9, FY[0], 0.5], [14.8, 0.12, 0.5]], seat: 0.34, taken: {}, stay: [40, 80],
       spots: [[-1.95, -1.2, Math.PI / 2], [-1.95, 0.4, Math.PI / 2], [-1.95, 2.0, Math.PI / 2], [-0.45, -1.2, -Math.PI / 2], [-0.45, 0.4, -Math.PI / 2], [-0.45, 2.0, -Math.PI / 2],
         [0.65, -1.2, Math.PI / 2], [0.65, 0.4, Math.PI / 2], [0.65, 2.0, Math.PI / 2], [2.15, -1.2, -Math.PI / 2], [2.15, 0.4, -Math.PI / 2]] }
   };
@@ -942,7 +980,7 @@
     if (!h) return;
     if (h.mug) h.mug.visible = false;
     p.visible = true;
-    if (PLACES[h.place].seat) { p.position.y += 0.12; p.userData.legL.rotation.x = p.userData.legR.rotation.x = 0; }
+    if (PLACES[h.place].seat) { p.position.y += PLACES[h.place].seat; p.userData.legL.rotation.x = p.userData.legR.rotation.x = 0; }
     const path = placePath(k, h.place, p.position.clone()).reverse();
     PLACES[h.place].taken[h.spot] = false;
     delete hang[k];
@@ -961,7 +999,7 @@
     }
     mug.visible = w.place === 'lounge' || w.place === 'pantry';
     u.legL.rotation.x = u.legR.rotation.x = pl.seat ? -Math.PI / 2 : 0;
-    if (pl.seat) p.position.y -= 0.12;
+    if (pl.seat) p.position.y -= pl.seat;
     if (pl.hide) p.visible = false;
     const st = pl.stay ? pl.stay[0] + Math.random() * (pl.stay[1] - pl.stay[0]) : 0;
     hang[k] = { place: w.place, floor: pl.floor, spot: w.spot, mug: mug, since: t, until: st ? t + st : 0 };

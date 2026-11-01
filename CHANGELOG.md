@@ -9,6 +9,7 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - **Fasilitas kantor.** Pantri di Lantai 1 (kulkas, microwave, dispenser, meja berdiri), toilet pria dan wanita serta musholla di Lantai 2, dan kantin beratap di halaman timur dengan meja panjang dan bangku. Lantai 1 punya pintu keluar ke kantin.
 - **Kegiatan saat tidak ada kerjaan.** Agent yang menganggur bergantian ngopi, ke pantri, ke toilet, ke kantin, atau mampir ke meja rekan untuk ngobrol, lalu kembali ke mejanya. Pada waktu salat (sekitar Zuhur, Asar, Magrib, Isya) mereka ke musholla, dan saat jam makan siang ke kantin.
 - **Agent saling berinteraksi.** Agent yang mampir saling menyapa dan menjawab, penerima tiket membalas kurir ("Siap!", "Bismillah, saya kerjakan"), dan agent yang berkumpul di ruang ngopi, pantri, atau kantin mengobrol lewat gelembung bicara.
+- **Kelengkapan ruangan.** Ruang rapat punya enam kursi, dan agent yang menunggu keputusan HOLD duduk di sana. Ruang ngopi punya sofa, kantin punya piring dan gelas di setiap kursi (agent duduk pas di bangku), toilet punya wastafel dan cermin, dan musholla punya sajadah di setiap saf serta tempat wudhu.
 
 ### Diperbaiki
 - Tangga dari Lantai 2 ke Lantai 3 menghadap terbalik, sehingga agent tampak berjalan di luar anak tangga. Tangga sekarang naik ke arah yang sama dengan jalur agent.
