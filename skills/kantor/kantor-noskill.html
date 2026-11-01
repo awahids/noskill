@@ -194,7 +194,7 @@
   .stat div { background: var(--log); border-radius: 10px; padding: 6px 8px; }
   .stat b { display: block; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
   .stat span { font-size: 0.75rem; color: var(--muted); }
-  .bar { display: grid; grid-template-columns: 112px 1fr auto; gap: 8px; align-items: center; font-size: 0.85rem; }
+  .bar { display: grid; grid-template-columns: 150px 1fr auto; gap: 8px; align-items: center; font-size: 0.85rem; }
   .bar i { display: block; height: 10px; border-radius: 6px; background: var(--btn); min-width: 2px; }
   .bar .val { font-family: var(--font-mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; color: var(--muted); }
   .bar.top i { background: #d9682a; }
@@ -552,15 +552,15 @@
   // ---------- Stations: one desk per agent, spread over three storeys ----------
   // f = storey, (x, z) = desk position, rot = facing (0 faces +z, PI faces -z); every desk faces the corridor at z = 0.5
   const AGENTS = [
-    { key: 'pm',       role: 'Product Manager', agent: 'product-manager',    color: 0x3b7fc4, extra: 'notes',  f: 0, x: -9,   z: -5, rot: 0 },
-    { key: 'cto',      role: 'CTO',             agent: 'cto',                color: 0xc8453a, extra: 'glass',  f: 0, x: -2.5, z: -5, rot: 0 },
-    { key: 'analyst',  role: 'Analyst',         agent: 'brd-tracer',         color: 0x7d5bbf, extra: 'shelf',  f: 0, x: 4,    z: -5, rot: 0 },
-    { key: 'lead',     role: 'Tech Lead',       agent: 'task-planner',       color: 0x1f9aab, extra: 'notes',  f: 0, x: -7,   z: 6,  rot: Math.PI },
-    { key: 'be',       role: 'Backend Dev',     agent: 'backend-developer',  color: 0x2f8a4e, extra: 'server', f: 1, x: -8,   z: -5, rot: 0 },
-    { key: 'fe',       role: 'Frontend Dev',    agent: 'frontend-developer', color: 0x5aa83a, extra: 'plant',  f: 1, x: -1.5, z: -5, rot: 0 },
-    { key: 'dev',      role: 'Fullstack Dev',   agent: 'developer',          color: 0x2b7569, extra: 'plant',  f: 1, x: 5,    z: -5, rot: 0 },
-    { key: 'reviewer', role: 'Reviewer',        agent: 'ticket-reviewer',    color: 0xc79a14, extra: 'dual',   f: 2, x: -6,   z: -5, rot: 0 },
-    { key: 'qa',       role: 'QA',              agent: 'qa-tester',          color: 0xd9682a, extra: 'rack',   f: 2, x: 2,    z: -5, rot: 0 }
+    { key: 'pm', name: 'Rayyan',       role: 'Product Manager', agent: 'product-manager',    color: 0x3b7fc4, extra: 'notes',  f: 0, x: -9,   z: -5, rot: 0 },
+    { key: 'cto', name: 'Faris',      role: 'CTO',             agent: 'cto',                color: 0xc8453a, extra: 'glass',  f: 0, x: -2.5, z: -5, rot: 0 },
+    { key: 'analyst', name: 'Zahra',  role: 'Analyst',         agent: 'brd-tracer',         color: 0x7d5bbf, extra: 'shelf',  f: 0, x: 4,    z: -5, rot: 0 },
+    { key: 'lead', name: 'Hamzah',     role: 'Tech Lead',       agent: 'task-planner',       color: 0x1f9aab, extra: 'notes',  f: 0, x: -7,   z: 6,  rot: Math.PI },
+    { key: 'be', name: 'Zayn',       role: 'Backend Dev',     agent: 'backend-developer',  color: 0x2f8a4e, extra: 'server', f: 1, x: -8,   z: -5, rot: 0 },
+    { key: 'fe', name: 'Alya',       role: 'Frontend Dev',    agent: 'frontend-developer', color: 0x5aa83a, extra: 'plant',  f: 1, x: -1.5, z: -5, rot: 0 },
+    { key: 'dev', name: 'Fathan',      role: 'Fullstack Dev',   agent: 'developer',          color: 0x2b7569, extra: 'plant',  f: 1, x: 5,    z: -5, rot: 0 },
+    { key: 'reviewer', name: 'Arkan', role: 'Reviewer',        agent: 'ticket-reviewer',    color: 0xc79a14, extra: 'dual',   f: 2, x: -6,   z: -5, rot: 0 },
+    { key: 'qa', name: 'Naura',       role: 'QA',              agent: 'qa-tester',          color: 0xd9682a, extra: 'rack',   f: 2, x: 2,    z: -5, rot: 0 }
   ];
   const ST = {};
   ['Produk & Arsitektur', 'Engineering', 'Quality'].forEach(function (name, k) {
@@ -642,7 +642,7 @@
     person.userData.legL.rotation.x = -Math.PI / 2;
     person.userData.legR.rotation.x = -Math.PI / 2;
 
-    const label = makeLabel(a.role, a.agent, a.color);
+    const label = makeLabel(a.name, a.role, a.color);
     label.position.set(0, 3.3, 0.3);
     g.add(label);
 
@@ -656,8 +656,9 @@
 
   // ---------- Ruang ngopi: one shared coffee corner on the top floor, where idle agents from every storey meet ----------
   const LOUNGE_FLOOR = 2;
-  // Ruang rapat (floor 1): where the Eng. Manager and the agents of HOLD tickets wait for your decision
-  const MEETING = { x: -2.3, z: 7.3 };
+  // Ruang rapat (floor 3, beside the coffee corner): where the Eng. Manager and the agents of HOLD tickets wait for your decision
+  const MEETING_FLOOR = 2;
+  const MEETING = { x: 5.2, z: 7.0 };
   const LOUNGE = { x: -2.6, z: 6.8 };
   // nine standing spots in a ring around the table, one for every agent that can be idle
   const LOUNGE_SPOTS = [];
@@ -684,13 +685,13 @@
   });
 
   (function buildMeetingRoom() {
-    const g = floors[0], y = FY[0], x = MEETING.x, z = MEETING.z;
+    const g = floors[MEETING_FLOOR], y = FY[MEETING_FLOOR], x = MEETING.x, z = MEETING.z;
     const floorMat = new THREE.MeshStandardMaterial({ color: 0x3d5a80, roughness: 0.95, transparent: true, opacity: 0.35 });
     const rug = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.03, 3.2), floorMat); rug.position.set(x, y + 0.02, z); g.add(rug);
     box(2.6, 0.08, 1.2, 0xf3ead6, x, y + 0.76, z, { parent: g });
     [[-1.1, -0.45], [1.1, -0.45], [-1.1, 0.45], [1.1, 0.45]].forEach(function (l) { box(0.08, 0.72, 0.08, 0x3b4048, x + l[0], y + 0.36, z + l[1], { parent: g }); });
-    box(0.05, 1.2, 1.6, C.white, x - 2.1, y + 1.4, z, { parent: g });                 // small whiteboard
-    box(0.06, 0.06, 1.6, 0x3b4048, x - 2.1, y + 2.02, z, { parent: g, cast: false });
+    box(0.05, 1.2, 1.6, C.white, x + 2.45, y + 1.4, z, { parent: g });                // small whiteboard
+    box(0.06, 0.06, 1.6, 0x3b4048, x + 2.45, y + 2.02, z, { parent: g, cast: false });
     const sign = makeLabel('Ruang rapat', 'tiket HOLD', 0x3d5a80);
     sign.position.set(x, y + 3.1, z + 1.7); sign.scale.set(3.0, 0.98, 1); g.add(sign);
   })();
@@ -717,7 +718,7 @@
 
   const em = makePerson({ skin: pick(SKIN), hair: pick(HAIR), shirt: 0x55606e, pants: 0x2b2d42, parent: centre });
   em.userData.key = 'em';
-  const emLabel = makeLabel('Eng. Manager', 'feature-flow', 0x55606e);
+  const emLabel = makeLabel('Hafiz', 'Eng. Manager', 0x55606e);
   emLabel.position.set(0, 4.55, -1.2);
   centre.add(emLabel);
   const emGlow = new THREE.MeshBasicMaterial({ color: 0x55606e, transparent: true, opacity: 0 });
@@ -762,7 +763,7 @@
   // Places agents can walk to: the shared coffee corner and the meeting room
   const PLACES = {
     lounge: { floor: LOUNGE_FLOOR, x: LOUNGE.x, z: LOUNGE.z, spots: LOUNGE_SPOTS, taken: loungeTaken },
-    meeting: { floor: 0, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {} }
+    meeting: { floor: MEETING_FLOOR, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {} }
   };
   function takeSpot(pl) {
     for (let i = 0; i < pl.spots.length; i++) if (!pl.taken[i]) { pl.taken[i] = true; return i; }
@@ -1059,7 +1060,7 @@
     to = station.work.clone();
     function begin() {
       waiting = false; stepT = 0; active = station;
-      logWho.textContent = station.a.agent;
+      logWho.textContent = NAME[step.s] + ' \u00b7 ' + station.a.agent;
       logWho.style.color = hex(station.a.color);
       logWhat.textContent = step.w;
       renderMini();
@@ -1069,9 +1070,9 @@
     if (prev && prev !== step.s) {
       // the agent who just finished walks the ticket over
       waiting = true; active = null;
-      logWho.textContent = ST[prev].a.agent;
+      logWho.textContent = NAME[prev] + ' \u00b7 ' + ST[prev].a.agent;
       logWho.style.color = hex(ST[prev].a.color);
-      logWhat.textContent = 'Mengantar tiket ke ' + ROLE[step.s] + (ST[prev].f !== station.f ? ' di lantai ' + (station.f + 1) : '');
+      logWhat.textContent = 'Mengantar tiket ke ' + who(step.s) + (ST[prev].f !== station.f ? ' di lantai ' + (station.f + 1) : '');
       renderMini();
       const ps = SCRIPT[(i + SCRIPT.length - 1) % SCRIPT.length];
       const verdict = (ps.w.match(/^(APPROVED|CHANGES_REQUESTED|PASS|FAIL)/) || [])[1];
@@ -1112,8 +1113,9 @@
     em: { desc: 'Orkestrator. Bicara dengan user, memanggil agent sesuai urutan, dan satu-satunya yang memindahkan status tiket, menulis Riwayat, commit, dan membuka PR.',
       skills: ['feature-flow', 'ticket-workflow', 'project-profile'], tools: 'Semua tools sesi utama', model: 'Model sesi', code: 'Tidak menulis kode, hanya commit hasil tiket', verdict: 'Memindahkan status berdasarkan verdict agent' }
   };
-  const ROLE = { em: 'Engineering Manager' };
-  AGENTS.forEach(function (a) { ROLE[a.key] = a.role; });
+  const ROLE = { em: 'Engineering Manager' }, NAME = { em: 'Hafiz' };
+  AGENTS.forEach(function (a) { ROLE[a.key] = a.role; NAME[a.key] = a.name; });
+  function who(k) { return NAME[k] + ' (' + ROLE[k] + ')'; }
   const lastBy = {};
   let selected = null;
   const infoEl = document.getElementById('info');
@@ -1125,14 +1127,14 @@
     const w = walkers[selected];
     if (w && w.mode === 'place') el('infoTask').textContent = (w.place === 'meeting' ? 'Berjalan ke ruang rapat untuk tiket HOLD. ' : 'Tidak ada pekerjaan, sedang ke ruang ngopi. ') + el('infoTask').textContent;
     else if (w && w.mode === 'home') el('infoTask').textContent = 'Kembali ke mejanya. ' + el('infoTask').textContent;
-    else if (w) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya. ' : 'Sedang berjalan mengantar tiket ke ' + ROLE[w.job.to] + '. ') + el('infoTask').textContent;
+    else if (w) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya. ' : 'Sedang berjalan mengantar tiket ke ' + who(w.job.to) + '. ') + el('infoTask').textContent;
     else if (hang[selected] && hang[selected].place === 'meeting') el('infoTask').textContent = 'Di ruang rapat, menunggu keputusanmu untuk ' + (meetingFor[selected] || []).join(', ') + '. ' + el('infoTask').textContent;
     else if (hang[selected]) el('infoTask').textContent = 'Sedang ngopi di ruang ngopi (lantai ' + (LOUNGE_FLOOR + 1) + ') karena tidak ada pekerjaan. ' + el('infoTask').textContent;
   }
   function renderInfoBody() {
     const s = ST[selected], d = INFO[selected], cur = SCRIPT[stepIdx];
     el('infoDot').style.background = hex(s.a.color);
-    el('infoRole').textContent = ROLE[selected];
+    el('infoRole').textContent = NAME[selected] + ' \u00b7 ' + ROLE[selected];
     el('infoAgent').textContent = s.a.agent;
     el('infoDesc').textContent = d.desc;
     const chips = el('infoSkills');
@@ -1493,7 +1495,7 @@
     logStatus.textContent = (liveSource === 'db' ? 'SNAPSHOT · ' : 'LIVE · ') + shownTk.length + ' tiket · ' + active + ' aktif';
     logStep.textContent = liveSource === 'db' ? liveAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + hhmm(liveAt) : hhmm(liveAt);
     if (latestAct) {
-      logWho.textContent = (multi ? latestAct.project + ' / ' : '') + latestAct.agent;
+      logWho.textContent = (multi ? latestAct.project + ' / ' : '') + NAME[latestAct.key] + ' \u00b7 ' + latestAct.agent;
       logWho.style.color = hex(ST[latestAct.key].a.color);
       logWhat.textContent = (latestAct.status === 'waiting_user' ? 'Menunggu jawaban kamu: ' : '') + (latestAct.stage ? latestAct.stage + ' · ' : '') + latestAct.task;
     } else if (latest) {
@@ -1762,7 +1764,7 @@
     } else if (sideColumn) renderColumn();
   }
   function node(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
-  function holderOf(tk) { const k = stationFor(tk) || (tk.status === 'TODO' ? 'lead' : null); return k ? ROLE[k] + ' (' + ST[k].a.agent + ')' : 'Tidak ada, tiket selesai'; }
+  function holderOf(tk) { const k = stationFor(tk) || (tk.status === 'TODO' ? 'lead' : null); return k ? NAME[k] + ', ' + ROLE[k] + ' (' + ST[k].a.agent + ')' : 'Tidak ada, tiket selesai'; }
   function openTicket(tk) {
     closeInfo(); closeSide();
     sideTicket = tk; tinfo.hidden = false; renderTicket();
@@ -1871,7 +1873,7 @@
     });
     function avg(a) { return a.reduce(function (x, y) { return x + y; }, 0) / a.length; }
     const stageRows = Object.keys(stages).map(function (k) { return { name: k, avg: avg(stages[k]), n: stages[k].length }; });
-    const agentRows = Object.keys(agents).map(function (k) { return { name: ROLE[k], avg: avg(agents[k]), n: agents[k].length }; });
+    const agentRows = Object.keys(agents).map(function (k) { return { name: NAME[k] + ' \u00b7 ' + ROLE[k], avg: avg(agents[k]), n: agents[k].length }; });
     return { stageRows: stageRows, agentRows: agentRows.sort(function (a, b) { return b.avg - a.avg; }) };
   }
   function fmtMin(m) { return m < 60 ? Math.round(m) + ' mnt' : m < 1440 ? (m / 60).toFixed(1) + ' jam' : (m / 1440).toFixed(1) + ' hari'; }
@@ -1903,7 +1905,7 @@
       });
       if (total) byTicket.push({ tk: tk, total: total });
     });
-    return { agents: Object.keys(byAgent).map(function (k) { return { name: ROLE[k], avg: byAgent[k], n: 0 }; }).sort(function (a, b) { return b.avg - a.avg; }),
+    return { agents: Object.keys(byAgent).map(function (k) { return { name: NAME[k] + ' \u00b7 ' + ROLE[k], avg: byAgent[k], n: 0 }; }).sort(function (a, b) { return b.avg - a.avg; }),
       tickets: byTicket.sort(function (a, b) { return b.total - a.total; }).slice(0, 5) };
   }
   function fmtTok(k) { return k >= 1000 ? (k / 1000).toFixed(2) + 'M' : k.toFixed(k < 10 ? 1 : 0) + 'k'; }
@@ -2021,8 +2023,8 @@
       }
       const h = hops[i++];
       logStatus.textContent = 'REPLAY · ' + tk.id + ' · ' + i + '/' + hops.length;
-      logWho.textContent = ST[h.from].a.agent; logWho.style.color = hex(ST[h.from].a.color);
-      logWhat.textContent = h.label + (h.at ? ' (' + h.at + ')' : '') + ': ' + ROLE[h.from] + ' mengantar ke ' + ROLE[h.to];
+      logWho.textContent = NAME[h.from] + ' \u00b7 ' + ST[h.from].a.agent; logWho.style.color = hex(ST[h.from].a.color);
+      logWhat.textContent = h.label + (h.at ? ' (' + h.at + ')' : '') + ': ' + who(h.from) + ' mengantar ke ' + who(h.to);
       renderMini();
       sendCourier(h.from, h.to, tk.color, function () { setTimeout(next, 500); }, h.label + ' \u00b7 ' + tk.id);
     })();

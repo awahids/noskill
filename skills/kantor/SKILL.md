@@ -15,7 +15,7 @@ The page is `kantor-noskill.html` in this skill's base directory. It is written 
 
 The live board reads ticket files and `activity.json` (written by `feature-flow`), so the Product Manager, CTO and Analyst light up while they write the PRD, ADR or BRD, before any ticket exists.
 
-HOLD tickets can be answered on the page (stored in the `answers` collection, applied by `/noskill:tiket lanjut`), and the Eng. Manager plus the agent who held a HOLD ticket wait in the meeting room on floor 1. Walking agents show a speech bubble with the verdict they carry, Metrik shows tokens per agent and per ticket from Riwayat, and **Timeline** shows today's status changes (click one to replay from there).
+HOLD tickets can be answered on the page (stored in the `answers` collection, applied by `/noskill:tiket lanjut`), and the Eng. Manager plus the agent who held a HOLD ticket wait in the meeting room on floor 3. Agents have names (Rayyan PM, Faris CTO, Zahra Analyst, Hamzah Tech Lead, Zayn Backend, Alya Frontend, Fathan Fullstack, Arkan Reviewer, Naura QA, Hafiz Eng. Manager). Walking agents show a speech bubble with the verdict they carry, Metrik shows tokens per agent and per ticket from Riwayat, and **Timeline** shows today's status changes (click one to replay from there).
 
 Idle agents from every floor walk to the shared coffee corner ("Ruang ngopi") on floor 3 and come back to their desk when work arrives.
 
