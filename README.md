@@ -15,6 +15,16 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 
 📖 **Dokumentasi lengkap:** [awahids.github.io/noskill](https://awahids.github.io/noskill/) (sumber: [`docs/index.html`](docs/index.html)) — cara install, cara kerja alur tiket, semua skill & agent.
 
+## Kantor noskill
+
+`/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent yang berjalan mengantar tiket, dan suasana kantor di sekitarnya.
+
+![Kantor noskill: kantor tiga lantai dengan board tiket, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran](docs/img/kantor-overview.jpg)
+
+| Klik agent untuk melihat tugas dan skill | Jalan raya, halte, dan warga sekitar | Mode malam |
+|---|---|---|
+| ![Kartu agent Naura (QA) dengan deskripsi, skill, tools, dan verdict](docs/img/kantor-agent.jpg) | ![Mobil dan motor melintas, penumpang menunggu di halte, agent bekerja di lantai 1](docs/img/kantor-jalan.jpg) | ![Kantor saat malam dengan lampu meja dan lampu jalan menyala](docs/img/kantor-malam.jpg) |
+
 ## Skills
 
 Penjelasan detail tiap skill (kapan dipakai, langkah kerja, hasil, aturan penting): **[awahids.github.io/noskill/skills.html](https://awahids.github.io/noskill/skills.html)** (sumber: [`docs/skills.html`](docs/skills.html)).
