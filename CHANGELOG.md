@@ -2,6 +2,14 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.15.2 — 2026-11-02
+
+### Diperbaiki
+- **Agent tidak kembali ke meja.** Agent yang punya tiket HOLD lalu mendapat tiket baru tetap tinggal di kantin, pantri, atau toilet. Sekarang pekerjaan di meja selalu mengakhiri istirahat di mana pun.
+- **Riwayat tiket dibaca terbalik.** Baris Riwayat berformat `FROM → TO`, tetapi Kantor mengambil status sebelum panah. Akibatnya metrik durasi, timeline, token per agent, dan agent yang diajak ke ruang rapat bergeser satu tahap. Sekarang yang diambil status setelah panah. Kalau baris Riwayat terbaru sudah menyebut status yang lebih baru daripada frontmatter, board memakai status dari Riwayat.
+- **Board tertinggal saat server filesystem sibuk.** Daftar file tiket kini disimpan 2 menit, jadi satu kali refresh cukup satu panggilan `read_multiple_files` per 40 tiket. Kalau pembacaan gagal sementara, panel menyebut jam pembacaan terakhir board.
+- `feature-flow`: status dan baris Riwayat ditulis **sebelum** agent tahap berikutnya dipanggil (misalnya `QA` sebelum `qa-tester`), tidak dikumpulkan di akhir.
+
 ## 1.15.1 — 2026-11-02
 
 ### Dokumentasi
