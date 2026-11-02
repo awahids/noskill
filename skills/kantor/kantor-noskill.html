@@ -1492,6 +1492,14 @@
     const b = res && Array.isArray(res.content) && res.content.find(function (c) { return c.type === 'text'; });
     return b ? b.text : '';
   }
+  const STATUSES = ['TODO', 'IN_PROGRESS', 'REVIEW', 'QA', 'BUG', 'HOLD', 'DONE'];
+  function histOf(lines) {
+    return lines.map(function (l) {
+      const m = l.match(/^- (\d{4}-\d{2}-\d{2}(?: \d{2}:\d{2})?)\s+([A-Z_]+)(?:\s*(?:\u2192|->)\s*([A-Z_]+))?/);
+      const tok = l.match(/(\d+(?:[.,]\d+)?)\s*k\s*token/i);
+      return m ? [m[1], m[3] || m[2], tok ? parseFloat(tok[1].replace(',', '.')) : 0] : null;
+    }).filter(Boolean);
+  }
   function parseTicket(md) {
     const m = md.match(/^﻿?---\s*\n([\s\S]*?)\n---/);
     if (!m) return null;
@@ -1507,17 +1515,21 @@
     const acPart = (md.split(/^## Acceptance Criteria\s*$/m)[1] || '').split(/^## /m)[0];
     const ac = acPart.split('\n').map(function (l) { return l.match(/^\s*- \[( |x|X)\]\s*(.+)$/); }).filter(Boolean).slice(0, 15)
       .map(function (m) { return [m[1] !== ' ', m[2].slice(0, 160)]; });
+    // [timestamp, status entered, k tokens] per Riwayat line. Lines read "TS FROM → TO (note)", or "TS TODO — dibuat …"
+    // for the first one, so the status is the one after the arrow when there is an arrow.
+    const h = histOf(hist);
+    // The orchestrator writes the frontmatter and the Riwayat line together; if the newest Riwayat line already
+    // names a later status than the frontmatter (frontmatter not updated yet), the Riwayat line wins.
+    let status = f.status.toUpperCase();
+    const lastTo = h.length ? h[h.length - 1][1] : '';
+    if (lastTo && lastTo !== status && STATUSES.indexOf(lastTo) >= 0 && /\u2192|->/.test(hist[hist.length - 1])) status = lastTo;
     return {
-      id: f.id, title: f.title || '', status: f.status.toUpperCase(),
+      id: f.id, title: f.title || '', status: status,
       layer: layer === 'be' || layer === 'fe' ? layer : '—', rounds: f.rounds || '0',
       last: hist.length ? hist[hist.length - 1].replace(/^- /, '') : '',
       color: LAYER_COLOR[layer] || 0x2b7569,
       // [timestamp, STATUS] per Riwayat line; timestamp is "YYYY-MM-DD HH:MM" or just the date
-      hist: hist.map(function (l) {
-        const m = l.match(/^- (\d{4}-\d{2}-\d{2}(?: \d{2}:\d{2})?)\s+([A-Z_]+)/);
-        const tok = l.match(/(\d+(?:[.,]\d+)?)\s*k\s*token/i);
-        return m ? [m[1], m[2], tok ? parseFloat(tok[1].replace(',', '.')) : 0] : null;
-      }).filter(Boolean),
+      hist: h,
       ac: ac,
       riw: hist.slice(-8).map(function (l) { return l.replace(/^- /, '').slice(0, 160); })
     };
@@ -1613,11 +1625,14 @@
   }
   async function readBase(f) {
     const project = projectOf(f.base + '/tickets');
-    let names = [];
-    if (f.tickets) {
+    // The ticket file list is cached with the feature list (2 minutes), so a normal refresh is one
+    // read_multiple_files call per 40 files. Fewer calls per tick keeps us under the host rate limit,
+    // which otherwise leaves the board on its last good (old) state.
+    if (f.tickets && !f.names) {
       const list = textOf(await mcpNs.callTool(FS, 'list_directory', { path: f.base + '/tickets' }, { cache: false }));
-      names = list.split('\n').map(function (l) { return l.match(/^\[FILE\]\s+(.+\.md)\s*$/); }).filter(Boolean).map(function (m) { return f.base + '/tickets/' + m[1]; });
+      f.names = list.split('\n').map(function (l) { return l.match(/^\[FILE\]\s+(.+\.md)\s*$/); }).filter(Boolean).map(function (m) { return f.base + '/tickets/' + m[1]; });
     }
+    const names = f.names || [];
     const actPath = f.base + '/activity.json';
     const all = names.concat([actPath]);
     const out = [], acts = [];
@@ -1909,7 +1924,7 @@
         fails++; lastErr = e;
         if (fails >= 3) { failLocal('Server filesystem tidak menjawab setelah 3 kali percobaan' + detail + '. Klik "Pakai data live" untuk mencoba lagi.'); return; }
         // transient: keep the last good board
-        setSource(mode === 'live' ? 'Live' : 'Demo', 'Server filesystem belum menjawab' + detail + ', mencoba lagi (' + fails + '/3)…');
+        setSource(mode === 'live' ? 'Live' : 'Demo', 'Server filesystem belum menjawab' + detail + ', mencoba lagi (' + fails + '/3). Board masih dari pembacaan ' + (liveAt ? hhmm(liveAt) : '-') + '.');
       }
       liveTimer = setTimeout(tick, Math.max(POLL_MS, (lastErr && lastErr.retryAfterMs) || 0));
       lastErr = null;
@@ -2713,7 +2728,7 @@
         if (wantMeeting && !deskWork) {
           if (hang[k] && !inMeeting) comeBack(k);
           else if (!hang[k] && !queue.some(function (j) { return j.from === k; })) goPlace(k, 'meeting');
-        } else if (inMeeting) comeBack(k);
+        } else if (hang[k] && (inMeeting || deskWork)) comeBack(k);   // work at the desk ends any break
       }
       if (k !== 'em' && !wantMeeting) {
         const busy = isAct || walkers[k] || queue.some(function (j) { return j.from === k; });
