@@ -2,6 +2,13 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.15.0 — 2026-11-02
+
+### Ditambahkan
+- **Jalan raya di depan kantor.** Dua lajur dengan marka, trotoar, zebra cross, lampu lalu lintas, dan lampu jalan yang menyala saat mode malam. Mobil, van, dan motor (termasuk ojek) melaju di kedua arah, menjaga jarak, dan berhenti di zebra cross saat ada orang menyeberang.
+- **Parkiran** di sisi barat dengan garis parkir, mobil dan motor karyawan, pos satpam, dan palang yang terangkat ketika satpam melambai.
+- **Warga sekitar.** Pejalan kaki di trotoar, orang yang menyeberang, penumpang menunggu di halte, pangkalan ojek, dan gerobak bakso Pak Udin dengan pembelinya. Mereka sesekali berbicara lewat gelembung ("Ojek, Mbak?", "Bakso satu, Pak", "Selamat pagi, Pak").
+
 ## 1.14.0 — 2026-11-01
 
 ### Ditambahkan

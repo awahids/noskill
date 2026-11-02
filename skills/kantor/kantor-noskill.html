@@ -2358,6 +2358,8 @@
     const x = (rand() * 2 - 1) * 22.2, z = (rand() * 2 - 1) * 22.2;
     if (Math.max(Math.abs(x), Math.abs(z)) < 18) continue;
     if (x > 14 && x < 23.5 && z > -7.5 && z < 8.5) continue;      // canteen
+    if (z > 12.5) continue;                                           // road and sidewalks
+    if (x < -14 && z > -14.5) continue;                               // parking lot
     let ok = true;
     for (const t of trees) if (Math.hypot(t.x - x, t.z - z) < 2.3) { ok = false; break; }
     if (!ok) continue;
@@ -2373,6 +2375,192 @@
     const pl = new THREE.PointLight(0xffc56b, 0, 16, 2);
     pl.position.set(pt[0], 3.0, pt[1]); scene.add(pl); lampLights.push(pl);
   });
+
+  const street = {};
+  // ---------- Street: road, sidewalks, zebra crossing, parking lot, traffic and people outside ----------
+  // Road runs east-west in front of the office (z 15..20); parking is on the west side with a guard post.
+  const ROAD = { z0: 15, z1: 20, lanes: [16.25, 18.75], cross: 2 };
+  const tailMat = new THREE.MeshStandardMaterial({ color: 0xff3b30, emissive: 0xff2a1f, emissiveIntensity: 0.6, flatShading: true });
+  const glassDark = new THREE.MeshStandardMaterial({ color: 0x23303b, roughness: 0.3, metalness: 0.2, flatShading: true });
+  (function buildStreet() {
+    box(46.2, 0.06, ROAD.z1 - ROAD.z0, 0x3a3f45, 0, 0.03, (ROAD.z0 + ROAD.z1) / 2, { cast: false });          // asphalt
+    for (let x = -22; x < 23; x += 3) box(1.5, 0.01, 0.14, 0xf7f5ef, x, 0.065, 17.5, { cast: false });          // lane dashes
+    box(46.2, 0.01, 0.1, 0xf3c623, 0, 0.065, ROAD.z0 + 0.25, { cast: false });                                  // edge lines
+    box(46.2, 0.01, 0.1, 0xf3c623, 0, 0.065, ROAD.z1 - 0.25, { cast: false });
+    for (let i = 0; i < 8; i++) box(2.4, 0.012, 0.36, 0xf7f5ef, ROAD.cross, 0.068, ROAD.z0 + 0.55 + i * 0.56, { cast: false });   // zebra
+    box(46.2, 0.18, 1.6, 0xc9c3b6, 0, 0.09, 14.2, { cast: false });                                              // sidewalks
+    box(46.2, 0.18, 1.6, 0xc9c3b6, 0, 0.09, 20.8, { cast: false });
+    box(46.2, 0.2, 0.12, 0x8d8a83, 0, 0.1, 14.98, { cast: false });                                              // curbs
+    box(46.2, 0.2, 0.12, 0x8d8a83, 0, 0.1, 20.02, { cast: false });
+    box(2.4, 0.08, 3.4, 0xc9c3b6, ROAD.cross, 0.05, 11.8, { cast: false });                                      // path office -> crossing
+    // street lights on the far sidewalk
+    [-16, -4, 8, 20].forEach(function (x) {
+      cyl(0.07, 0.09, 3.6, 6, 0x3b4048, x, 1.9, 21.3);
+      box(0.08, 0.08, 1.0, 0x3b4048, x, 3.66, 20.85, { cast: false });
+      box(0.5, 0.14, 0.32, 0, x, 3.6, 20.4, { material: lampMat, cast: false });
+    });
+    // traffic light by the crossing
+    cyl(0.06, 0.07, 3, 6, 0x2a2f36, ROAD.cross + 1.6, 1.6, 14.5);
+    box(0.36, 0.95, 0.3, 0x1d2126, ROAD.cross + 1.6, 3.2, 14.5);
+    // halte (bus stop) on the far side
+    const hx = -7;
+    box(3.6, 0.1, 1.4, 0x2f6b4f, hx, 2.6, 21.0); box(0.1, 2.5, 0.1, 0x3b4048, hx - 1.7, 1.3, 21.6); box(0.1, 2.5, 0.1, 0x3b4048, hx + 1.7, 1.3, 21.6);
+    box(3.4, 1.4, 0.06, 0, hx, 1.5, 21.65, { material: glassMat, cast: false });
+    box(2.6, 0.1, 0.45, 0x8d6e63, hx, 0.62, 21.35); box(0.1, 0.45, 0.4, 0x3b4048, hx - 1.1, 0.4, 21.35); box(0.1, 0.45, 0.4, 0x3b4048, hx + 1.1, 0.4, 21.35);
+    const hl = makeLabel('Halte', 'bus kota', 0x2f6b4f); hl.position.set(hx, 3.5, 21.0); hl.scale.set(2.2, 0.73, 1); scene.add(hl);
+    // gerobak bakso
+    const bx = 9;
+    box(1.6, 0.8, 0.8, 0xd94f3d, bx, 0.75, 21.3); box(1.7, 0.06, 0.9, 0xf3ead6, bx, 1.18, 21.3);
+    cyl(0.3, 0.3, 0.4, 10, 0x9aa0a6, bx - 0.4, 1.4, 21.3); box(0.5, 0.4, 0.5, 0, bx + 0.4, 1.4, 21.3, { material: glassMat, cast: false });
+    [-0.6, 0.6].forEach(function (w) { cyl(0.3, 0.3, 0.08, 12, 0x2a2f36, bx + w, 0.3, 21.75).rotation.x = Math.PI / 2; });
+    cyl(0.04, 0.04, 1.8, 6, 0x3b4048, bx, 2.0, 21.6);
+    const um = new THREE.Mesh(new THREE.ConeGeometry(1.2, 0.5, 8), mat(0x3d8bd9)); um.position.set(bx, 3.0, 21.6); scene.add(um);
+    const bl = makeLabel('Bakso', 'Pak Udin', 0xd94f3d); bl.position.set(bx, 3.9, 21.4); bl.scale.set(2.0, 0.66, 1); scene.add(bl);
+    // parking lot (west) with driveway, stall lines, guard post and barrier
+    box(7.4, 0.06, 24.2, 0x4a4f55, -18.9, 0.035, -1.1, { cast: false });
+    box(3.2, 0.06, 4.2, 0x4a4f55, -18.9, 0.036, 13.0, { cast: false });
+    for (let i = 0; i < 9; i++) { const z = -12.5 + i * 2.6; box(2.4, 0.012, 0.08, 0xf7f5ef, -21.4, 0.07, z, { cast: false }); box(2.4, 0.012, 0.08, 0xf7f5ef, -16.4, 0.07, z, { cast: false }); }
+    const pk = makeLabel('Parkir', 'tamu & karyawan', 0x3d5a80); pk.position.set(-18.9, 3.4, 11.4); pk.scale.set(2.6, 0.86, 1); scene.add(pk);
+    box(1.6, 2.1, 1.6, 0xf3ead6, -15.6, 1.05, 12.6); box(1.9, 0.14, 1.9, 0x2f6b4f, -15.6, 2.17, 12.6);
+    box(1.0, 0.7, 0.05, 0, -15.6, 1.4, 13.42, { material: glassMat, cast: false });
+    const ps = makeLabel('Pos Satpam', '24 jam', 0x2f6b4f); ps.position.set(-15.6, 3.1, 12.6); ps.scale.set(2.4, 0.8, 1); scene.add(ps);
+    box(0.25, 0.9, 0.25, 0x3b4048, -17.2, 0.45, 12.4);
+    const arm = new THREE.Group(); arm.position.set(-17.2, 0.85, 12.4); scene.add(arm);
+    for (let i = 0; i < 6; i++) box(0.5, 0.1, 0.1, i % 2 ? 0xf7f5ef : 0xd94f3d, -0.25 - i * 0.5, 0, 0, { parent: arm, cast: false });
+    street.barrier = arm;
+  })();
+  function makeCar(color, kind) {
+    const g = new THREE.Group();
+    if (kind === 'motor') {
+      box(0.22, 0.4, 1.4, color, 0, 0.55, 0, { parent: g });
+      box(0.3, 0.12, 0.6, 0x1d2126, 0, 0.82, -0.2, { parent: g });
+      box(0.5, 0.05, 0.05, 0x3b4048, 0, 1.05, 0.55, { parent: g, cast: false });
+      box(0.16, 0.12, 0.06, 0, 0, 0.8, 0.72, { parent: g, material: lampMat, cast: false });
+      [-0.55, 0.55].forEach(function (z) { cyl(0.28, 0.28, 0.12, 10, 0x1d2126, 0, 0.28, z, { parent: g }).rotation.z = Math.PI / 2; });
+      return g;
+    }
+    const L = kind === 'van' ? 4.2 : 3.6, H = kind === 'van' ? 1.0 : 0.62;
+    box(1.7, H, L, color, 0, 0.35 + H / 2, 0, { parent: g });
+    box(1.5, 0.6, kind === 'van' ? 2.8 : 1.9, color, 0, 0.35 + H + 0.3, kind === 'van' ? -0.4 : -0.2, { parent: g });
+    box(1.52, 0.42, kind === 'van' ? 2.7 : 1.8, 0, 0, 0.35 + H + 0.3, kind === 'van' ? -0.4 : -0.2, { parent: g, material: glassDark, cast: false });
+    [-0.6, 0.6].forEach(function (x) {
+      box(0.3, 0.16, 0.05, 0, x, 0.35 + H * 0.6, L / 2 + 0.01, { parent: g, material: lampMat, cast: false });
+      box(0.3, 0.14, 0.05, 0, x, 0.35 + H * 0.6, -L / 2 - 0.01, { parent: g, material: tailMat, cast: false });
+      [-L / 2 + 0.75, L / 2 - 0.75].forEach(function (z) { cyl(0.34, 0.34, 0.24, 12, 0x1d2126, x * 1.4, 0.34, z, { parent: g }).rotation.z = Math.PI / 2; });
+    });
+    return g;
+  }
+  const CAR_COLORS = [0xd94f3d, 0xf7f5ef, 0x2a2f36, 0x3d5a80, 0x9aa0a6, 0xf3a712, 0x2f6b4f];
+  // parked cars and motorbikes
+  for (let i = 0; i < 8; i++) {
+    [[-21.3, Math.PI / 2], [-16.5, -Math.PI / 2]].forEach(function (c, side) {
+      if ((i * 3 + side * 5) % 7 === 3) return;                   // a few empty stalls
+      const car = makeCar(CAR_COLORS[(i + side * 3) % CAR_COLORS.length], (i + side) % 4 === 0 ? 'van' : 'car');
+      car.position.set(c[0], 0.06, -11.2 + i * 2.6); car.rotation.y = c[1]; scene.add(car);
+    });
+  }
+  for (let i = 0; i < 7; i++) { const m = makeCar(CAR_COLORS[(i * 2) % CAR_COLORS.length], 'motor'); m.position.set(-21.8 + i * 0.8, 0.06, 9.6); m.rotation.y = 0.25; scene.add(m); }
+  // people outside: satpam, bakso seller, people at the halte, ojek drivers, walkers, and riders
+  const OUT_SKIN = [0xf1c9a5, 0xd9a47c, 0xc68e66, 0xb67a52, 0x8d5a3b];
+  function npc(o, x, y, z, ry) { o.scale = 0.75; o.skin = o.skin || pick(OUT_SKIN); o.pants = o.pants || pick([0x2b2d42, 0x3d5a80, 0x5c4033]); o.hair = o.hair || 0x1a1410; const p = makePerson(o); p.position.set(x, y, z); p.rotation.y = ry || 0; return p; }
+  function seat(p, drop) { p.userData.legL.rotation.x = p.userData.legR.rotation.x = -Math.PI / 2; p.position.y -= drop; }
+  const satpam = npc({ shirt: 0x2b3a55, pants: 0x1d2126, style: 'short', card: 0xf3c623 }, -16.6, 0.06, 13.3, Math.PI);
+  const seller = npc({ shirt: 0xf7f5ef, style: 'short', beard: true }, 9, 0.18, 22.2, Math.PI);
+  const buyer = npc({ shirt: 0x6aa84f, hijab: 0xd94f3d }, 10.5, 0.18, 20.6, -Math.PI / 2);
+  const waitA = npc({ shirt: 0x8d6e63, style: 'side' }, -7.6, 0.18, 21.35, Math.PI); seat(waitA, 0.22);
+  const waitB = npc({ shirt: 0xc0617a, hijab: 0x2e3a59 }, -5.8, 0.18, 20.8, Math.PI);
+  waitB.userData.armR.rotation.x = -1.3;                                              // looking at a phone
+  const ojekA = makeCar(0x2f6b4f, 'motor'); ojekA.position.set(-3.6, 0.18, 21.1); ojekA.rotation.y = Math.PI / 2; scene.add(ojekA);
+  const ojekB = makeCar(0x2a2f36, 'motor'); ojekB.position.set(-2.6, 0.18, 21.1); ojekB.rotation.y = Math.PI / 2; scene.add(ojekB);
+  const driver = npc({ shirt: 0x2fa84f, style: 'short' }, -3.6, 0.18, 20.4, Math.PI);
+  const NPC_TALK = [
+    [satpam, ['Selamat pagi, Pak', 'Parkir di sebelah kiri ya', 'Hati-hati di jalan']],
+    [seller, ['Bakso, bakso!', 'Pakai mie atau bihun?', 'Sambalnya di situ ya']],
+    [buyer, ['Bakso satu, Pak', 'Jangan pedas ya']],
+    [driver, ['Ojek, Mbak?', 'Mau ke mana, Mas?']],
+    [waitB, ['Busnya lama ya', 'Sebentar lagi sampai']]
+  ];
+  const npcSays = [];
+  let npcT = 4;
+  // vehicles on the road: lane 0 drives +x, lane 1 drives -x; motor riders carry a person
+  const traffic = [];
+  [[0, -18, 'car'], [0, -4, 'motor'], [0, 9, 'van'], [1, 15, 'car'], [1, 2, 'motor'], [1, -12, 'car']].forEach(function (v, i) {
+    const g = makeCar(v[2] === 'motor' ? CAR_COLORS[(i + 2) % 7] : CAR_COLORS[i % 7], v[2]);
+    g.position.set(v[1], 0.06, ROAD.lanes[v[0]]); g.rotation.y = v[0] ? -Math.PI / 2 : Math.PI / 2; scene.add(g);
+    if (v[2] === 'motor') {
+      const r = npc({ shirt: i % 2 ? 0x2fa84f : 0x3d5a80, style: 'short', parent: g }, 0, 0.12, -0.2, 0);
+      seat(r, 0); r.position.y = 0.2; r.userData.armL.rotation.x = r.userData.armR.rotation.x = -1.2;
+    }
+    traffic.push({ g: g, lane: v[0], x: v[1], v: 0, max: v[2] === 'motor' ? 5.2 : 4.0 + (i % 3) * 0.4, len: v[2] === 'motor' ? 1.6 : v[2] === 'van' ? 4.2 : 3.6 });
+  });
+  // people walking along the sidewalks, and one who crosses at the zebra now and then
+  const walkersOut = [
+    { p: npc({ shirt: 0xf3a712, style: 'curly' }, -20, 0.18, 14.3, 0), z: 14.3, x: -20, dir: 1, sp: 1.3 },
+    { p: npc({ shirt: 0x6b4f9a, hijab: 0xe9b9c3 }, 6, 0.18, 20.7, 0), z: 20.7, x: 6, dir: -1, sp: 1.1 },
+    { p: npc({ shirt: 0x55606e, style: 'side', glasses: true }, 16, 0.18, 14.3, 0), z: 14.3, x: 16, dir: -1, sp: 1.2 }
+  ];
+  const crosser = { p: npc({ shirt: 0xc8553d, style: 'short' }, ROAD.cross - 0.5, 0.18, 13.2, 0), z: 13.2, to: 21.0, wait: 6, state: 'wait' };
+  let crossing = false;
+  function swing(p, ph, on) {
+    const u = p.userData, a = on ? Math.sin(ph) * 0.6 : 0;
+    u.legL.rotation.x = a; u.legR.rotation.x = -a; u.armL.rotation.x = -a * 0.7; u.armR.rotation.x = a * 0.7;
+  }
+  function stepStreet(dt) {
+    // the crosser waits at the curb, cars stop, then it walks over (and later back)
+    const c = crosser;
+    if (c.state === 'wait') { c.wait -= dt; swing(c.p, 0, false); if (c.wait <= 0) c.state = 'curb'; }
+    else {
+      crossing = true;
+      const clear = traffic.every(function (v) { const d = (v.lane ? -1 : 1) * (ROAD.cross - v.x); return v.v < 0.3 || d < -1 || d > 9; });
+      if (c.state === 'curb') { swing(c.p, 0, false); if (clear) c.state = 'go'; }
+      else {
+        const dz = c.to - c.z, st = Math.sign(dz) * Math.min(Math.abs(dz), 1.4 * dt);
+        c.z += st; c.p.position.z = c.z; c.p.position.y = (c.z > ROAD.z0 && c.z < ROAD.z1) ? 0.06 : 0.18; c.p.rotation.y = dz > 0 ? 0 : Math.PI;
+        swing(c.p, t * 8, true);
+        if (Math.abs(dz) < 0.01) { c.state = 'wait'; c.wait = 10 + Math.random() * 10; c.to = c.to > 17 ? 13.2 : 21.0; crossing = false; }
+      }
+    }
+    // traffic: keep a gap to the car ahead, stop before the zebra while someone crosses
+    traffic.forEach(function (v) {
+      const dir = v.lane ? -1 : 1;
+      let gap = 99;
+      traffic.forEach(function (o) { if (o !== v && o.lane === v.lane) { let d = (o.x - v.x) * dir; if (d < 0) d += 46; gap = Math.min(gap, d - (o.len + v.len) / 2); } });
+      const toZebra = (ROAD.cross - v.x) * dir - v.len / 2 - 1.6;
+      let target = v.max;
+      if (gap < 4) target = Math.max(0, (gap - 1) * 1.2);
+      if (crossing && toZebra > -0.5 && toZebra < 7) target = Math.min(target, Math.max(0, toZebra * 0.8));
+      v.v += Math.max(-6 * dt, Math.min(2.5 * dt, target - v.v));
+      v.x += dir * v.v * dt;
+      if (v.x > 23.5) v.x -= 47; if (v.x < -23.5) v.x += 47;
+      v.g.position.x = v.x;
+      v.g.visible = Math.abs(v.x) < 23.2;
+    });
+    // walkers on the sidewalks turn around at the ends
+    walkersOut.forEach(function (w) {
+      w.x += w.dir * w.sp * dt;
+      if (w.x > 21.5 || w.x < -21.5) { w.dir *= -1; w.x = Math.max(-21.5, Math.min(21.5, w.x)); }
+      w.p.position.x = w.x; w.p.rotation.y = w.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
+      swing(w.p, t * 7 * w.sp, true);
+    });
+    // the satpam lifts the barrier and waves at cars now and then; the seller stirs the pot
+    const wave = Math.sin(t * 0.4) > 0.7;
+    satpam.userData.armR.rotation.x = wave ? -2.6 + Math.sin(t * 8) * 0.3 : 0;
+    street.barrier.rotation.z = wave ? -1.2 : 0;
+    seller.userData.armR.rotation.x = -1.0 + Math.sin(t * 3) * 0.3;
+    // someone outside says something every few seconds
+    npcT -= dt;
+    if (npcT <= 0) {
+      npcT = 5 + Math.random() * 4;
+      const n = NPC_TALK[Math.floor(Math.random() * NPC_TALK.length)];
+      npcSays.push({ p: n[0], sp: makeBubble(n[1][Math.floor(Math.random() * n[1].length)]), ttl: 2.6 });
+    }
+    for (let i = npcSays.length - 1; i >= 0; i--) {
+      const b = npcSays[i];
+      b.p.getWorldPosition(wp); b.sp.position.set(wp.x, wp.y + 2.7, wp.z);
+      b.ttl -= dt;
+      if (b.ttl <= 0) { scene.remove(b.sp); b.sp.material.map.dispose(); b.sp.material.dispose(); npcSays.splice(i, 1); }
+    }
+  }
 
   // ---------- Sky ----------
   const clouds = [];
@@ -2486,6 +2674,7 @@
     t += dt;
     stepSays(dt);
     smallTalk(dt);
+    stepStreet(dt);
     if (mode === 'demo' && !replaying) {
       if (!waiting) stepT += dt;
       if (stepIdx < 0 || (!waiting && stepT >= WORK)) {
