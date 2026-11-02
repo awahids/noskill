@@ -8,12 +8,22 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 1.15.0" src="https://img.shields.io/badge/version-1.15.0-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 1.15.1" src="https://img.shields.io/badge/version-1.15.1-1d6b57?style=flat-square&logo=github" />
 </div>
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, reviewer, dan QA.
 
 📖 **Dokumentasi lengkap:** [awahids.github.io/noskill](https://awahids.github.io/noskill/) (sumber: [`docs/index.html`](docs/index.html)) — cara install, cara kerja alur tiket, semua skill & agent.
+
+## Kantor noskill
+
+`/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent yang berjalan mengantar tiket, dan suasana kantor di sekitarnya.
+
+![Kantor noskill: kantor tiga lantai dengan board tiket, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran](docs/img/kantor-overview.jpg)
+
+| Klik agent untuk melihat tugas dan skill | Jalan raya, halte, dan warga sekitar | Mode malam |
+|---|---|---|
+| ![Kartu agent Naura (QA) dengan deskripsi, skill, tools, dan verdict](docs/img/kantor-agent.jpg) | ![Mobil dan motor melintas, penumpang menunggu di halte, agent bekerja di lantai 1](docs/img/kantor-jalan.jpg) | ![Kantor saat malam dengan lampu meja dan lampu jalan menyala](docs/img/kantor-malam.jpg) |
 
 ## Skills
 

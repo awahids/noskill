@@ -92,7 +92,12 @@
     }
     @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
     html { scroll-behavior: smooth; }
-  </style>
+      .shots { display: grid; gap: 12px; margin: 12px 0 8px; }
+    .shots figure { margin: 0; }
+    .shots img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); }
+    .shots figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+    .shots .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+</style>
 </head>
 <body>
   <div class="wrap">
@@ -104,6 +109,7 @@
         <li><a href="#cara-kerja">Cara kerja</a></li>
         <li><a href="#tiket">Alur tiket</a></li>
         <li><a href="#agent">Agent</a></li>
+        <li><a href="#kantor">Kantor noskill</a></li>
         <li><a href="#skill">Semua skill</a></li>
         <li><a href="skills.html">Detail skill →</a></li>
         <li><a href="#shortcut">Shortcut</a></li>
@@ -118,7 +124,7 @@
         <div class="eyebrow">Plugin Claude Code</div>
         <h1>noskill</h1>
         <div align="center">
-          <img alt="Version 1.15.0" src="https://img.shields.io/badge/version-1.15.0-1d6b57?style=flat-square&logo=github" />
+          <img alt="Version 1.15.1" src="https://img.shields.io/badge/version-1.15.1-1d6b57?style=flat-square&logo=github" />
         </div>
         <p class="lede">Skill dan agent untuk kerja development seperti tim engineering: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu masuk DONE. Kodenya hanya mengubah yang diminta, bukan refactor tanpa alasan. Cocok untuk bug fix, fitur kecil, fitur besar, dan multi-repo.</p>
         <div class="cmd"><pre>/plugin install noskill --marketplace awahids/noskill</pre><button type="button" data-copy>Salin</button></div>
@@ -238,6 +244,17 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
           <tr><td><code>task-planner</code></td><td>Mengubah PRD dan BRD menjadi file tiket berstatus TODO.</td><td>Tidak</td><td>Sonnet</td></tr>
         </tbody>
       </table></div>
+
+      <h2 id="kantor">Kantor noskill</h2>
+      <p><code>/noskill:kantor</code> membuka kantor 3D tempat agent noskill bekerja. Board tiket dibaca live dari <code>docs/noskill</code>, agent berjalan mengantar tiket ke agent berikutnya, dan agent yang menganggur ngopi, makan di kantin, atau mampir ngobrol. Detailnya ada di <a href="skills.html#kantor">halaman skill</a>.</p>
+      <div class="shots">
+        <figure><img src="img/kantor-overview.jpg" alt="Kantor noskill: kantor tiga lantai dengan board tiket, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran" width="1280" height="800" loading="lazy"><figcaption>Kantor tiga lantai dengan board tiket, fasilitas kantor, jalan raya, dan parkiran.</figcaption></figure>
+        <div class="row">
+          <figure><img src="img/kantor-agent.jpg" alt="Kartu agent Naura (QA) dengan deskripsi, skill, tools, dan verdict" width="1280" height="800" loading="lazy"><figcaption>Klik agent untuk melihat tugas, skill, dan tiketnya.</figcaption></figure>
+          <figure><img src="img/kantor-jalan.jpg" alt="Mobil dan motor melintas, penumpang menunggu di halte, agent bekerja di lantai 1" width="1280" height="800" loading="lazy"><figcaption>Jalan raya, halte, ojek, dan warga sekitar.</figcaption></figure>
+          <figure><img src="img/kantor-malam.jpg" alt="Kantor saat malam dengan lampu meja dan lampu jalan menyala" width="1280" height="800" loading="lazy"><figcaption>Mode malam: lampu meja dan lampu jalan menyala.</figcaption></figure>
+        </div>
+      </div>
 
       <h2 id="skill">Semua skill</h2>
       <p>Penjelasan lengkap tiap skill — kapan dipakai, langkah kerja, hasil, dan aturan penting — ada di halaman <a href="skills.html">Detail skill</a>.</p>
