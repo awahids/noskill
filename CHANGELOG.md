@@ -13,6 +13,7 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 
 ### Diperbaiki
 - Tangga dari Lantai 2 ke Lantai 3 menghadap terbalik, sehingga agent tampak berjalan di luar anak tangga. Tangga sekarang naik ke arah yang sama dengan jalur agent.
+- Agent yang mejanya menghadap ke belakang (Hamzah, Hafiz) kadang berjalan mundur dan duduk membelakangi meja rapat. Arah hadap sekarang dihitung ulang setiap kali agent meninggalkan mejanya.
 
 ## 1.13.0 — 2026-11-01
 

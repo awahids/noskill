@@ -966,7 +966,7 @@
     const spot = V(pl.x + pl.spots[i][0], pl.y != null ? pl.y : FY[pl.floor], pl.z + pl.spots[i][1]);
     const path = placePath(k, name, spot);
     const p = s.person;
-    scene.attach(p);
+    toWorld(p);
     p.userData.legL.rotation.x = 0; p.userData.legR.rotation.x = 0;
     p.position.copy(path[0]);
     if (!courierCards[k]) courierCards[k] = makeCard();
@@ -991,7 +991,7 @@
     const p = ST[k].person, u = p.userData, pl = PLACES[w.place];
     delete walkers[k];
     const sp = pl.spots[w.spot];
-    p.rotation.y = sp.length > 2 ? sp[2] : Math.atan2(pl.x - p.position.x, pl.z - p.position.z);   // face the table (or qibla)
+    p.rotation.set(0, sp.length > 2 ? sp[2] : Math.atan2(pl.x - p.position.x, pl.z - p.position.z), 0);   // face the table (or qibla)
     let mug = p.userData.mug;
     if (!mug) {
       mug = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.18, 8), mugMat);
@@ -1081,12 +1081,19 @@
     if (!courierCards[job.from]) courierCards[job.from] = makeCard();
     const c = courierCards[job.from];
     c.stripe.color.setHex(job.color); c.stripe.emissive.setHex(job.color);
-    scene.attach(p);
+    toWorld(p);
     p.userData.legL.rotation.x = 0; p.userData.legR.rotation.x = 0;
     lastWalker = job.from;
     walkers[job.from] = { job: job, path: route(job.from, job.to), i: 0, back: false, wait: 0, ph: 0, card: c, carrying: !job.chat, chat: !!job.chat, bubble: job.say ? makeBubble(job.say) : null, bubbleTTL: 0 };
     p.position.copy(walkers[job.from].path[0]);
     if (selected === job.from) renderInfo();
+  }
+  // Move a person to the scene keeping its world pose, as a plain yaw: attach() turns a half turn into Euler (PI, 0, PI)
+  const fwd = new THREE.Vector3();
+  function toWorld(p) {
+    scene.attach(p);
+    fwd.set(0, 0, 1).applyQuaternion(p.quaternion);
+    p.rotation.set(0, Math.atan2(fwd.x, fwd.z), 0);
   }
   function sitDown(k) {
     const s = ST[k], p = s.person, u = p.userData;
@@ -1119,7 +1126,7 @@
         while (move > 0 && w.i < w.path.length - 1) {
           seg.copy(w.path[w.i + 1]).sub(p.position);
           const d = seg.length();
-          if (Math.hypot(seg.x, seg.z) > 0.01) p.rotation.y = Math.atan2(seg.x, seg.z);
+          if (Math.hypot(seg.x, seg.z) > 0.01) p.rotation.set(0, Math.atan2(seg.x, seg.z), 0);   // set all three: attach() may leave x = z = PI
           if (d <= move) { p.position.copy(w.path[w.i + 1]); w.i++; move -= d; }
           else { p.position.addScaledVector(seg, move / d); move = 0; }
         }
