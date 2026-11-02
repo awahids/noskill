@@ -26,7 +26,7 @@ Stop at the first step that solves the problem. **Step 2 must never be skipped**
 
 ## When to stop
 
-If the request turns out to touch new business rules, database schema, more than ~5 files, or several repos, don't silently continue. Stop and suggest `/noskill:tiket fix` (quick mode with review and QA).
+If the request turns out to touch new business rules, database schema, more than ~5 files, or several repos, don't silently continue. Stop and suggest `/noskill:tiket fix` (one ticket with review and verification).
 
 ## Report (max ~8 lines)
 

@@ -2,6 +2,25 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.0.0 — 2026-11-02
+
+### Diubah — alur ramping ala superpowers
+- **Mode default = plan langsung.** `feature-flow` menulis tiket dari permintaan (≤ 3 tiket sendiri, lebih banyak lewat `task-planner` tanpa PRD). PRD → CTO → BRD hanya bila user meminta dokumen. Mode cepat dilebur ke mode default.
+- **QA digabung ke reviewer.** `ticket-reviewer` sekarang review **dan** verifikasi: menjalankan tes tiket + tes terkait sekali, Cara Verifikasi, dan cek negatif/batas yang belum tercakup. `APPROVED` → `DONE`. `qa-tester` hanya untuk tiket FE `integrates_with` (FE diuji terhadap BE asli) atau bila user minta.
+- **Status diringkas:** TODO → IN_PROGRESS → REVIEW → DONE; `QA` hanya untuk tiket di atas. Kantor dan `/noskill:tiket` tetap jalan (status lama tetap dikenali).
+- **`activity.json` Stage 5 ditulis orchestrator** dalam satu Bash call bersama perubahan status; developer, reviewer, dan QA tidak lagi menulisnya. Agent sebelum tiket ada (PM, CTO, analyst, tech lead) tetap menulis sendiri, karena di 1.11.0 langkah orchestrator untuk tahap itu sering terlewat.
+- **Review akhir** (`cto` SIGN_OFF) untuk mode lengkap atau plan > 3 tiket.
+
+### Diubah (hemat token & waktu)
+Hasil audit 3 board (forecast-sample-lanjut, forecast-sample-brand, wms-mobile-shell): orchestrator ±45% total token, QA tahap termahal per tiket, dan semua agent ternyata jalan di model sesi.
+- `feature-flow`: model **tidak pernah** di-override untuk `ticket-reviewer`, `qa-tester`, `task-planner`, `brd-tracer` (tetap Sonnet). Kalau Sonnet gagal `model_not_found`, user diberi tahu sekali soal `ANTHROPIC_DEFAULT_SONNET_MODEL`, lalu baru pakai model sesi.
+- `feature-flow`: **database tes dibuat sekali per sesi** oleh orchestrator dan URL-nya (`Test DB`) dikirim ke developer dan QA; migration tiket baru diterapkan orchestrator. Agent tidak lagi membuat Postgres sekali pakai per tiket.
+- `feature-flow`: setelah gate tiket (full mode, >5 tiket) sarankan Stage 5 di sesi baru (`/clear` → `/noskill:tiket lanjut`) supaya konteks PRD/BRD tidak ikut terbaca di setiap giliran.
+- `qa-tester`: tes tiket + tes terkait dijalankan satu kali dalam satu command, tanpa typecheck/lint; dilarang menyalakan DB/container/server, membuat harness browser, mengambil screenshot, atau membaca file gambar; target ≤ 15 tool call; laporan ≤ ~60 baris. Batasan ini mengalahkan isi profile.
+- `ticket-implementation`: baca kode per rentang (`grep -n`, ≤ 200 baris), batch perintah, iterasi hanya pada file tes tiket, gate digabung dalam satu command, pakai `Test DB` dari orchestrator; laporan ≤ ~80 baris.
+- `ticket-reviewer`: diff per file (`--stat` lalu `-U10`), tidak membaca file utuh; laporan ≤ ~50 baris.
+- `cto`, `task-planner`: baca per rentang dan batch, CTO ≤ 30 tool call per mode.
+
 ## 1.15.2 — 2026-11-02
 
 ### Diperbaiki

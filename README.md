@@ -33,10 +33,10 @@ Yang muncul di menu `/`: `feature-flow`, `tiket`, `lazy`, `kantor`, `project-pro
 
 | Skill | Fungsi |
 |---|---|
-| [`feature-flow`](skills/feature-flow/) | Orkestrator (engineering manager): PM → CTO → analyst → tech lead → developer BE/FE → reviewer → QA → sign-off CTO → DONE (atau BUG/HOLD). Mode cepat dan lengkap, paralel, multi-repo, branch dan PR |
+| [`feature-flow`](skills/feature-flow/) | Orkestrator (engineering manager), alur ramping ala superpowers: plan → developer BE/FE → reviewer (review + verifikasi) → DONE (atau BUG/HOLD) → cek akhir. PRD/CTO/BRD hanya bila diminta, paralel, multi-repo, branch dan PR |
 | [`ticket-workflow`](skills/ticket-workflow/) *internal* | Format file tiket, arti tiap status, aturan transisi, verdict agent, dan board |
 | [`project-profile`](skills/project-profile/) | Scan repo sekali → `docs/noskill/project-profile.md` (stack, command, struktur, helper, aturan) yang dibaca semua agent |
-| [`tiket`](skills/tiket/) | Shortcut tiket dalam satu perintah: lihat board, lanjutkan tiket dari sesi sebelumnya, bug fix lewat mode cepat, rapikan tiket lama atau review ulang tiket DONE |
+| [`tiket`](skills/tiket/) | Shortcut tiket dalam satu perintah: lihat board, lanjutkan tiket dari sesi sebelumnya, bug fix lewat satu tiket, rapikan tiket lama atau review ulang tiket DONE |
 | [`kantor`](skills/kantor/) | Shortcut: buka **Kantor noskill**, kantor 3D tiga lantai tempat agent noskill bekerja dan berjalan mengantar tiket, live dari tiket `docs/noskill` (lewat artifact claude.ai) |
 | [`lazy`](skills/lazy/) | Shortcut: kerjakan langsung dengan solusi paling sederhana, tanpa tiket/review/QA |
 | [`prd-writer`](skills/prd-writer/) | PRD baku dengan diagram Mermaid, didahului minimal 5 pertanyaan klarifikasi; juga Reverse-PRD dari kode |
@@ -70,8 +70,8 @@ Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field 
 | [`backend-developer`](agents/backend-developer.md) | Tiket `layer: be` — API, service, migration (NestJS/Laravel/Go) | `ticket-implementation`, `coding-standards` | Ya |
 | [`frontend-developer`](agents/frontend-developer.md) | Tiket `layer: fe` — halaman, komponen, state (Vue/Next.js) | `ticket-implementation`, `coding-standards` | Ya |
 | [`developer`](agents/developer.md) | Fullstack: tiket tanpa `layer` (monolith, mobile, script, tiket lama) | `ticket-implementation`, `coding-standards` | Ya |
-| [`ticket-reviewer`](agents/ticket-reviewer.md) | Cek perubahan sesuai AC tiket & standar → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
-| [`qa-tester`](agents/qa-tester.md) | Jalankan test terhadap AC & TC → PASS / FAIL (bug report) / BLOCKED | `ticket-workflow` | Tidak |
+| [`ticket-reviewer`](agents/ticket-reviewer.md) | Review perubahan sesuai AC & standar **dan** jalankan test + Cara Verifikasi (positif/negatif/batas) → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
+| [`qa-tester`](agents/qa-tester.md) | Hanya untuk tiket FE `integrates_with` (FE diuji terhadap BE asli) atau bila diminta → PASS / FAIL / BLOCKED | `ticket-workflow` | Tidak |
 
 ## Aturan inti yang selalu aktif
 
@@ -105,46 +105,45 @@ Pengaturan ini berlaku untuk semua project di komputer itu.
 | Perintah | Fungsi |
 |---|---|
 | `/noskill:tiket` atau `/noskill:tiket board` | Tampilkan board tiket, pertanyaan tiket HOLD, dan durasi tiap tahap per tiket |
-| `/noskill:tiket fix <deskripsi>` | Bug fix atau perubahan kecil lewat mode cepat |
+| `/noskill:tiket fix <deskripsi>` | Bug fix atau perubahan kecil lewat satu tiket |
 | `/noskill:tiket lanjut [jawaban]` | Lanjutkan tiket yang tertunda dari sesi sebelumnya |
 | `/noskill:tiket rapikan [ID]` | Rapikan tiket TODO/HOLD agar sesuai aturan tiket terbaru (gabung tiket per layer, lengkapi Kontrak API, `integrates_with`, `complexity`); usulan ditampilkan dulu, diterapkan setelah kamu setujui |
 | `/noskill:tiket rapikan review <ID>` | Review ulang kode tiket DONE; temuan jadi tiket BUG baru |
 | `/noskill:lazy <permintaan>` | Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan (YAGNI, stdlib dulu, tanpa abstraksi), tanpa tiket/review/QA |
-| `/noskill:feature-flow` | Alur lengkap (mode cepat atau dari PRD) |
+| `/noskill:feature-flow` | Alur tiket (default: plan langsung; PRD/BRD bila diminta) |
 | `/noskill:project-profile` | Buat/refresh profil project |
 
 ## Alur pemakaian
 
 Panggil `/noskill:feature-flow` lalu jelaskan pekerjaannya.
 
-- **Mode cepat** — bug fix atau fitur kecil. Orkestrator langsung menulis satu tiket (AC positif & negatif, File/Lokasi, Cara Verifikasi), kamu setujui, lalu masuk loop developer → reviewer → QA.
-- **Mode lengkap** — fitur atau modul baru, mulai dari PRD. Level BRD bisa dipilih: **lengkap** (BR→UAT, untuk sign-off/UAT formal), **ringkas** (US→AC→TECH + Test Case), atau **tanpa BRD** (langsung PRD → tiket).
+- **Mode default** — semua pekerjaan, kecil maupun besar. Orkestrator menulis tiket langsung dari permintaan (≤ 3 tiket sendiri, lebih banyak lewat `task-planner`) dengan AC positif & negatif, File/Lokasi, dan Cara Verifikasi. Kamu setujui, lalu masuk loop developer → reviewer (review + verifikasi) → DONE. Tanpa PRD, BRD, atau ADR.
+- **Mode lengkap** — hanya kalau kamu minta dokumen ("buatkan PRD", "pakai BRD"). Level BRD bisa dipilih: **lengkap** (BR→UAT, untuk sign-off/UAT formal), **ringkas** (US→AC→TECH + Test Case), atau **tanpa BRD** (langsung PRD → tiket).
 
 Aturan tiket: **satu tiket per endpoint (BE), per fitur/halaman (FE), atau per bug**. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer. Perubahan kecil digabung: maksimal 3 endpoint `simple` di resource yang sama, atau satu layar/fitur kecil yang berhubungan.
 
 Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket. Di akhir kamu memilih: push + PR (deskripsi PR disusun otomatis dari tiket), merge lokal, atau biarkan dulu.
 
-**Mode paralel** (opsional): selagi tiket A di-review/QA, developer sudah mengerjakan tiket B di git worktree terpisah. Maksimal 2 tiket aktif, atau 3 kalau tiketnya di repo berbeda.
+**Mode paralel** (opsional): selagi tiket A di-review, developer sudah mengerjakan tiket B di git worktree terpisah. Maksimal 2 tiket aktif, atau 3 kalau tiketnya di repo berbeda.
 
-**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (DB + server) dinyalakan sekali per sesi lalu dipakai bersama oleh semua QA.
+**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (server) dan database tes dinyalakan sekali per sesi oleh orchestrator lalu dipakai bersama oleh semua developer dan QA; reviewer, QA, task-planner, dan brd-tracer selalu memakai Sonnet.
 
 **Multi-repo:** satu fitur bisa menyentuh beberapa repo (misal api NestJS + web Vue + mobile Flutter). Daftarkan repo di bagian `## Repo` pada `project-profile.md`; PRD, BRD, dan tiket tetap di satu root docs.
 
 Opsional: isi `tracker: github` atau `tracker: notion` di `docs/noskill/project-profile.md` supaya board tiket tercermin di GitHub Issues atau database Notion. `standup-update` (plugin `noskill-extras`) bisa dibaca dari Riwayat tiket.
 
-Mode lengkap:
-
 ```
-product-manager ──► cto (ADR) ──► brd-tracer ──► task-planner ──► tiket TODO
- (pertanyaan → kamu jawab → PRD)
+Default:  permintaan ─► plan (tiket TODO) ─► kamu setujui
+Lengkap:  product-manager ─► cto (ADR) ─► brd-tracer ─► task-planner ─► tiket TODO   (hanya bila diminta)
 
 Per tiket:
-TODO ─► IN_PROGRESS ─► REVIEW ─► QA ─► DONE (commit lokal)
-  (backend-/frontend-/developer)  (reviewer)  (qa-tester)
-          ▲           │          │
-          └─ revisi ──┘          └─► BUG ─► developer (debug-assistant)
+TODO ─► IN_PROGRESS ─► REVIEW ──────────► DONE (commit lokal)
+  (backend-/frontend-/developer)  (reviewer: review + test + Cara Verifikasi)
+          ▲           │
+          └─ revisi ──┘
+Tiket FE integrates_with: REVIEW ─► QA (qa-tester, FE vs BE asli) ─► DONE / BUG
 Blocker / 3x gagal ─► HOLD ─► ditanyakan ke user
-Semua DONE ─► full check ─► cto SIGN_OFF ─► PR
+Semua DONE ─► full check ─► cto SIGN_OFF (mode lengkap atau > 3 tiket) ─► PR
 ```
 
 Agent tidak berbicara langsung satu sama lain. Mereka terhubung lewat file di `docs/noskill/`, dan hanya `feature-flow` yang memindahkan status tiket. Hasil setiap tahap jadi bisa direview, diedit, dan di-cek ulang.

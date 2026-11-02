@@ -5,7 +5,7 @@
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>noskill Docs</title>
-  <meta name="description" content="Dokumentasi plugin noskill untuk Claude Code: install, alur tiket developer–reviewer–QA, skill, agent, shortcut, dan konfigurasi.">
+  <meta name="description" content="Dokumentasi plugin noskill untuk Claude Code: install, alur tiket plan → developer → reviewer, skill, agent, shortcut, dan konfigurasi.">
   <style>
     :root {
       --bg: #f6f7f6;
@@ -124,9 +124,9 @@
         <div class="eyebrow">Plugin Claude Code</div>
         <h1>noskill</h1>
         <div align="center">
-          <img alt="Version 1.15.2" src="https://img.shields.io/badge/version-1.15.2-1d6b57?style=flat-square&logo=github" />
+          <img alt="Version 2.0.0" src="https://img.shields.io/badge/version-2.0.0-1d6b57?style=flat-square&logo=github" />
         </div>
-        <p class="lede">Skill dan agent untuk kerja development seperti tim engineering: tiket dikerjakan developer, dicek reviewer, diuji QA, lalu masuk DONE. Kodenya hanya mengubah yang diminta, bukan refactor tanpa alasan. Cocok untuk bug fix, fitur kecil, fitur besar, dan multi-repo.</p>
+        <p class="lede">Skill dan agent untuk kerja development seperti tim engineering: tiket dikerjakan developer, lalu reviewer mengecek kode sekaligus menjalankan test dan cara verifikasinya, lalu masuk DONE. Kodenya hanya mengubah yang diminta, bukan refactor tanpa alasan. Cocok untuk bug fix, fitur kecil, fitur besar, dan multi-repo.</p>
         <div class="cmd"><pre>/plugin install noskill --marketplace awahids/noskill</pre><button type="button" data-copy>Salin</button></div>
       </header>
 
@@ -159,7 +159,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <h2 id="mulai">Mulai cepat</h2>
       <ol class="steps">
         <li><strong>Buat profil project</strong> sekali di setiap repo: <code>/noskill:project-profile</code>. Hasilnya <code>docs/noskill/project-profile.md</code> berisi stack, command test yang bisa dipakai, dan helper project.</li>
-        <li><strong>Perbaiki bug atau tambah fitur kecil:</strong> <code>/noskill:tiket fix tombol simpan tidak validasi email</code>. Claude menulis satu tiket, kamu setujui, lalu tiket berjalan melalui developer → reviewer → QA.</li>
+        <li><strong>Perbaiki bug atau tambah fitur kecil:</strong> <code>/noskill:tiket fix tombol simpan tidak validasi email</code>. Claude menulis satu tiket, kamu setujui, lalu tiket berjalan melalui developer → reviewer (review + verifikasi).</li>
         <li><strong>Fitur besar:</strong> <code>/noskill:feature-flow</code> lalu ceritakan fiturnya. Alurnya dimulai dari PRD, dengan pertanyaan klarifikasi lebih dulu.</li>
         <li><strong>Cek progres</strong> kapan saja dengan <code>/noskill:tiket</code>. Kalau sesi terputus, lanjutkan dengan <code>/noskill:tiket lanjut</code>.</li>
       </ol>
@@ -186,8 +186,8 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
 
       <h3>Dua mode kerja</h3>
       <div class="lanes">
-        <div class="lane"><h3>Mode cepat</h3><p>Untuk bug fix, fitur kecil, atau revisi fitur yang sudah ada. Permintaan langsung jadi satu tiket (maksimal tiga) berisi AC positif dan negatif, file yang boleh diubah, dan cara verifikasi.</p></div>
-        <div class="lane"><h3>Mode lengkap</h3><p>Untuk fitur atau modul baru. Product Manager menulis PRD (dengan pertanyaan klarifikasi), CTO me-review arsitektur dan menulis ADR, lalu tiket. Di akhir, CTO memberi sign-off sebelum PR. Di antaranya ada BRD dengan tiga pilihan level: lengkap, ringkas, atau tanpa BRD.</p></div>
+        <div class="lane"><h3>Mode default</h3><p>Untuk semua pekerjaan, kecil maupun besar. Permintaan langsung jadi plan berupa tiket (sampai tiga ditulis orkestrator, lebih banyak lewat <code>task-planner</code>) berisi AC positif dan negatif, file yang boleh diubah, dan cara verifikasi. Tanpa PRD, BRD, atau ADR.</p></div>
+        <div class="lane"><h3>Mode lengkap</h3><p>Hanya kalau kamu meminta dokumen ("buatkan PRD", "pakai BRD"). Product Manager menulis PRD (dengan pertanyaan klarifikasi), CTO me-review arsitektur dan menulis ADR, lalu tiket. Di akhir, CTO memberi sign-off sebelum PR. Di antaranya ada BRD dengan tiga pilihan level: lengkap, ringkas, atau tanpa BRD.</p></div>
       </div>
       <p>Pekerjaan dilakukan di branch baru (<code>feat/…</code> atau <code>fix/…</code>) dengan satu commit per tiket. Di akhir kamu memilih push + PR (deskripsinya disusun dari tiket), merge lokal, atau biarkan dulu.</p>
 
@@ -195,24 +195,23 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <div class="flow" aria-label="Alur status tiket">
         <span class="pill s-todo">TODO</span><span class="arrow">→</span>
         <span class="pill s-prog">IN_PROGRESS</span><span class="arrow">→</span>
-        <span class="pill s-rev">REVIEW</span><span class="arrow">→</span>
-        <span class="pill s-qa">QA</span><span class="arrow">→</span>
+        <span class="pill s-rev">REVIEW</span><span class="arrow">review + verifikasi →</span>
         <span class="pill s-done">DONE</span>
       </div>
       <div class="flow">
         <span class="pill s-rev">REVIEW</span><span class="arrow">revisi →</span><span class="pill s-prog">IN_PROGRESS</span>
         <span class="arrow">&nbsp;·&nbsp;</span>
-        <span class="pill s-qa">QA</span><span class="arrow">gagal →</span><span class="pill s-bug">BUG</span><span class="arrow">→ developer</span>
+        <span class="arrow">tiket FE integrates_with:</span><span class="pill s-rev">REVIEW</span><span class="arrow">→</span><span class="pill s-qa">QA</span><span class="arrow">gagal →</span><span class="pill s-bug">BUG</span>
         <span class="arrow">&nbsp;·&nbsp;</span>
         <span class="arrow">blocker / 3x gagal →</span><span class="pill s-hold">HOLD</span>
       </div>
-      <p class="side">Tiket berstatus HOLD ditanyakan ke kamu. Tiket lain yang tidak bergantung padanya tetap jalan.</p>
+      <p class="side">Reviewer menjalankan test tiket, cara verifikasi, dan cek negatif/batas; tanpa bukti jalan tidak ada <code>APPROVED</code>. QA terpisah hanya untuk tiket FE yang diuji terhadap BE asli. Tiket berstatus HOLD ditanyakan ke kamu. Tiket lain yang tidak bergantung padanya tetap jalan.</p>
       <p>Setiap tiket adalah satu file Markdown di <code>docs/noskill/tickets/</code>. Isinya acceptance criteria, file yang boleh diubah, cara verifikasi, dan bagian <code>Riwayat</code> yang mencatat keputusan.</p>
 
       <h3>Aturan tiket</h3>
       <p>Satu tiket per endpoint (BE), per fitur atau halaman (FE), atau per bug. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer. Perubahan kecil digabung: maksimal 3 endpoint <code>simple</code> di resource yang sama, atau perubahan kecil di halaman/layar yang sama.</p>
       <p>Kalau BE dan FE sama-sama berubah, tiket BE memuat Kontrak API sejak dibuat: path, request, response sukses, dan kode error. Tiket FE merujuk kontrak itu lewat <code>integrates_with</code>.</p>
-      <p>Selama loop, test hanya dijalankan untuk yang tersentuh tiket. Typecheck, lint, dan seluruh test dijalankan sekali di akhir.</p>
+      <p>Selama loop, test hanya dijalankan untuk yang tersentuh tiket. Typecheck, lint, dan seluruh test dijalankan sekali di akhir, lalu CTO me-review seluruh branch (mode lengkap atau lebih dari tiga tiket).</p>
 
       <h3>Mode paralel</h3>
       <p>Bisa dipilih saat tiket disetujui. Selagi reviewer mengecek tiket A, developer sudah mengerjakan tiket B. Setiap tiket aktif mendapat git worktree sendiri, jadi perubahan tidak tercampur.</p>
@@ -221,9 +220,11 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <ul>
         <li>Revisi dilanjutkan oleh developer yang sama, jadi tiket dan kode tidak dibaca ulang dari nol.</li>
         <li>Setiap tiket punya <code>complexity</code>. Tiket <code>simple</code> dikerjakan developer dengan Sonnet, tiket <code>complex</code> dengan model sesi.</li>
-        <li>Database dan server dinyalakan sekali per sesi lalu dipakai bersama oleh semua QA.</li>
+        <li>Server dan database tes dinyalakan sekali per sesi oleh orkestrator lalu dipakai bersama oleh developer, reviewer, dan QA. Agent tidak pernah membuat database sendiri.</li>
+        <li>Reviewer, QA, task-planner, dan brd-tracer selalu memakai Sonnet; model sesi tidak dipaksakan ke mereka.</li>
+        <li>Agent membaca kode per rentang, menggabungkan perintah, dan menulis laporan ringkas, supaya jumlah giliran (dan token) tetap kecil.</li>
         <li>Typecheck dan lint per tiket memakai versi cepat dengan cache (<code>tsc --incremental</code>, <code>eslint --cache</code>).</li>
-        <li>Riwayat tiket mencatat jam, dan <code>/noskill:tiket board</code> menampilkan berapa lama tiap tiket di tahap developer, review, dan QA.</li>
+        <li>Riwayat tiket mencatat jam, dan <code>/noskill:tiket board</code> menampilkan berapa lama tiap tiket di tahap developer, review, dan QA (kalau ada).</li>
       </ul>
 
       <h3>Multi-repo</h3>
@@ -238,10 +239,10 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
           <tr><td><code>backend-developer</code></td><td>Mengerjakan tiket <code>layer: be</code>: API, service, migration. Rencana dulu, helper yang ada, test RED, quality gate.</td><td>Ya</td><td>Model sesi</td></tr>
           <tr><td><code>frontend-developer</code></td><td>Mengerjakan tiket <code>layer: fe</code>: halaman, komponen, state, sesuai Kontrak API.</td><td>Ya</td><td>Model sesi</td></tr>
           <tr><td><code>developer</code></td><td>Developer fullstack untuk tiket tanpa <code>layer</code> (monolith, mobile, script, tiket lama).</td><td>Ya</td><td>Model sesi</td></tr>
-          <tr><td><code>ticket-reviewer</code></td><td>Mengecek kesesuaian dengan AC, scope, reuse, kesederhanaan, efisiensi, dan test. Hasilnya <code>APPROVED</code>, <code>CHANGES_REQUESTED</code>, atau <code>BLOCKED</code>.</td><td>Tidak</td><td>Sonnet</td></tr>
-          <tr><td><code>qa-tester</code></td><td>Menjalankan test positif, negatif, dan batas terhadap AC dan TC. Hasilnya <code>PASS</code> atau <code>FAIL</code> dengan bug report.</td><td>Tidak</td><td>Sonnet</td></tr>
+          <tr><td><code>ticket-reviewer</code></td><td>Mengecek kesesuaian dengan AC, scope, reuse, kesederhanaan, efisiensi, dan test, lalu menjalankan test tiket dan cara verifikasi (positif, negatif, batas). Hasilnya <code>APPROVED</code>, <code>CHANGES_REQUESTED</code>, atau <code>BLOCKED</code>.</td><td>Tidak</td><td>Sonnet</td></tr>
+          <tr><td><code>qa-tester</code></td><td>Hanya untuk tiket FE dengan <code>integrates_with</code> (FE diuji terhadap BE asli) atau bila diminta. Hasilnya <code>PASS</code> atau <code>FAIL</code> dengan bug report.</td><td>Tidak</td><td>Sonnet</td></tr>
           <tr><td><code>brd-tracer</code></td><td>Menurunkan PRD menjadi BR, PROC, US, AC, TECH, dan TC.</td><td>Tidak</td><td>Sonnet</td></tr>
-          <tr><td><code>task-planner</code></td><td>Mengubah PRD dan BRD menjadi file tiket berstatus TODO.</td><td>Tidak</td><td>Sonnet</td></tr>
+          <tr><td><code>task-planner</code></td><td>Mengubah permintaan (atau PRD dan BRD di mode lengkap) menjadi file tiket berstatus TODO.</td><td>Tidak</td><td>Sonnet</td></tr>
         </tbody>
       </table></div>
 
@@ -261,7 +262,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <p>Yang muncul di menu <code>/</code> hanya <code>feature-flow</code>, <code>tiket</code>, <code>lazy</code>, <code>kantor</code>, <code>project-profile</code>, <code>prd-writer</code>, dan <code>debug-assistant</code>. Skill internal dipakai otomatis oleh agent dan orkestrator.</p>
       <h3>Alur kerja</h3>
       <div class="tbl"><table><tbody>
-        <tr><td><code>feature-flow</code></td><td>Orkestrator mode cepat, lengkap, dan paralel: tiket → developer → reviewer → QA → DONE, termasuk branch dan PR.</td></tr>
+        <tr><td><code>feature-flow</code></td><td>Orkestrator mode default, lengkap, dan paralel: plan → developer → reviewer (review + verifikasi) → DONE, termasuk branch dan PR.</td></tr>
         <tr><td><code>ticket-workflow</code> <em>internal</em></td><td>Format file tiket, alur status, verdict agent, dan board.</td></tr>
         <tr><td><code>project-profile</code></td><td>Men-scan repo sekali menjadi profil yang dibaca semua agent: command, struktur, helper, aturan project, dan tracker.</td></tr>
         <tr><td><code>kantor</code></td><td>Kantor noskill: kantor 3D tiga lantai tempat agent bekerja dan berjalan mengantar tiket, dengan board live dari tiket <code>docs/noskill</code>, metrik, detail dan replay tiket.</td></tr>
@@ -291,12 +292,12 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
         <thead><tr><th>Perintah</th><th>Fungsi</th></tr></thead>
         <tbody>
           <tr><td><code>/noskill:tiket</code> atau <code>/noskill:tiket board</code></td><td>Status semua tiket, pertanyaan dari tiket HOLD, dan durasi tiap tahap per tiket.</td></tr>
-          <tr><td><code>/noskill:tiket fix &lt;deskripsi&gt;</code></td><td>Bug fix atau perubahan kecil lewat mode cepat.</td></tr>
+          <tr><td><code>/noskill:tiket fix &lt;deskripsi&gt;</code></td><td>Bug fix atau perubahan kecil lewat satu tiket.</td></tr>
           <tr><td><code>/noskill:tiket lanjut [jawaban]</code></td><td>Melanjutkan tiket yang tertunda dari sesi sebelumnya.</td></tr>
           <tr><td><code>/noskill:tiket rapikan [ID]</code></td><td>Rapikan tiket lama agar sesuai aturan tiket terbaru. Usulan ditampilkan dulu, diterapkan setelah kamu setujui.</td></tr>
           <tr><td><code>/noskill:kantor</code></td><td>Buka Kantor noskill. Di Cowork/claude.ai diterbitkan sebagai artifact milikmu; di Claude Code terminal disalin ke folder docs dan berjalan dalam mode demo.</td></tr>
           <tr><td><code>/noskill:lazy &lt;permintaan&gt;</code></td><td>Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan, tanpa tiket, review, atau QA.</td></tr>
-          <tr><td><code>/noskill:feature-flow</code></td><td>Alur kerja lengkap, mode cepat atau dari PRD.</td></tr>
+          <tr><td><code>/noskill:feature-flow</code></td><td>Alur tiket: default plan langsung, PRD/BRD bila diminta.</td></tr>
           <tr><td><code>/noskill:project-profile</code></td><td>Membuat atau me-refresh profil project.</td></tr>
         </tbody>
       </table></div>
@@ -327,7 +328,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <ul>
         <li>developer memakai helper yang ada dan menulis test negatif/batas</li>
         <li>reviewer menolak duplikasi</li>
-        <li>mode cepat berhenti di gate</li>
+        <li>mode default berhenti di gate sebelum kode ditulis</li>
         <li>aturan inti berlaku tanpa skill</li>
         <li>tiket dibuat langsung dari PRD (tanpa BRD)</li>
         <li>fitur lintas repo dipecah jadi tiket per repo</li>
