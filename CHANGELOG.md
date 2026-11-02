@@ -2,6 +2,11 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.15.1 — 2026-11-02
+
+### Dokumentasi
+- Screenshot Kantor noskill di README, halaman utama dokumentasi (bagian baru *Kantor noskill*), dan detail skill `kantor`: tampilan utama, kartu agent, jalan raya, dan mode malam. Gambar diambil dari mode demo, tanpa data tiket asli.
+
 ## 1.15.0 — 2026-11-02
 
 ### Ditambahkan
