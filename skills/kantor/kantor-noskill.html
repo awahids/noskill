@@ -1203,6 +1203,12 @@
   ];
 
   let boardList = TICKETS;
+  // Tickets of one board column, newest status change first, so a ticket that just moved is never hidden behind "+N lagi"
+  function colTickets(list, c) {
+    const lastAt = function (tk) { const h = tk.hist || []; return h.length ? String(h[h.length - 1][0]) : ''; };
+    return list.filter(function (tk) { return tk.status === c; })
+      .sort(function (a, b) { return lastAt(b).localeCompare(lastAt(a)); });
+  }
   function drawBoard(phase, list) {
     list = list || TICKETS;
     boardList = list;
@@ -1222,7 +1228,7 @@
       x.font = '500 20px "JetBrains Mono", Menlo, monospace';
       x.textAlign = 'center';
       x.fillText(c === 'IN_PROGRESS' ? 'IN_PROG' : c, i * cw + cw / 2, 108);
-      const inCol = list.filter(function (tk) { return tk.status === c; });
+      const inCol = colTickets(list, c);
       inCol.forEach(function (tk, row) {
         if (row > 2) return;
         const y = 132 + row * 108;
@@ -1434,7 +1440,7 @@
     const col = COLS[Math.min(COLS.length - 1, Math.max(0, Math.floor(x / cw)))];
     const row = Math.floor((y - 132) / 108);
     if (y < 132 || row > 2 || (y - 132) % 108 > 92) return null;
-    const inCol = boardList.filter(function (tk) { return tk.status === col; });
+    const inCol = colTickets(boardList, col);
     if (row === 2 && inCol.length > 3) return { column: col };
     return inCol[row] ? { ticket: inCol[row] } : null;
   }
@@ -2094,7 +2100,7 @@
     sideColumn = col; tinfo.hidden = false; renderColumn();
   }
   function renderColumn() {
-    const list = view().filter(function (t) { return t.status === sideColumn; });
+    const list = colTickets(view(), sideColumn);
     el('tDot').style.background = 'var(--btn)';
     el('tTitle').textContent = sideColumn;
     el('tSub').textContent = list.length + ' tiket';

@@ -2,6 +2,11 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.0.1 — 2026-11-02
+
+### Diperbaiki
+- **Kantor: tiket yang baru pindah status tersembunyi di "+N lagi".** Board 3D hanya menampilkan 2 tiket pertama per kolom menurut urutan file, jadi tiket yang baru DONE (misalnya BUG-013 di antara 22 tiket DONE) tidak terlihat. Sekarang setiap kolom, termasuk daftar "+N lagi" dan klik pada board, diurutkan dari perubahan status terbaru.
+
 ## 2.0.0 — 2026-11-02
 
 ### Diubah — alur ramping ala superpowers
