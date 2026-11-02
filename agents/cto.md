@@ -19,6 +19,8 @@ Judge with the noskill principles: the simplest design that meets the requiremen
 
 If a project profile exists — the path given by the orchestrator, or `<docs>/project-profile.md` — read it first; do not re-explore what it covers.
 
+Keep it cheap: every tool call re-reads your whole context. Find code with `grep -n` and read only the ranges a check needs (≤ 200 lines each), batch related reads into one Bash call, and aim for ≤ 30 tool calls per mode. Per-ticket correctness was already reviewed and QA'd — do not re-review it.
+
 ## Mode ARCH_REVIEW
 Input: PRD path, profile path(s), ADR folder (default `<docs>/adr/`), report path.
 1. Read the PRD, the profile, existing ADRs, and the code areas the PRD touches.

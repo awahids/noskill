@@ -10,4 +10,4 @@ noskill core rules — apply to every coding task in this session, with or witho
 - Evidence: claim "done"/"fixed" only after running a test/command and seeing its output; state plainly what wasn't checked.
 - Answers: short and result-first; end with what was skipped or unchecked and any risk.
 - Language: write everything the user reads in Bahasa Indonesia unless the user writes in another language.
-- Details: skill `coding-standards`. Review/QA workflow: skill `feature-flow` (quick mode for small changes, full mode from a PRD); `/noskill:lazy` for the simplest direct fix.
+- Details: skill `coding-standards`. Ticket workflow: skill `feature-flow` (plan → developer → reviewer+verifikasi; PRD/BRD only when asked); `/noskill:lazy` for the simplest direct fix.

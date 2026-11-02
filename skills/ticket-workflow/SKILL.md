@@ -1,7 +1,7 @@
 ---
 name: ticket-workflow
 description: >-
-  noskill ticket file format and status flow (TODO → IN_PROGRESS → REVIEW → QA → DONE, plus BUG and HOLD), agent verdicts, and the board. Use when creating, moving, or reporting tickets, or when the user asks "status tiket" or "board tiket".
+  noskill ticket file format and status flow (TODO → IN_PROGRESS → REVIEW → DONE, optional QA, plus BUG and HOLD), agent verdicts, and the board. Use when creating, moving, or reporting tickets, or when the user asks "status tiket" or "board tiket".
 user-invocable: false
 ---
 
@@ -14,8 +14,8 @@ Shared contract for all tickets in `<docs>/tickets/`. Every skill and agent that
 ## Status Flow
 
 ```
-TODO ──► IN_PROGRESS ──► REVIEW ──► QA ──► DONE
-              ▲             │        │
+TODO ──► IN_PROGRESS ──► REVIEW ──────────────► DONE
+              ▲             │   └─► QA ──► DONE   (hanya tiket integrates_with / diminta user)
               │   revisi    │        │ gagal test
               ├─────────────┘        ▼
               └──────────────────── BUG
@@ -28,11 +28,11 @@ HOLD ──► status sebelum HOLD, setelah blocker selesai
 |---|---|---|---|
 | `TODO` | Ready to work, all `depends_on` are DONE | developer | IN_PROGRESS |
 | `IN_PROGRESS` | Being worked / revised | developer | REVIEW, HOLD |
-| `REVIEW` | Code done, checked against the ticket | ticket-reviewer | QA, IN_PROGRESS, HOLD |
-| `QA` | Passed review, tested against AC & Test Cases. Tickets with `integrates_with` wait here until their paired ticket is DONE | qa-tester | DONE, BUG, HOLD |
-| `BUG` | Failed QA — bug report in Riwayat | developer (using `debug-assistant`) | IN_PROGRESS |
+| `REVIEW` | Code done; reviewed **and verified** (tests + Cara Verifikasi run) against the ticket | ticket-reviewer | DONE, QA, IN_PROGRESS, HOLD |
+| `QA` | Only for tickets with `integrates_with` (FE tested against the real BE) or when the user asks for separate QA. Waits here until the paired ticket is DONE | qa-tester | DONE, BUG, HOLD |
+| `BUG` | Failed QA or found later (final check) — bug report in Riwayat | developer (using `debug-assistant`) | IN_PROGRESS |
 | `HOLD` | Stopped: ambiguous requirement, needs user decision, environment/access unavailable, or 3 failed rounds | user | previous status |
-| `DONE` | Passed QA, changes committed | — | — |
+| `DONE` | Passed review+verification (or QA), changes committed | — | — |
 
 ## Transition Rules
 
@@ -40,8 +40,8 @@ HOLD ──► status sebelum HOLD, setelah blocker selesai
 2. **One ticket per working directory**, so `git diff` during review/QA contains only that ticket's changes. Sequential mode: tickets take turns on the working branch. Parallel mode: each active ticket has its own git worktree. Multi-repo: the ticket is worked in the repo named in its `repo` field (see `feature-flow`).
 3. **Pick order:** `BUG` first, then `TODO` whose `depends_on` are all DONE, BE tickets before FE tickets, by ID. Tickets depending on a HOLD ticket are not picked. `integrates_with` doesn't block work — only QA (rule 7).
 4. **`rounds` increases by 1** each time a ticket returns to the developer (REVIEW → IN_PROGRESS or QA → BUG). When `rounds` reaches 3, the ticket moves to **HOLD** — three failed rounds mean the problem is in the requirement/design, not the code, and needs a user decision.
-5. **No status is skipped.** No ticket goes directly from IN_PROGRESS to QA, or from REVIEW to DONE.
-6. **DONE needs evidence.** QA may PASS only if every AC and TC of the ticket was actually run and the result is visible (test/command output), not "should be correct".
+5. **No status is skipped.** No ticket goes directly from IN_PROGRESS to QA or DONE.
+6. **DONE needs evidence.** The reviewer may APPROVE (and QA may PASS) only if every AC of the ticket was actually run and the result is visible (test/command output), not "should be correct".
 7. **BE–FE joint QA.** A ticket with `integrates_with` is QA'd only after all tickets in that list are DONE, then tested together with them (FE calls the real BE). The Kontrak API is changed only by the orchestrator, recorded in both tickets' Riwayat.
 
 ## Agent Verdicts
@@ -52,7 +52,7 @@ Agents return the verdict on the first line of their answer, then details:
 |---|---|---|
 | developer | `READY_FOR_REVIEW` | REVIEW |
 | developer | `BLOCKED: <alasan>` | HOLD |
-| ticket-reviewer | `APPROVED` | QA |
+| ticket-reviewer | `APPROVED` + evidence per AC | DONE (QA if the ticket has `integrates_with` or the user asked for QA) |
 | ticket-reviewer | `CHANGES_REQUESTED` + list of changes | IN_PROGRESS |
 | ticket-reviewer | `BLOCKED: <alasan>` | HOLD |
 | qa-tester | `PASS` + evidence per AC/TC | DONE |
@@ -137,7 +137,7 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
   - **Bukti:** [output command/test]
 ```
 
-If QA finds a bug **outside this ticket's AC** (regression in another feature), don't fail this ticket for it — create a new ticket `type: bug`, `status: BUG`, `related: [<tiket asal>]`. If the correct behavior for that bug isn't defined in the requirements (no AC that can serve as Expected), its initial status is `HOLD` with a question to the user, not `BUG` — the developer can't fix it without a spec.
+If the reviewer or QA finds a bug **outside this ticket's AC** (regression in another feature), don't fail this ticket for it — create a new ticket `type: bug`, `status: BUG`, `related: [<tiket asal>]`. If the correct behavior for that bug isn't defined in the requirements (no AC that can serve as Expected), its initial status is `HOLD` with a question to the user, not `BUG` — the developer can't fix it without a spec.
 
 ## Board
 
