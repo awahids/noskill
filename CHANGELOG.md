@@ -2,6 +2,48 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 1.15.0 — 2026-11-02
+
+### Ditambahkan
+- **Jalan raya di depan kantor.** Dua lajur dengan marka, trotoar, zebra cross, lampu lalu lintas, dan lampu jalan yang menyala saat mode malam. Mobil, van, dan motor (termasuk ojek) melaju di kedua arah, menjaga jarak, dan berhenti di zebra cross saat ada orang menyeberang.
+- **Parkiran** di sisi barat dengan garis parkir, mobil dan motor karyawan, pos satpam, dan palang yang terangkat ketika satpam melambai.
+- **Warga sekitar.** Pejalan kaki di trotoar, orang yang menyeberang, penumpang menunggu di halte, pangkalan ojek, dan gerobak bakso Pak Udin dengan pembelinya. Mereka sesekali berbicara lewat gelembung ("Ojek, Mbak?", "Bakso satu, Pak", "Selamat pagi, Pak").
+
+## 1.14.0 — 2026-11-01
+
+### Ditambahkan
+- **Agent lebih mirip orang.** Setiap agent punya wajah (mata, alis, hidung, mulut, telinga), leher, sepatu, ikat pinggang, kerah, ID card, dan tangan. Gaya rambut berbeda per agent, beberapa berjenggot atau berkacamata, dan hijab Zahra, Alya, dan Naura kini membingkai wajah dengan warna masing-masing.
+- **Fasilitas kantor.** Pantri di Lantai 1 (kulkas, microwave, dispenser, meja berdiri), toilet pria dan wanita serta musholla di Lantai 2, dan kantin beratap di halaman timur dengan meja panjang dan bangku. Lantai 1 punya pintu keluar ke kantin.
+- **Kegiatan saat tidak ada kerjaan.** Agent yang menganggur bergantian ngopi, ke pantri, ke toilet, ke kantin, atau mampir ke meja rekan untuk ngobrol, lalu kembali ke mejanya. Pada waktu salat (sekitar Zuhur, Asar, Magrib, Isya) mereka ke musholla, dan saat jam makan siang ke kantin.
+- **Agent saling berinteraksi.** Agent yang mampir saling menyapa dan menjawab, penerima tiket membalas kurir ("Siap!", "Bismillah, saya kerjakan"), dan agent yang berkumpul di ruang ngopi, pantri, atau kantin mengobrol lewat gelembung bicara.
+- **Kelengkapan ruangan.** Ruang rapat punya enam kursi, dan agent yang menunggu keputusan HOLD duduk di sana. Ruang ngopi punya sofa, kantin punya piring dan gelas di setiap kursi (agent duduk pas di bangku), toilet punya wastafel dan cermin, dan musholla punya sajadah di setiap saf serta tempat wudhu.
+
+### Diperbaiki
+- Tangga dari Lantai 2 ke Lantai 3 menghadap terbalik, sehingga agent tampak berjalan di luar anak tangga. Tangga sekarang naik ke arah yang sama dengan jalur agent.
+- Agent yang mejanya menghadap ke belakang (Hamzah, Hafiz) kadang berjalan mundur dan duduk membelakangi meja rapat. Arah hadap sekarang dihitung ulang setiap kali agent meninggalkan mejanya.
+
+## 1.13.0 — 2026-11-01
+
+### Ditambahkan
+- **Jawab HOLD dari Kantor.** Detail tiket HOLD punya kolom jawaban. Jawaban disimpan di database artifact (koleksi `answers`, hanya pemilik dan editor yang bisa menulis), dan `/noskill:tiket lanjut` mengambilnya di sesi Cowork/claude.ai, mencatatnya di Riwayat, lalu melanjutkan tiket.
+- **Token per tiket.** `feature-flow` menambahkan pemakaian agent di akhir baris Riwayat, misalnya `(45.2k token, 3m)`. Panel **Metrik** di Kantor menampilkan token per agent dan tiket paling boros, dan detail tiket menampilkan totalnya.
+- **Ruang rapat** di Lantai 3, di sebelah ruang ngopi. Selama ada tiket HOLD, Eng. Manager dan agent yang terakhir memegang tiket itu naik ke sana dan menunggu sampai keputusanmu masuk.
+- **Nama agent.** Setiap agent punya nama: Rayyan (Product Manager), Faris (CTO), Zahra (Analyst), Hamzah (Tech Lead), Zayn (Backend Dev), Alya (Frontend Dev), Fathan (Fullstack Dev), Arkan (Reviewer), Naura (QA), dan Hafiz (Eng. Manager). Nama tampil di label meja, kartu agent, log, metrik, dan replay.
+- **Gelembung bicara.** Agent yang berjalan mengantar tiket menampilkan verdict-nya (`APPROVED`, `CHANGES_REQUESTED`, `PASS`, `FAIL`, `HOLD`, …) beserta ID tiket.
+- **Timeline hari ini.** Tombol **Timeline** menampilkan semua perpindahan status hari ini di garis 00–24. Klik satu titik untuk membuka tiketnya dan memutar ulang dari momen itu.
+
+## 1.12.0 — 2026-11-01
+
+### Ditambahkan
+- **Ruang ngopi di Kantor noskill.** Satu ruang ngopi bersama di Lantai 3 (meja bundar, mesin kopi, papan nama). Agent dari lantai mana pun yang tidak punya pekerjaan sekitar 20 detik berjalan ke sana, naik tangga kalau perlu, lalu berdiri melingkari meja sambil memegang cangkir. Mereka kembali ke mejanya begitu mendapat tiket, tahap baru, atau harus mengantar tiket. Kartu agent menyebut kalau ia sedang ngopi. Eng. Manager tetap di board.
+
+## 1.11.1 — 2026-11-01
+
+### Diperbaiki
+- **Agent yang sedang bekerja tidak terlihat di Kantor.** Di 1.11.0 hanya orkestrator yang menulis `activity.json`, dan dalam praktik langkah itu bisa terlewat. Sekarang setiap agent (PM, CTO, Analyst, Tech Lead, developer, reviewer, QA) menulis baris aktivitasnya sendiri sebagai langkah pertama, dan orkestrator cukup menulis `waiting_user` dan `done`.
+- **Jam `00:00` di Riwayat tiket.** Agent tanpa Bash (task-planner, product-manager, brd-tracer) menulis jam placeholder karena tidak diberi waktu. Orkestrator sekarang menyertakan `Waktu sekarang` di setiap pemanggilan agent.
+- **Kantor:** Tech Lead tetap terlihat menulis tiket walau `activity.json` belum ada, ditebak dari tiket TODO yang baru dibuat.
+
 ## 1.11.0 — 2026-10-31
 
 ### Ditambahkan

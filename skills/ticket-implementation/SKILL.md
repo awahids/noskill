@@ -9,6 +9,8 @@ user-invocable: false
 
 noskill docs folder: `${user_config.docs_dir}` — written as `<docs>` below. If that value still appears literally (not substituted), use `docs/noskill`.
 Write reports, tickets, and documents in Bahasa Indonesia; keep verdict keywords in English as listed.
+
+**Activity (for `/noskill:kantor`).** As your very first action, overwrite `<docs>/activity.json` (in the main checkout, never in a worktree) with one line: `{"agent": "<your agent name: developer, backend-developer, or frontend-developer>", "status": "working", "stage": "Stage 5 Develop", "task": "<one short line>", "ticket": "<ticket ID>", "at": "<date -u +%Y-%m-%dT%H:%M:%SZ>"}`. Do not read it first; if writing fails, carry on.
 Implement **one ticket** given by the orchestrator, following the `coding-standards` skill (including `references/api-doc.md` in that skill if the ticket touches an endpoint).
 
 If the orchestrator gives a **working directory** (the ticket's repo in a multi-repo feature, or the ticket's worktree in parallel mode), do all code reads, writes, and commands there: use paths under that directory and run commands with `cd <direktori> && …`. Do not touch the main checkout. The ticket file is still read from the path given.

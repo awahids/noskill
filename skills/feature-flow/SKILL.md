@@ -40,7 +40,7 @@ Keep `<docs>/activity.json` current so `/noskill:kantor` can show who is working
 ```
 
 - `agent`: the agent name you are about to call (`product-manager`, `cto`, `brd-tracer`, `task-planner`, `backend-developer`, `frontend-developer`, `developer`, `ticket-reviewer`, `qa-tester`), or `feature-flow` for yourself.
-- `status`: `working` right before you call an agent; `waiting_user` when you ask the user something or wait at a gate (`agent: "feature-flow"`, `task` = what you asked); `done` at the end of Stage 6.
+- `status`: each agent writes its own `working` line as its first action (the agent files say so); you write `working` only for stages you run yourself, `waiting_user` when you ask the user something or wait at a gate (`agent: "feature-flow"`, `task` = what you asked); `done` at the end of Stage 6.
 - `ticket`: the ticket ID during Stage 5, otherwise `null`. `task`: one short line in the user's language. `at`: `date -u +%Y-%m-%dT%H:%M:%SZ`.
 
 Write it with one `cat > <docs>/activity.json <<'EOF' … EOF` (or the Write tool) — no reads, no extra checks. Multi-repo: only in the docs repo. It is a display aid only; if writing it fails, continue the flow.
@@ -132,7 +132,7 @@ For one ticket:
    - If QA reports a bug outside this ticket, create a new `BUG-NNN` ticket per `ticket-workflow`
 4. **`rounds` = 3** → set `HOLD` with a summary of why it keeps failing.
 
-On every status change: update `status` in the frontmatter and add one line to `## Riwayat` with date **and time** (`date '+%Y-%m-%d %H:%M'`), so `/noskill:tiket board` can compute each stage's duration. Report to the user one line per change (`WMS-BE-004: REVIEW → QA`), not long narration. When calling an agent, send the ticket path and the paths that stage needs: latest review/QA report path for the developer, latest developer report path for the reviewer. Don't send file or report contents — agents read files themselves.
+On every status change: update `status` in the frontmatter and add one line to `## Riwayat` with date **and time** (`date '+%Y-%m-%d %H:%M'`), so `/noskill:tiket board` can compute each stage's duration. When the line closes an agent's stage and the Agent tool result shows its usage (e.g. `45.2k tokens · 3m 10s`), end the line with `(45.2k token, 3m)` so `/noskill:kantor` can show tokens per agent and per ticket; skip it when no usage is shown. Report to the user one line per change (`WMS-BE-004: REVIEW → QA`), not long narration. When calling an agent, send the ticket path and the paths that stage needs: latest review/QA report path for the developer, latest developer report path for the reviewer. Don't send file or report contents — agents read files themselves. Every agent call also includes `Waktu sekarang: <date '+%Y-%m-%d %H:%M %z'>`, so agents without Bash can timestamp Riwayat lines and `activity.json` correctly (never write a placeholder such as `00:00`).
 
 ### Parallel Mode (pipeline)
 
@@ -159,7 +159,7 @@ For one feature touching several repos (e.g. `api` NestJS, `web` Vue, `mobile` F
 7. **Cross-repo QA:** a `web` ticket is tested after its paired `api` ticket is DONE, against the environment you started from the `api` repo's working branch that already contains that ticket. If it can't run here, set `HOLD` with an explanation.
 8. Tickets in different repos never overlap `File/Lokasi`, so in parallel mode they can run concurrently as long as `depends_on` is met — including BE–FE pairs via `integrates_with`.
 
-**HOLD:** don't stop the whole flow just because one ticket is HOLD. Continue other tickets that don't depend on it. Once no ticket can run, show all HOLD tickets at once with their questions to the user. After they answer, record the answer in Riwayat, return the ticket to its pre-HOLD status, reset `rounds` to 0 if the requirement changed, and continue the loop.
+**HOLD:** don't stop the whole flow just because one ticket is HOLD. Continue other tickets that don't depend on it. Once no ticket can run, show all HOLD tickets at once with their questions to the user (they can also answer from `/noskill:kantor`; `/noskill:tiket lanjut` picks those answers up). After they answer, record the answer in Riwayat, return the ticket to its pre-HOLD status, reset `rounds` to 0 if the requirement changed, and continue the loop.
 
 ## Stage 6 — Finish
 

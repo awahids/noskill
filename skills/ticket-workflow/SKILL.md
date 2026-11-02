@@ -123,7 +123,7 @@ tracker_ref: —        # opsional: nomor issue GitHub / URL Notion kalau tracke
 
 **layer** is set when the ticket is created and picks the developer agent: `be` → `backend-developer` (API, service, migration, job), `fe` → `frontend-developer` (pages, components, state), `—` or empty → `developer` (fullstack monolith, mobile, scripts, config, or tickets made before this field existed). "developer" elsewhere in this skill means whichever of the three the ticket's `layer` picks.
 
-**Riwayat** is append-only, one line per status change: `- <YYYY-MM-DD HH:MM> <STATUS> — <ringkasan alasan>` (time from `date '+%Y-%m-%d %H:%M'`, used by `/noskill:tiket board` to compute each stage's duration). For changes to BUG/HOLD/IN_PROGRESS (revision), add a 1–3 line summary beneath it (indented) with the agent report path, or the question for the user.
+**Riwayat** is append-only, one line per status change: `- <YYYY-MM-DD HH:MM> <STATUS> — <ringkasan alasan>` (time from `date '+%Y-%m-%d %H:%M'`, used by `/noskill:tiket board` to compute each stage's duration). A line may end with the closing agent's usage, `(45.2k token, 3m)`. For changes to BUG/HOLD/IN_PROGRESS (revision), add a 1–3 line summary beneath it (indented) with the agent report path, or the question for the user.
 
 **Agent reports** are stored in `<docs>/reports/<ID>/` — `dev-<n>.md`, `review-<n>.md`, `qa-<n>.md` (n = round). Riwayat only references the path, it doesn't copy the contents.
 

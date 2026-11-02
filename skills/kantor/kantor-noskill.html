@@ -115,6 +115,20 @@
   button:focus-visible { outline: 3px solid var(--btn); outline-offset: 2px; }
 
   .err[hidden] { display: none; }
+  .timeline { position: fixed; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(560px, calc(100% - 432px));
+    background: var(--panel); border: 1px solid var(--edge); border-radius: 16px; padding: 10px 14px 8px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: grid; gap: 6px; }
+  .timeline[hidden] { display: none; }
+  .tl-head { display: flex; align-items: center; gap: 10px; }
+  .tl-head h2 { margin: 0; font-size: 1rem; }
+  .tl-head span { flex: 1; font-size: 0.8rem; color: var(--muted); min-width: 0; }
+  .tl-head .close { padding: 0 9px; font-size: 1rem; }
+  .tl-track { position: relative; height: 34px; border-radius: 8px; background: var(--log); }
+  .tl-track button { position: absolute; top: 5px; width: 10px; height: 24px; padding: 0; border-radius: 4px; border: 1px solid var(--panel); transform: translateX(-5px); }
+  .tl-track .tl-now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--btn); }
+  .tl-axis { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
+  @media (max-width: 900px) {
+    .timeline { left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px)); width: auto; top: calc(10px + env(safe-area-inset-top, 0px)); bottom: auto; }
+  }
   .src { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 0.85rem; color: var(--muted); }
   .src span:nth-child(2) { flex: 1 1 160px; min-width: 0; }
   .src button { padding: 2px 10px; font-size: 0.82rem; }
@@ -180,7 +194,7 @@
   .stat div { background: var(--log); border-radius: 10px; padding: 6px 8px; }
   .stat b { display: block; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
   .stat span { font-size: 0.75rem; color: var(--muted); }
-  .bar { display: grid; grid-template-columns: 112px 1fr auto; gap: 8px; align-items: center; font-size: 0.85rem; }
+  .bar { display: grid; grid-template-columns: 150px 1fr auto; gap: 8px; align-items: center; font-size: 0.85rem; }
   .bar i { display: block; height: 10px; border-radius: 6px; background: var(--btn); min-width: 2px; }
   .bar .val { font-family: var(--font-mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; color: var(--muted); }
   .bar.top i { background: #d9682a; }
@@ -239,6 +253,7 @@
   <div class="controls">
     <button type="button" id="btnMetrics" aria-expanded="false" aria-controls="metrics">Metrik</button>
     <button type="button" id="btnFollow" aria-pressed="false">Ikuti tiket</button>
+    <button type="button" id="btnTimeline" aria-expanded="false" aria-controls="timeline">Timeline</button>
   </div>
   <div class="viewers" id="viewers" hidden aria-live="polite"></div>
   <div class="controls">
@@ -287,6 +302,12 @@
   </header>
   <div id="mBody" class="tbody"></div>
 </aside>
+
+<section class="timeline" id="timeline" hidden aria-labelledby="tlTitle">
+  <div class="tl-head"><h2 id="tlTitle">Hari ini</h2><span id="tlSub"></span><button class="close" id="tlClose" aria-label="Tutup timeline">×</button></div>
+  <div class="tl-track" id="tlTrack"></div>
+  <div class="tl-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+</section>
 
 <div class="err" id="err" hidden>Browser ini belum bisa menampilkan 3D (WebGL tidak aktif). Coba buka di Chrome, Safari, atau Firefox versi terbaru.</div>
 
@@ -442,61 +463,117 @@
     box(0.3, H, d, C.wall, BX0, y + H / 2, 0, { parent: g });
     for (let z = BZ0 + 2.4; z < BZ1 - 1.5; z += 3.4) box(0.06, 1.5, 2.2, 0, BX0 + 0.17, y + 2.2, z, { parent: g, cast: false, material: windowMat });
     box(len, 1.0, 0.06, 0, (BX0 + BX1) / 2, y + 0.5, BZ1, { parent: g, material: glassMat, cast: false });
-    box(0.06, 1.0, d, 0, BX1, y + 0.5, 0, { parent: g, material: glassMat, cast: false });
+    if (k === 0) {   // a door gap at z -0.6..1.6 leads out to the canteen
+      box(0.06, 1.0, 9.4, 0, BX1, y + 0.5, -5.3, { parent: g, material: glassMat, cast: false });
+      box(0.06, 1.0, 8.4, 0, BX1, y + 0.5, 5.8, { parent: g, material: glassMat, cast: false });
+    } else box(0.06, 1.0, d, 0, BX1, y + 0.5, 0, { parent: g, material: glassMat, cast: false });
     box(len, 0.08, 0.1, 0x3b4048, (BX0 + BX1) / 2, y + 1.02, BZ1, { parent: g });
-    box(0.1, 0.08, d, 0x3b4048, BX1, y + 1.02, 0, { parent: g });
+    if (k === 0) { box(0.1, 0.08, 9.4, 0x3b4048, BX1, y + 1.02, -5.3, { parent: g }); box(0.1, 0.08, 8.4, 0x3b4048, BX1, y + 1.02, 5.8, { parent: g }); }
+    else box(0.1, 0.08, d, 0x3b4048, BX1, y + 1.02, 0, { parent: g });
     [[BX1, BZ1], [BX1, BZ0], [BX0, BZ1]].forEach(function (c) { box(0.4, FLOOR_H, 0.4, C.trim, c[0], y + FLOOR_H / 2 - 0.15, c[1], { parent: g }); });
     if (k === 2) { box(len, 0.25, 0.5, C.trim, (BX0 + BX1) / 2, y + H, BZ0, { parent: g }); box(0.5, 0.25, d, C.trim, BX0, y + H, 0, { parent: g }); }
   }
-  function stairs(k, x) {   // from storey k up to k + 1, rising towards -z
-    const g = floors[k], n = 16, rise = FLOOR_H / n, z0 = 7.6, z1 = -3.4, run = (z0 - z1) / n;
-    for (let i = 0; i < n; i++) box(1.3, 0.14, run + 0.02, 0xb88a5a, x, FY[k] + (i + 1) * rise - 0.07, z0 - (i + 0.5) * run, { parent: g });
-    const len = Math.hypot(FLOOR_H, z0 - z1), ang = Math.atan2(FLOOR_H, z0 - z1);
+  // from storey k up to k + 1, starting at z0 and rising towards z1 (must match upRoute)
+  function stairs(k, x, z0, z1) {
+    const g = floors[k], n = 16, rise = FLOOR_H / n, run = (z0 - z1) / n;
+    for (let i = 0; i < n; i++) box(1.3, 0.14, Math.abs(run) + 0.02, 0xb88a5a, x, FY[k] + (i + 1) * rise - 0.07, z0 - (i + 0.5) * run, { parent: g });
+    const len = Math.hypot(FLOOR_H, z0 - z1), ang = Math.sign(z0 - z1) * Math.atan2(FLOOR_H, Math.abs(z0 - z1));
     [-0.7, 0.7].forEach(function (sx) { box(0.08, 0.3, len, 0x3b4048, x + sx, FY[k] + FLOOR_H / 2, (z0 + z1) / 2, { parent: g }).rotation.x = ang; });
     box(0.06, 0.06, len, 0x3b4048, x + 0.72, FY[k] + FLOOR_H / 2 + 1.0, (z0 + z1) / 2, { parent: g }).rotation.x = ang;
   }
   [0, 1, 2].forEach(function (k) { slab(k); storeyWalls(k); });
-  stairs(0, 10.9);
-  stairs(1, 12.5);
+  stairs(0, 10.9, 7.6, -3.4);   // L1 -> L2 rises towards the back
+  stairs(1, 12.5, -3.4, 7.6);   // L2 -> L3 rises towards the front
 
   // ---------- Characters ----------
   const SKIN = [0xf1c9a5, 0xd9a47c, 0xb67a52, 0x8d5a3b];
   const HAIR = [0x2b1d14, 0x3a2a1e, 0x1a1410, 0x5a3a22];
   const PANTS = [0x2b2d42, 0x3d5a80, 0x5c4033, 0x8d99ae];
 
+  // People: shoes, belt, tapered torso, neck, face (eyes, brows, nose, mouth, ears), hair styles,
+  // optional beard, glasses, tie, ID card, and a hijab that frames the face. Pivots stay where the
+  // poses expect them: legs at the hip, arms at the shoulder, the hand 0.75 below the shoulder.
   function makePerson(o) {
     const g = new THREE.Group();
-    const hip = 0.95;
-    function limb(w, h, d, color, px, py) {
-      const p = new THREE.Group();
-      p.position.set(px, py, 0);
-      box(w, h, d, color, 0, -h / 2, 0, { parent: p });
-      g.add(p);
-      return p;
+    const hip = 0.95, hair = o.hair, skin = o.skin, dark = 0x1a1410;
+    const o2 = function (extra) { const r = { parent: g, cast: false }; for (const k in extra) r[k] = extra[k]; return r; };
+    function limb(px, py) { const p = new THREE.Group(); p.position.set(px, py, 0); g.add(p); return p; }
+    // legs: trousers + shoes
+    const legL = limb(0.14, hip), legR = limb(-0.14, hip);
+    [legL, legR].forEach(function (leg) {
+      box(0.22, 0.8, 0.24, o.pants, 0, -0.4, 0, { parent: leg });
+      box(0.23, 0.11, 0.34, o.shoes || 0x2a2320, 0, -0.85, 0.05, { parent: leg });
+    });
+    // hips, belt, torso, collar
+    box(0.52, 0.16, 0.28, o.pants, 0, hip + 0.02, 0, { parent: g });
+    box(0.54, 0.05, 0.3, 0x3b2a1e, 0, hip + 0.1, 0, o2());
+    box(0.5, 0.34, 0.28, o.shirt, 0, hip + 0.28, 0, { parent: g });
+    box(0.62, 0.36, 0.32, o.shirt, 0, hip + 0.6, 0, { parent: g });
+    if (!o.hijab) box(0.26, 0.07, 0.06, o.collar || 0xf7f5ef, 0, hip + 0.8, 0.15, o2());
+    if (o.tie) box(0.08, 0.42, 0.02, o.tie, 0, hip + 0.56, 0.165, o2());
+    else if (!o.hijab) box(0.05, 0.3, 0.02, 0xf7f5ef, 0, hip + 0.62, 0.162, o2({ material: undefined }));
+    if (o.card) { box(0.13, 0.17, 0.02, 0xf7f5ef, 0.15, hip + 0.48, 0.17, o2()); box(0.13, 0.04, 0.021, o.card, 0.15, hip + 0.55, 0.172, o2()); }
+    // arms: sleeves + hands (long sleeves, office style)
+    const armL = limb(0.38, hip + 0.74), armR = limb(-0.38, hip + 0.74);
+    [armL, armR].forEach(function (arm) {
+      box(0.16, 0.66, 0.18, o.shirt, 0, -0.33, 0, { parent: arm });
+      box(0.17, 0.05, 0.19, o.cuff || o.shirt, 0, -0.64, 0, { parent: arm, cast: false });
+      box(0.13, 0.14, 0.15, skin, 0, -0.74, 0.01, { parent: arm });
+    });
+    // neck + head
+    cyl(0.085, 0.095, 0.14, 8, skin, 0, hip + 0.86, 0, { parent: g });
+    const hy = hip + 1.13;
+    box(0.4, 0.44, 0.4, skin, 0, hy, 0, { parent: g });
+    box(0.05, 0.1, 0.08, skin, 0.215, hy, 0, o2());
+    box(0.05, 0.1, 0.08, skin, -0.215, hy, 0, o2());
+    // face
+    [0.095, -0.095].forEach(function (ex) {
+      box(0.09, 0.055, 0.015, 0xffffff, ex, hy + 0.03, 0.2, o2());
+      box(0.045, 0.05, 0.016, dark, ex, hy + 0.03, 0.208, o2());
+      box(0.11, 0.025, 0.02, o.hijab ? 0x2b1d14 : hair, ex, hy + 0.1, 0.205, o2());
+    });
+    box(0.05, 0.08, 0.05, skin, 0, hy - 0.03, 0.22, o2());
+    box(0.12, 0.025, 0.015, 0x9a4f45, 0, hy - 0.12, 0.202, o2());
+    if (o.glasses) {
+      [0.095, -0.095].forEach(function (ex) {
+        box(0.13, 0.015, 0.012, 0x22262c, ex, hy + 0.065, 0.214, o2());
+        box(0.13, 0.015, 0.012, 0x22262c, ex, hy - 0.005, 0.214, o2());
+        box(0.012, 0.08, 0.012, 0x22262c, ex - 0.065, hy + 0.03, 0.214, o2());
+        box(0.012, 0.08, 0.012, 0x22262c, ex + 0.065, hy + 0.03, 0.214, o2());
+      });
+      box(0.06, 0.015, 0.012, 0x22262c, 0, hy + 0.04, 0.214, o2());
     }
-    const legL = limb(0.24, 0.9, 0.26, o.pants, 0.15, hip);
-    const legR = limb(0.24, 0.9, 0.26, o.pants, -0.15, hip);
-    box(0.62, 0.8, 0.36, o.shirt, 0, hip + 0.4, 0, { parent: g });
-    const armL = limb(0.17, 0.7, 0.2, o.shirt, 0.4, hip + 0.75);
-    const armR = limb(0.17, 0.7, 0.2, o.shirt, -0.4, hip + 0.75);
-    box(0.15, 0.15, 0.17, o.skin, 0, -0.75, 0, { parent: armL });
-    box(0.15, 0.15, 0.17, o.skin, 0, -0.75, 0, { parent: armR });
-    box(0.46, 0.46, 0.44, o.skin, 0, hip + 1.05, 0, { parent: g });
-    box(0.06, 0.07, 0.02, 0x1a1410, 0.1, hip + 1.08, 0.225, { parent: g, cast: false });
-    box(0.06, 0.07, 0.02, 0x1a1410, -0.1, hip + 1.08, 0.225, { parent: g, cast: false });
     if (o.hijab) {
-      box(0.54, 0.54, 0.46, o.hijab, 0, hip + 1.08, -0.03, { parent: g });
-      box(0.62, 0.3, 0.44, o.hijab, 0, hip + 0.8, 0, { parent: g });
+      // a wrap that frames the face, falls over the shoulders, and covers the hair
+      box(0.48, 0.5, 0.34, o.hijab, 0, hy + 0.04, -0.06, { parent: g });
+      box(0.48, 0.09, 0.44, o.hijab, 0, hy + 0.26, 0, { parent: g });
+      box(0.05, 0.48, 0.38, o.hijab, 0.235, hy - 0.01, 0.02, { parent: g });
+      box(0.05, 0.48, 0.38, o.hijab, -0.235, hy - 0.01, 0.02, { parent: g });
+      box(0.46, 0.14, 0.42, o.hijab, 0, hy - 0.27, 0.01, { parent: g });
+      box(0.7, 0.2, 0.4, o.hijab, 0, hip + 0.76, 0, { parent: g });
+      box(0.4, 0.28, 0.06, o.hijab, 0, hip + 0.58, 0.16, { parent: g });
     } else {
-      box(0.5, 0.16, 0.48, o.hair, 0, hip + 1.3, -0.01, { parent: g });
-      box(0.5, 0.3, 0.1, o.hair, 0, hip + 1.15, -0.22, { parent: g });
+      const style = o.style || 'short';
+      box(0.42, 0.1, 0.42, hair, 0, hy + 0.26, 0, { parent: g });
+      box(0.42, 0.3, 0.07, hair, 0, hy + 0.1, -0.2, o2());
+      box(0.05, 0.16, 0.36, hair, 0.205, hy + 0.15, -0.02, o2());
+      box(0.05, 0.16, 0.36, hair, -0.205, hy + 0.15, -0.02, o2());
+      if (style === 'side') box(0.24, 0.07, 0.12, hair, 0.08, hy + 0.3, 0.12, o2());
+      if (style === 'curly') for (let i = 0; i < 5; i++) box(0.12, 0.08, 0.12, hair, -0.16 + i * 0.08, hy + 0.32, (i % 2) * 0.1 - 0.05, o2());
+      if (style === 'quiff') box(0.3, 0.12, 0.14, hair, 0, hy + 0.33, 0.12, o2());
+      if (o.beard) {
+        box(0.4, 0.1, 0.06, hair, 0, hy - 0.17, 0.18, o2());
+        box(0.05, 0.22, 0.2, hair, 0.19, hy - 0.08, 0.1, o2());
+        box(0.05, 0.22, 0.2, hair, -0.19, hy - 0.08, 0.1, o2());
+        box(0.16, 0.03, 0.02, hair, 0, hy - 0.08, 0.205, o2());
+      }
     }
-    if (o.tie) box(0.1, 0.5, 0.02, o.tie, 0, hip + 0.5, 0.19, { parent: g, cast: false });
     g.scale.setScalar(o.scale || 0.75);
-    g.userData = { legL: legL, legR: legR, armL: armL, armR: armR };
+    g.userData = { legL: legL, legR: legR, armL: armL, armR: armR, female: !!o.hijab };
     (o.parent || scene).add(g);
     return g;
   }
+
 
   // ---------- Name labels (always face the camera) ----------
   function makeLabel(title, sub, color) {
@@ -531,17 +608,30 @@
   // ---------- Stations: one desk per agent, spread over three storeys ----------
   // f = storey, (x, z) = desk position, rot = facing (0 faces +z, PI faces -z); every desk faces the corridor at z = 0.5
   const AGENTS = [
-    { key: 'pm',       role: 'Product Manager', agent: 'product-manager',    color: 0x3b7fc4, extra: 'notes',  f: 0, x: -9,   z: -5, rot: 0 },
-    { key: 'cto',      role: 'CTO',             agent: 'cto',                color: 0xc8453a, extra: 'glass',  f: 0, x: -2.5, z: -5, rot: 0 },
-    { key: 'analyst',  role: 'Analyst',         agent: 'brd-tracer',         color: 0x7d5bbf, extra: 'shelf',  f: 0, x: 4,    z: -5, rot: 0 },
-    { key: 'lead',     role: 'Tech Lead',       agent: 'task-planner',       color: 0x1f9aab, extra: 'notes',  f: 0, x: -7,   z: 6,  rot: Math.PI },
-    { key: 'be',       role: 'Backend Dev',     agent: 'backend-developer',  color: 0x2f8a4e, extra: 'server', f: 1, x: -8,   z: -5, rot: 0 },
-    { key: 'fe',       role: 'Frontend Dev',    agent: 'frontend-developer', color: 0x5aa83a, extra: 'plant',  f: 1, x: -1.5, z: -5, rot: 0 },
-    { key: 'dev',      role: 'Fullstack Dev',   agent: 'developer',          color: 0x2b7569, extra: 'plant',  f: 1, x: 5,    z: -5, rot: 0 },
-    { key: 'reviewer', role: 'Reviewer',        agent: 'ticket-reviewer',    color: 0xc79a14, extra: 'dual',   f: 2, x: -6,   z: -5, rot: 0 },
-    { key: 'qa',       role: 'QA',              agent: 'qa-tester',          color: 0xd9682a, extra: 'rack',   f: 2, x: 2,    z: -5, rot: 0 }
+    { key: 'pm', name: 'Rayyan',       role: 'Product Manager', agent: 'product-manager',    color: 0x3b7fc4, extra: 'notes',  f: 0, x: -9,   z: -5, rot: 0 },
+    { key: 'cto', name: 'Faris',      role: 'CTO',             agent: 'cto',                color: 0xc8453a, extra: 'glass',  f: 0, x: -2.5, z: -5, rot: 0 },
+    { key: 'analyst', name: 'Zahra',  role: 'Analyst',         agent: 'brd-tracer',         color: 0x7d5bbf, extra: 'shelf',  f: 0, x: 4,    z: -5, rot: 0 },
+    { key: 'lead', name: 'Hamzah',     role: 'Tech Lead',       agent: 'task-planner',       color: 0x1f9aab, extra: 'notes',  f: 0, x: -7,   z: 6,  rot: Math.PI },
+    { key: 'be', name: 'Zayn',       role: 'Backend Dev',     agent: 'backend-developer',  color: 0x2f8a4e, extra: 'server', f: 1, x: -8,   z: -5, rot: 0 },
+    { key: 'fe', name: 'Alya',       role: 'Frontend Dev',    agent: 'frontend-developer', color: 0x5aa83a, extra: 'plant',  f: 1, x: -1.5, z: -5, rot: 0 },
+    { key: 'dev', name: 'Fathan',      role: 'Fullstack Dev',   agent: 'developer',          color: 0x2b7569, extra: 'plant',  f: 1, x: 5,    z: -5, rot: 0 },
+    { key: 'reviewer', name: 'Arkan', role: 'Reviewer',        agent: 'ticket-reviewer',    color: 0xc79a14, extra: 'dual',   f: 2, x: -6,   z: -5, rot: 0 },
+    { key: 'qa', name: 'Naura',       role: 'QA',              agent: 'qa-tester',          color: 0xd9682a, extra: 'rack',   f: 2, x: 2,    z: -5, rot: 0 }
   ];
   const ST = {};
+  // How each agent looks: skin, hair style, beard, glasses, hijab colour
+  const LOOKS = {
+    pm:       { skin: 0xd9a47c, hair: 0x2b1d14, style: 'side', pants: 0x3d5a80 },
+    cto:      { skin: 0xc68e66, hair: 0x1a1410, style: 'short', beard: true, glasses: true, tie: 0x1d2530, pants: 0x2b2d42 },
+    analyst:  { skin: 0xf1c9a5, hijab: 0xb9a3dc, pants: 0x5c4033 },
+    lead:     { skin: 0xb67a52, hair: 0x1a1410, style: 'curly', beard: true, pants: 0x2b2d42 },
+    be:       { skin: 0xd9a47c, hair: 0x3a2a1e, style: 'quiff', glasses: true, pants: 0x3d5a80 },
+    fe:       { skin: 0xe8b894, hijab: 0xe9b9c3, pants: 0x8d99ae },
+    dev:      { skin: 0x8d5a3b, hair: 0x1a1410, style: 'short', beard: true, pants: 0x5c4033 },
+    reviewer: { skin: 0xc68e66, hair: 0x2b1d14, style: 'side', beard: true, glasses: true, pants: 0x2b2d42 },
+    qa:       { skin: 0xd9a47c, hijab: 0x2e3a59, pants: 0x3d5a80 },
+    em:       { skin: 0xb67a52, hair: 0x2b1d14, style: 'short', beard: true, pants: 0x2b2d42 }
+  };
   ['Produk & Arsitektur', 'Engineering', 'Quality'].forEach(function (name, k) {
     const lb = makeLabel('Lantai ' + (k + 1), name, 0x2f6b4f);
     lb.position.set(BX0 - 1.2, FY[k] + 2.4, BZ1 + 1.2);
@@ -611,17 +701,18 @@
     if (a.extra === 'plant' || a.extra === 'dual') plant(g, 1.8, -0.6);
 
     // the agent at the desk, seated
+    const look = LOOKS[a.key] || {};
     const person = makePerson({
-      skin: pick(SKIN), hair: pick(HAIR), shirt: a.color, pants: pick(PANTS),
-      hijab: (a.key === 'analyst' || a.key === 'qa' || a.key === 'fe') ? 0x3a3f46 : null,
-      tie: a.key === 'cto' ? 0x1d2530 : null, parent: g
+      skin: look.skin || pick(SKIN), hair: look.hair || pick(HAIR), shirt: a.color, pants: look.pants || pick(PANTS),
+      hijab: look.hijab || null, style: look.style, beard: look.beard, glasses: look.glasses,
+      tie: look.tie || null, card: a.color, parent: g
     });
     person.userData.key = a.key;
     person.position.set(0, -0.18, 0);
     person.userData.legL.rotation.x = -Math.PI / 2;
     person.userData.legR.rotation.x = -Math.PI / 2;
 
-    const label = makeLabel(a.role, a.agent, a.color);
+    const label = makeLabel(a.name, a.role, a.color);
     label.position.set(0, 3.3, 0.3);
     g.add(label);
 
@@ -630,15 +721,149 @@
     ST[a.key] = { a: a, g: g, f: a.f, person: person, glow: glowMat, screen: screenMat, work: work, label: label, labelY: 3.3 };
   });
 
-  // Lounges so each storey reads as its own room
+  // Plants so each storey reads as its own room
   plant(floors[0], -11.8, 8.6, FY[0]); plant(floors[0], 8.4, -8.6, FY[0]);
-  plant(floors[1], -11.8, 8.6, FY[1]); plant(floors[1], 8.4, -8.6, FY[1]);
-  box(3.2, 0.5, 1.2, 0x3d5a80, -3, FY[1] + 0.35, 7.8, { parent: floors[1] });
-  box(3.2, 0.8, 0.3, 0x3d5a80, -3, FY[1] + 0.6, 8.4, { parent: floors[1] });
-  box(1.4, 0.45, 0.8, 0xb88a5a, -3, FY[1] + 0.25, 6.2, { parent: floors[1] });
-  plant(floors[2], -11.8, 8.6, FY[2]); plant(floors[2], 8.4, -8.6, FY[2]); plant(floors[2], 6, 8.4, FY[2]);
-  box(2.6, 1.0, 0.8, 0x8d6e63, -3, FY[2] + 0.5, 7.9, { parent: floors[2] });
-  cyl(0.18, 0.18, 0.35, 10, 0x2a2f36, -3.6, FY[2] + 1.18, 7.9, { parent: floors[2] });
+  plant(floors[2], -11.8, 8.6, FY[2]); plant(floors[2], 8.4, -8.6, FY[2]);
+
+  // ---------- Ruang ngopi: one shared coffee corner on the top floor, where idle agents from every storey meet ----------
+  const LOUNGE_FLOOR = 2;
+  // Ruang rapat (floor 3, beside the coffee corner): where the Eng. Manager and the agents of HOLD tickets wait for your decision
+  const MEETING_FLOOR = 2;
+  const MEETING = { x: 5.2, z: 7.0 };
+  const LOUNGE = { x: -2.6, z: 6.8 };
+  // nine standing spots in a ring around the table, one for every agent that can be idle
+  const LOUNGE_SPOTS = [];
+  for (let i = 0; i < 9; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 9; LOUNGE_SPOTS.push([Math.cos(a) * 1.55, Math.sin(a) * 1.55]); }
+  const loungeTaken = {};
+  const mugMat = new THREE.MeshStandardMaterial({ color: 0xf7f5ef, flatShading: true });
+  [LOUNGE_FLOOR].forEach(function (k) {
+    const g = floors[k], y = FY[k], x = LOUNGE.x, z = LOUNGE.z;
+    const rug = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 0.03, 32), new THREE.MeshStandardMaterial({ color: 0x8d6e63, roughness: 0.95, transparent: true, opacity: 0.45 }));
+    rug.position.set(x, y + 0.02, z); rug.receiveShadow = true; g.add(rug);
+    cyl(0.55, 0.55, 0.08, 18, 0xb88a5a, x, y + 0.72, z, { parent: g });             // round table
+    cyl(0.07, 0.12, 0.68, 8, 0x5c4a3a, x, y + 0.36, z, { parent: g });
+    for (let m = 0; m < 3; m++) cyl(0.07, 0.06, 0.12, 8, 0, x - 0.2 + m * 0.2, y + 0.82, z + (m - 1) * 0.12, { parent: g, material: mugMat });
+    // coffee counter against the front railing with a machine and a jar
+    box(1.8, 0.95, 0.6, 0x6b4430, x + 1.9, y + 0.48, 9.2, { parent: g });
+    box(1.9, 0.06, 0.66, 0xd8c3a5, x + 1.9, y + 0.98, 9.2, { parent: g });
+    box(0.45, 0.55, 0.4, 0x2a2f36, x + 1.5, y + 1.29, 9.2, { parent: g });
+    box(0.1, 0.06, 0.1, 0, x + 1.5, y + 1.2, 8.98, { parent: g, cast: false, material: lampMat });
+    cyl(0.13, 0.13, 0.3, 10, 0xc8553d, x + 2.35, y + 1.16, 9.2, { parent: g });
+    plant(g, x - 2.2, 9.2, y);
+    box(0.8, 0.45, 2.4, 0x6b8f71, x - 3.4, y + 0.25, z, { parent: g });                  // sofa
+    box(0.25, 0.7, 2.4, 0x6b8f71, x - 3.8, y + 0.6, z, { parent: g });
+    box(0.8, 0.6, 0.22, 0x6b8f71, x - 3.4, y + 0.45, z - 1.25, { parent: g });
+    box(0.8, 0.6, 0.22, 0x6b8f71, x - 3.4, y + 0.45, z + 1.25, { parent: g });
+    const sign = makeLabel('Ruang ngopi', 'untuk semua lantai', 0x6b4430);
+    sign.position.set(x, y + 3.1, z + 2.0); sign.scale.set(3.0, 0.98, 1);
+    g.add(sign);
+  });
+
+  // an office chair whose seat top is at y + 0.52, backrest on the side facing away from (fx, fz)
+  function chairAt(g, y, x, z, fx, fz, col) {
+    const c = new THREE.Group(); c.position.set(x, y, z); c.rotation.y = Math.atan2(fx - x, fz - z); g.add(c);
+    box(0.62, 0.08, 0.62, col, 0, 0.48, 0, { parent: c });
+    box(0.62, 0.62, 0.08, col, 0, 0.84, -0.32, { parent: c });
+    cyl(0.05, 0.05, 0.44, 6, 0x3b4048, 0, 0.22, 0, { parent: c });
+    cyl(0.28, 0.28, 0.04, 10, 0x3b4048, 0, 0.03, 0, { parent: c, cast: false });
+    return c;
+  }
+  (function buildMeetingRoom() {
+    const g = floors[MEETING_FLOOR], y = FY[MEETING_FLOOR], x = MEETING.x, z = MEETING.z;
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x3d5a80, roughness: 0.95, transparent: true, opacity: 0.35 });
+    const rug = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.03, 3.2), floorMat); rug.position.set(x, y + 0.02, z); g.add(rug);
+    box(2.6, 0.08, 1.2, 0xf3ead6, x, y + 0.76, z, { parent: g });
+    [[-1.1, -0.45], [1.1, -0.45], [-1.1, 0.45], [1.1, 0.45]].forEach(function (l) { box(0.08, 0.72, 0.08, 0x3b4048, x + l[0], y + 0.36, z + l[1], { parent: g }); });
+    [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]].forEach(function (sp) {   // one chair per spot
+      chairAt(g, y, x + sp[0], z + sp[1], x, z, 0x2b3a55);
+    });
+    box(0.5, 0.03, 0.35, 0xf7f5ef, x - 0.5, y + 0.815, z - 0.1, { parent: g, cast: false });   // papers and a laptop on the table
+    box(0.45, 0.03, 0.32, 0x2a2f36, x + 0.55, y + 0.815, z + 0.1, { parent: g, cast: false });
+    box(0.45, 0.3, 0.02, 0x2a2f36, x + 0.55, y + 0.97, z + 0.27, { parent: g, cast: false }).rotation.x = -0.25;
+    box(0.05, 1.2, 1.6, C.white, x + 2.45, y + 1.4, z, { parent: g });                // small whiteboard
+    box(0.06, 0.06, 1.6, 0x3b4048, x + 2.45, y + 2.02, z, { parent: g, cast: false });
+    const sign = makeLabel('Ruang rapat', 'tiket HOLD', 0x3d5a80);
+    sign.position.set(x, y + 3.1, z + 1.7); sign.scale.set(3.0, 0.98, 1); g.add(sign);
+  })();
+
+  // ---------- Pantry (floor 1), toilets and musholla (floor 2), canteen (outside, east) ----------
+  const PANTRY = { x: -2.2, z: 7.3 }, TOILET = { x: -10.7, z: 8.1 }, MUSHOLLA = { x: 10.9, z: -7.3 }, KANTIN = { x: 18.6, z: 0.6 };
+  function sign(g, title, sub, color, x, y, z, sc) { const l = makeLabel(title, sub, color); l.position.set(x, y, z); l.scale.set(sc || 2.8, (sc || 2.8) * 0.33, 1); g.add(l); return l; }
+  (function buildPantry() {
+    const g = floors[0], y = FY[0], x = PANTRY.x, z = PANTRY.z;
+    box(4.4, 0.92, 0.6, 0xe9e2d0, x, y + 0.46, 9.35, { parent: g });                     // counter
+    box(4.5, 0.06, 0.66, 0x55606e, x, y + 0.95, 9.35, { parent: g });
+    box(0.5, 0.06, 0.36, 0x9aa0a6, x - 0.8, y + 0.99, 9.35, { parent: g, cast: false });   // sink
+    box(0.04, 0.25, 0.04, 0x9aa0a6, x - 0.8, y + 1.12, 9.55, { parent: g, cast: false });
+    box(0.55, 0.32, 0.38, 0x2a2f36, x + 0.6, y + 1.14, 9.35, { parent: g });              // microwave
+    box(0.8, 1.9, 0.7, 0xdfe6ea, x - 2.65, y + 0.95, 9.2, { parent: g });                 // fridge
+    box(0.04, 0.5, 0.04, 0x9aa0a6, x - 2.3, y + 1.3, 8.84, { parent: g, cast: false });
+    box(0.4, 1.2, 0.4, 0xf7f5ef, x + 1.75, y + 0.6, 9.3, { parent: g });                  // water dispenser
+    cyl(0.17, 0.17, 0.4, 10, 0x8fd3f4, x + 1.75, y + 1.4, 9.3, { parent: g });
+    cyl(0.45, 0.45, 0.06, 16, 0xb88a5a, x, y + 1.05, z, { parent: g });                   // standing table
+    cyl(0.05, 0.08, 1.02, 8, 0x3b4048, x, y + 0.52, z, { parent: g });
+    sign(g, 'Pantri', 'lantai 1', 0x8d6e63, x, y + 3.0, 9.0);
+  })();
+  (function buildToilets() {
+    const g = floors[1], y = FY[1], H = 2.6;
+    // front wall with two doors (pria at x -11.8, wanita at x -9.6), side wall, divider
+    [[-12.85, -12.3], [-11.3, -10.1], [-9.1, -8.45]].forEach(function (seg) {
+      box(seg[1] - seg[0], H, 0.12, 0xdfe6ea, (seg[0] + seg[1]) / 2, y + H / 2, 6.3, { parent: g });
+    });
+    box(0.12, H, 3.6, 0xdfe6ea, -8.45, y + H / 2, 8.1, { parent: g });
+    box(0.08, H, 3.6, 0xc9d1d6, -10.7, y + H / 2, 8.1, { parent: g });
+    box(4.4, 0.15, 0.2, 0xdfe6ea, -10.65, y + H, 6.3, { parent: g });
+    box(0.5, 0.45, 0.4, 0xf7f5ef, -12.2, y + 0.25, 9.3, { parent: g });                    // fixtures
+    box(0.5, 0.45, 0.4, 0xf7f5ef, -9.2, y + 0.25, 9.3, { parent: g });
+    [-12.75, -8.55].forEach(function (wx) {
+      const s = wx < -10 ? 1 : -1;
+      box(0.4, 0.12, 0.6, 0xf7f5ef, wx + s * 0.2, y + 0.85, 8.0, { parent: g });         // washbasin
+      box(0.04, 0.7, 0.6, 0xbfe3f2, wx + s * 0.02, y + 1.55, 8.0, { parent: g, cast: false });   // mirror
+    });
+    sign(g, 'Pria', 'toilet', 0x3d5a80, -11.8, y + 3.0, 6.2, 1.9);
+    sign(g, 'Wanita', 'toilet', 0xc0617a, -9.6, y + 3.0, 6.2, 1.9);
+  })();
+  (function buildMusholla() {
+    const g = floors[1], y = FY[1], x = MUSHOLLA.x, z = MUSHOLLA.z;
+    const carpet = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.04, 4.2), new THREE.MeshStandardMaterial({ color: 0x2f7a5a, roughness: 1 }));
+    carpet.position.set(x, y + 0.03, z); carpet.receiveShadow = true; g.add(carpet);
+    [[-1.3, 0], [0.2, -1.1], [0.2, 0], [0.2, 1.1], [1.4, -1.1], [1.4, 0], [1.4, 1.1]].forEach(function (sp, i) {
+      box(1.1, 0.02, 0.62, [0x8b2e3c, 0x1f5f4a, 0x6b4f9a][i % 3], x + sp[0] - 0.25, y + 0.06, z + sp[1], { parent: g, cast: false });
+      box(0.16, 0.022, 0.5, 0xe0c27a, x + sp[0] - 0.72, y + 0.065, z + sp[1], { parent: g, cast: false });
+    });
+    box(0.9, 0.8, 0.4, 0xdfe6ea, x - 0.4, y + 0.4, -4.85, { parent: g });                 // tempat wudhu
+    box(0.05, 0.2, 0.05, 0x9aa0a6, x - 0.6, y + 0.95, -4.95, { parent: g, cast: false });
+    box(0.05, 0.2, 0.05, 0x9aa0a6, x - 0.2, y + 0.95, -4.95, { parent: g, cast: false });
+    box(0.12, 1.3, 4.4, 0xdfe6ea, x - 2.3, y + 0.65, z, { parent: g });                   // partition on the qibla side
+    box(4.6, 1.3, 0.12, 0xdfe6ea, x, y + 0.65, z - 2.2, { parent: g });
+    box(1.2, 0.5, 0.35, 0x8d6e63, x + 1.4, y + 0.25, -4.85, { parent: g });              // shoe rack
+    sign(g, 'Musholla', 'lantai 2', 0x2f7a5a, x, y + 2.6, z + 1.6, 2.6);
+  })();
+  (function buildKantin() {
+    const g = new THREE.Group(); scene.add(g);
+    const x = KANTIN.x, z = KANTIN.z;
+    box(7.2, 0.12, 12, 0xcfc6b4, x, 0.06, z, { parent: g, cast: false });                // paving
+    box(1.8, 0.06, 1.6, 0xcfc6b4, 14.6, 0.05, 0.5, { parent: g, cast: false });           // path to the door
+    [[-3.4, -5.8], [3.4, -5.8], [-3.4, 5.8], [3.4, 5.8]].forEach(function (pp) { box(0.18, 3.1, 0.18, 0x5c4a3a, x + pp[0], 1.6, z + pp[1], { parent: g }); });
+    box(7.6, 0.16, 12.4, 0x2f6b4f, x, 3.2, z, { parent: g });                              // roof
+    [17.4, 20.0].forEach(function (tx) {
+      box(0.9, 0.08, 5.2, 0xb88a5a, tx, 0.78, z + 0.5, { parent: g });                     // long table
+      box(0.08, 0.74, 0.08, 0x3b4048, tx, 0.4, z - 1.8, { parent: g }); box(0.08, 0.74, 0.08, 0x3b4048, tx, 0.4, z + 2.8, { parent: g });
+      [-0.75, 0.75].forEach(function (bx) { box(0.35, 0.06, 5.2, 0x8d6e63, tx + bx, 0.46, z + 0.5, { parent: g }); });
+    });
+    box(0.7, 1.0, 5.0, 0xc8553d, 21.6, 0.5, z + 0.5, { parent: g });                       // food counter
+    box(0.8, 0.06, 5.1, 0xf3ead6, 21.6, 1.03, z + 0.5, { parent: g });
+    for (let i = 0; i < 5; i++) cyl(0.18, 0.16, 0.12, 10, [0xf3a712, 0xe63946, 0x8ac926][i % 3], 21.6, 1.12, z - 1.3 + i * 0.9, { parent: g });
+    [[-1.95, Math.PI / 2], [-0.45, -Math.PI / 2], [0.65, Math.PI / 2], [2.15, -Math.PI / 2]].forEach(function (c) {
+      const tx = c[0] < 0.1 ? 17.4 : 20.0, side = Math.sign(x + c[0] - tx);
+      [-1.2, 0.4, 2.0].forEach(function (dz) {
+        cyl(0.17, 0.14, 0.03, 12, 0xf7f5ef, tx + side * 0.22, 0.835, z + dz, { parent: g, cast: false });
+        cyl(0.11, 0.1, 0.035, 10, [0xf3a712, 0x8ac926, 0xe63946][Math.abs(Math.round(dz)) % 3], tx + side * 0.22, 0.86, z + dz, { parent: g, cast: false });
+        cyl(0.05, 0.045, 0.14, 8, 0xc7e8f3, tx + side * 0.25, 0.89, z + dz + 0.3, { parent: g, cast: false });
+      });
+    });
+    const lb = makeLabel('Kantin', 'makan siang', 0xc8553d); lb.position.set(x, 4.1, z + 2.0); lb.scale.set(3.0, 0.99, 1); g.add(lb);
+  })();
 
   // ---------- Ground floor: Engineering Manager (feature-flow) + ticket board ----------
   const centre = new THREE.Group();
@@ -660,9 +885,9 @@
   box(1.1, 1.0, 0.6, 0xb88a5a, 1.6, 0.5, 0.4, { parent: centre });
   deskLamp(centre, 1.85, 1.0, 0.6);
 
-  const em = makePerson({ skin: pick(SKIN), hair: pick(HAIR), shirt: 0x55606e, pants: 0x2b2d42, parent: centre });
+  const em = makePerson({ skin: LOOKS.em.skin, hair: LOOKS.em.hair, style: LOOKS.em.style, beard: true, shirt: 0x55606e, pants: LOOKS.em.pants, card: 0x55606e, parent: centre });
   em.userData.key = 'em';
-  const emLabel = makeLabel('Eng. Manager', 'feature-flow', 0x55606e);
+  const emLabel = makeLabel('Hafiz', 'Eng. Manager', 0x55606e);
   emLabel.position.set(0, 4.55, -1.2);
   centre.add(emLabel);
   const emGlow = new THREE.MeshBasicMaterial({ color: 0x55606e, transparent: true, opacity: 0 });
@@ -703,18 +928,172 @@
   }
 
   const walkers = {}, queue = [], courierCards = {};
-  function sendCourier(from, toKey, color, onArrive) { queue.push({ from: from, to: toKey, color: color, onArrive: onArrive }); }
+  const hang = {};          // agent key -> { floor, spot, mug } while it is in the coffee corner
+  // Places agents can walk to: the shared coffee corner and the meeting room
+  const PLACES = {
+    lounge: { floor: LOUNGE_FLOOR, x: LOUNGE.x, z: LOUNGE.z, spots: LOUNGE_SPOTS, taken: loungeTaken },
+    meeting: { floor: MEETING_FLOOR, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {}, seat: 0.18 },
+    pantry: { floor: 0, x: PANTRY.x, z: PANTRY.z, spots: [[0, -0.85], [0.85, 0], [-0.85, 0], [0, 0.85]], taken: {}, stay: [18, 35] },
+    toilet: { floor: 1, x: TOILET.x, z: TOILET.z, spots: [[-1.1, 0.4], [1.1, 0.4]], taken: {}, stay: [7, 11], hide: true },
+    musholla: { floor: 1, x: MUSHOLLA.x, z: MUSHOLLA.z, spots: [[-1.3, 0, -Math.PI / 2], [0.2, -1.1, -Math.PI / 2], [0.2, 0, -Math.PI / 2], [0.2, 1.1, -Math.PI / 2], [1.4, -1.1, -Math.PI / 2], [1.4, 0, -Math.PI / 2], [1.4, 1.1, -Math.PI / 2]], taken: {}, stay: [22, 35] },
+    kantin: { floor: 0, x: KANTIN.x, z: KANTIN.z, y: 0.12, via: [[12.9, FY[0], 0.5], [14.8, 0.12, 0.5]], seat: 0.34, taken: {}, stay: [40, 80],
+      spots: [[-1.95, -1.2, Math.PI / 2], [-1.95, 0.4, Math.PI / 2], [-1.95, 2.0, Math.PI / 2], [-0.45, -1.2, -Math.PI / 2], [-0.45, 0.4, -Math.PI / 2], [-0.45, 2.0, -Math.PI / 2],
+        [0.65, -1.2, Math.PI / 2], [0.65, 0.4, Math.PI / 2], [0.65, 2.0, Math.PI / 2], [2.15, -1.2, -Math.PI / 2], [2.15, 0.4, -Math.PI / 2]] }
+  };
+  PLACES.lounge.stay = [30, 60];
+  function takeSpot(pl, only) {
+    for (let i = 0; i < pl.spots.length; i++) if (!pl.taken[i] && (only == null || only === i)) { pl.taken[i] = true; return i; }
+    return -1;
+  }
+  // desk -> corridor -> stairs (when on another storey) -> corridor of that floor -> around the table -> spot
+  function placePath(k, name, spot) {
+    const pl = PLACES[name], f = ST[k].f, L = pl.floor, exit = nav(k, -1.5, 2.4);
+    const pts = [nav(k, 0, 0), nav(k, -1.5, 0.1), exit, V(exit.x, FY[f], CORR_Z)];
+    if (f !== L) { pts.push(V(STAIR_X, FY[f], CORR_Z)); pts.push.apply(pts, floorRoute(f, L)); }
+    (pl.via || []).forEach(function (v) { pts.push(V(v[0], v[1], v[2])); });
+    const yL = pl.y != null ? pl.y : FY[L];
+    if (pl.hide) { pts.push(V(spot.x, yL, CORR_Z), V(spot.x, yL, spot.z)); return pts; }   // straight through the door
+    const ax = spot.z > pl.z ? spot.x + (spot.x < pl.x ? -1.05 : 1.05) : spot.x;
+    pts.push(V(ax, yL, CORR_Z));
+    if (ax !== spot.x) pts.push(V(ax, yL, spot.z));
+    pts.push(spot);
+    return pts;
+  }
+  function goPlace(k, name) {
+    const pl = PLACES[name], s = ST[k];
+    const i = takeSpot(pl, name === 'toilet' ? (ST[k].person.userData.female ? 1 : 0) : null);
+    if (i < 0) return false;
+    const spot = V(pl.x + pl.spots[i][0], pl.y != null ? pl.y : FY[pl.floor], pl.z + pl.spots[i][1]);
+    const path = placePath(k, name, spot);
+    const p = s.person;
+    toWorld(p);
+    p.userData.legL.rotation.x = 0; p.userData.legR.rotation.x = 0;
+    p.position.copy(path[0]);
+    if (!courierCards[k]) courierCards[k] = makeCard();
+    walkers[k] = { job: { from: k, to: null }, mode: 'place', place: name, path: path, i: 0, back: true, wait: 0, ph: 0, card: courierCards[k], carrying: false, spot: i };
+    if (selected === k) renderInfo();
+    return true;
+  }
+  function goLounge(k) { return goPlace(k, 'lounge'); }
+  function comeBack(k) {
+    const h = hang[k], s = ST[k], p = s.person;
+    if (!h) return;
+    if (h.mug) h.mug.visible = false;
+    p.visible = true;
+    if (PLACES[h.place].seat) { p.position.y += PLACES[h.place].seat; p.userData.legL.rotation.x = p.userData.legR.rotation.x = 0; }
+    const path = placePath(k, h.place, p.position.clone()).reverse();
+    PLACES[h.place].taken[h.spot] = false;
+    delete hang[k];
+    walkers[k] = { job: { from: k, to: null }, mode: 'home', path: path, i: 0, back: true, wait: 0, ph: 0, card: courierCards[k] || makeCard(), carrying: false };
+    if (selected === k) renderInfo();
+  }
+  function arrivePlace(k, w) {
+    const p = ST[k].person, u = p.userData, pl = PLACES[w.place];
+    delete walkers[k];
+    const sp = pl.spots[w.spot];
+    p.rotation.set(0, sp.length > 2 ? sp[2] : Math.atan2(pl.x - p.position.x, pl.z - p.position.z), 0);   // face the table (or qibla)
+    let mug = p.userData.mug;
+    if (!mug) {
+      mug = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.09, 0.18, 8), mugMat);
+      mug.position.set(0, -0.82, 0.1); u.armR.add(mug); p.userData.mug = mug;
+    }
+    mug.visible = w.place === 'lounge' || w.place === 'pantry';
+    u.legL.rotation.x = u.legR.rotation.x = pl.seat ? -Math.PI / 2 : 0;
+    if (pl.seat) p.position.y -= pl.seat;
+    if (pl.hide) p.visible = false;
+    const st = pl.stay ? pl.stay[0] + Math.random() * (pl.stay[1] - pl.stay[0]) : 0;
+    hang[k] = { place: w.place, floor: pl.floor, spot: w.spot, mug: mug, since: t, until: st ? t + st : 0 };
+    if (selected === k) renderInfo();
+  }
+
+  function sendCourier(from, toKey, color, onArrive, say) { queue.push({ from: from, to: toKey, color: color, onArrive: onArrive, say: say }); }
+  // Speech bubble above a walking agent: the verdict or note it is carrying
+  function makeBubble(text) {
+    const cv = document.createElement('canvas');
+    cv.width = 640; cv.height = 150;
+    const x = cv.getContext('2d');
+    x.font = '700 46px "Baloo 2", "Trebuchet MS", sans-serif';
+    const w = Math.min(616, x.measureText(text).width + 64);
+    x.fillStyle = '#ffffff'; x.strokeStyle = '#24352a'; x.lineWidth = 5;
+    x.beginPath();
+    if (x.roundRect) x.roundRect((640 - w) / 2, 10, w, 100, 40); else x.rect((640 - w) / 2, 10, w, 100);
+    x.fill(); x.stroke();
+    x.beginPath(); x.moveTo(300, 108); x.lineTo(320, 140); x.lineTo(340, 108); x.closePath(); x.fill();
+    x.fillStyle = /FAIL|CHANGES|HOLD|BUG/.test(text) ? '#b5312a' : /PASS|APPROVED|DONE|GO|SIGN_OFF/.test(text) ? '#2f6b4f' : '#24352a';
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    let tx = text;
+    while (x.measureText(tx).width > 580 && tx.length > 4) tx = tx.slice(0, -2);
+    if (tx !== text) tx = tx.slice(0, -1) + '\u2026';
+    x.fillText(tx, 320, 62);
+    const tex = new THREE.CanvasTexture(cv);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+    sp.scale.set(4.5, 1.05, 1);
+    scene.add(sp);
+    return sp;
+  }
+  // say(): a bubble over any agent for a few seconds, wherever it is
+  const says = {};
+  function say(k, text, secs) {
+    if (!ST[k] || !text) return;
+    if (says[k]) { scene.remove(says[k].sp); says[k].sp.material.map.dispose(); says[k].sp.material.dispose(); }
+    says[k] = { sp: makeBubble(text), ttl: secs || 2.4 };
+  }
+  const wp = new THREE.Vector3();
+  function stepSays(dt) {
+    Object.keys(says).forEach(function (k) {
+      const b = says[k], p = ST[k].person;
+      p.getWorldPosition(wp);
+      b.sp.position.set(wp.x, wp.y + (hang[k] && PLACES[hang[k].place].seat || (!walkers[k] && !hang[k] && !ST[k].standing) ? 2.5 : 2.9), wp.z);
+      b.sp.visible = p.visible && shown(wp.y);
+      b.ttl -= dt;
+      if (b.ttl <= 0) { scene.remove(b.sp); b.sp.material.map.dispose(); b.sp.material.dispose(); delete says[k]; }
+    });
+  }
+  const TALK = {
+    lounge: ['Kopinya enak nih', 'Sudah push belum?', 'Deploy aman kan?', 'Nanti zuhur bareng ya', 'Ada meeting jam 3?', 'Alhamdulillah, lancar', 'Mantap, PR sudah merge', 'Teh atau kopi?', 'Bismillah, lanjut lagi', 'Test-nya hijau semua'],
+    pantry: ['Ada yang mau air hangat?', 'Kulkasnya penuh nih', 'Mie instan lagi?', 'Jangan lupa cuci gelas', 'Kopi sachet tinggal dua'],
+    kantin: ['Nasi goreng enak hari ini', 'Pesan apa?', 'Es teh satu ya', 'Alhamdulillah kenyang', 'Habis ini lanjut review', 'Sambalnya pedas banget'],
+    meeting: ['Kita tunggu keputusan dulu', 'Opsi A atau B ya?', 'Saya catat di Riwayat']
+  };
+  const OPENERS = ['Assalamualaikum, sibuk?', 'Ada waktu sebentar?', 'Mau tanya soal tiket', 'Ngopi yuk nanti', 'Sudah makan siang?', 'Review-nya aman?'];
+  const REPLIES = ['Waalaikumsalam, boleh', 'Bentar ya, lagi fokus', 'Boleh, kenapa?', 'Siap, nanti nyusul', 'Aman, insyaAllah', 'Belum, yuk ke kantin'];
+  const ACK = ['Siap!', 'Oke, saya cek', 'Terima kasih', 'Bismillah, saya kerjakan', 'Noted'];
+  function anyOf(a) { return a[Math.floor(Math.random() * a.length)]; }
+  let talkT = 0;
+  function smallTalk(dt) {
+    talkT -= dt;
+    if (talkT > 0) return;
+    talkT = 3 + Math.random() * 3;
+    const groups = {};
+    Object.keys(hang).forEach(function (k) { const pl = hang[k].place; if (TALK[pl] && !walkers[k]) (groups[pl] = groups[pl] || []).push(k); });
+    const busy = Object.keys(groups).filter(function (pl) { return groups[pl].length >= 2; });
+    if (!busy.length) return;
+    const pl = anyOf(busy), k = anyOf(groups[pl]);
+    if (!says[k]) say(k, anyOf(TALK[pl]), 2.6);
+  }
+
+  function dropBubble(w) {
+    if (!w.bubble) return;
+    scene.remove(w.bubble); w.bubble.material.map.dispose(); w.bubble.material.dispose(); w.bubble = null;
+  }
   function startWalk(job) {
     const s = ST[job.from], p = s.person;
     if (!courierCards[job.from]) courierCards[job.from] = makeCard();
     const c = courierCards[job.from];
     c.stripe.color.setHex(job.color); c.stripe.emissive.setHex(job.color);
-    scene.attach(p);
+    toWorld(p);
     p.userData.legL.rotation.x = 0; p.userData.legR.rotation.x = 0;
     lastWalker = job.from;
-    walkers[job.from] = { job: job, path: route(job.from, job.to), i: 0, back: false, wait: 0, ph: 0, card: c, carrying: true };
+    walkers[job.from] = { job: job, path: route(job.from, job.to), i: 0, back: false, wait: 0, ph: 0, card: c, carrying: !job.chat, chat: !!job.chat, bubble: job.say ? makeBubble(job.say) : null, bubbleTTL: 0 };
     p.position.copy(walkers[job.from].path[0]);
     if (selected === job.from) renderInfo();
+  }
+  // Move a person to the scene keeping its world pose, as a plain yaw: attach() turns a half turn into Euler (PI, 0, PI)
+  const fwd = new THREE.Vector3();
+  function toWorld(p) {
+    scene.attach(p);
+    fwd.set(0, 0, 1).applyQuaternion(p.quaternion);
+    p.rotation.set(0, Math.atan2(fwd.x, fwd.z), 0);
   }
   function sitDown(k) {
     const s = ST[k], p = s.person, u = p.userData;
@@ -723,37 +1102,50 @@
     p.rotation.set(0, 0, 0);
     u.legL.rotation.x = u.legR.rotation.x = s.standing ? 0 : -Math.PI / 2;
     u.armL.rotation.x = u.armR.rotation.x = 0;
+    if (walkers[k]) dropBubble(walkers[k]);
     delete walkers[k];
     if (selected === k) renderInfo();
   }
   const seg = new THREE.Vector3();
   function stepWalkers(dt) {
     for (let qi = 0; qi < queue.length;) {
-      if (!walkers[queue[qi].from]) startWalk(queue.splice(qi, 1)[0]); else qi++;
+      const from = queue[qi].from;
+      if (hang[from] && !walkers[from]) { comeBack(from); qi++; }
+      else if (!walkers[from] && !hang[from]) startWalk(queue.splice(qi, 1)[0]);
+      else qi++;
     }
     Object.keys(walkers).forEach(function (k) {
       const w = walkers[k], p = ST[k].person, u = p.userData;
       if (w.wait > 0) {          // handing the ticket over
         w.wait -= dt;
         u.legL.rotation.x = u.legR.rotation.x = 0;
-        u.armR.rotation.x = -1.4; u.armL.rotation.x = 0;
+        u.armR.rotation.x = w.chat ? -0.9 + Math.sin(t * 4) * 0.3 : -1.4; u.armL.rotation.x = 0;
         if (w.wait <= 0) { w.carrying = false; if (w.job.onArrive) w.job.onArrive(); }
       } else {
         let move = WALK_SPEED * dt;
         while (move > 0 && w.i < w.path.length - 1) {
           seg.copy(w.path[w.i + 1]).sub(p.position);
           const d = seg.length();
-          if (Math.hypot(seg.x, seg.z) > 0.01) p.rotation.y = Math.atan2(seg.x, seg.z);
+          if (Math.hypot(seg.x, seg.z) > 0.01) p.rotation.set(0, Math.atan2(seg.x, seg.z), 0);   // set all three: attach() may leave x = z = PI
           if (d <= move) { p.position.copy(w.path[w.i + 1]); w.i++; move -= d; }
           else { p.position.addScaledVector(seg, move / d); move = 0; }
         }
         w.ph += dt * 10;
         u.legL.rotation.x = Math.sin(w.ph) * 0.6;
         u.legR.rotation.x = -Math.sin(w.ph) * 0.6;
-        if (!w.back) { u.armL.rotation.x = u.armR.rotation.x = -1.25; }
+        if (!w.back && !w.chat) { u.armL.rotation.x = u.armR.rotation.x = -1.25; }
+        else if (!w.back) { u.armL.rotation.x = -Math.sin(w.ph) * 0.5; u.armR.rotation.x = Math.sin(w.ph) * 0.5; }
         else { u.armL.rotation.x = -Math.sin(w.ph) * 0.5; u.armR.rotation.x = Math.sin(w.ph) * 0.5; }
+        if (w.i >= w.path.length - 1 && w.mode === 'place') { arrivePlace(k, w); return; }
+        if (w.i >= w.path.length - 1 && w.mode === 'home') { sitDown(k); return; }
         if (w.i >= w.path.length - 1) {
-          if (!w.back) { w.back = true; w.wait = 0.7; w.path = w.path.slice().reverse(); w.i = 0; }
+          if (!w.back) {
+            w.back = true; w.wait = w.job.chat ? 4.2 : 0.9; w.bubbleTTL = 2.2; w.path = w.path.slice().reverse(); w.i = 0;
+            if (w.job.chat) {
+              say(k, w.job.chat[0], 2);
+              setTimeout(function () { say(w.job.to, w.job.chat[1], 2); }, 1700);
+            } else if (w.job.to) say(w.job.to, anyOf(ACK), 1.6);
+          }
           else { w.card.g.visible = false; sitDown(k); return; }
         }
       }
@@ -764,6 +1156,11 @@
       const vis = shown(p.position.y);
       p.visible = vis;
       w.card.g.visible = w.carrying && vis;
+      if (w.bubble) {
+        w.bubble.position.set(p.position.x, p.position.y + 2.9, p.position.z);
+        w.bubble.visible = vis;
+        if (w.back && w.wait <= 0) { w.bubbleTTL -= dt; if (w.bubbleTTL <= 0) dropBubble(w); }
+      }
     });
   }
 
@@ -904,7 +1301,7 @@
     to = station.work.clone();
     function begin() {
       waiting = false; stepT = 0; active = station;
-      logWho.textContent = station.a.agent;
+      logWho.textContent = NAME[step.s] + ' \u00b7 ' + station.a.agent;
       logWho.style.color = hex(station.a.color);
       logWhat.textContent = step.w;
       renderMini();
@@ -914,11 +1311,14 @@
     if (prev && prev !== step.s) {
       // the agent who just finished walks the ticket over
       waiting = true; active = null;
-      logWho.textContent = ST[prev].a.agent;
+      logWho.textContent = NAME[prev] + ' \u00b7 ' + ST[prev].a.agent;
       logWho.style.color = hex(ST[prev].a.color);
-      logWhat.textContent = 'Mengantar tiket ke ' + ROLE[step.s] + (ST[prev].f !== station.f ? ' di lantai ' + (station.f + 1) : '');
+      logWhat.textContent = 'Mengantar tiket ke ' + who(step.s) + (ST[prev].f !== station.f ? ' di lantai ' + (station.f + 1) : '');
       renderMini();
-      sendCourier(prev, step.s, color, function () { if (mode === 'demo' && SCRIPT[stepIdx] === step) begin(); });
+      const ps = SCRIPT[(i + SCRIPT.length - 1) % SCRIPT.length];
+      const verdict = (ps.w.match(/^(APPROVED|CHANGES_REQUESTED|PASS|FAIL)/) || [])[1];
+      const say = verdict || ({ IN_PROGRESS: 'READY_FOR_REVIEW', BUG: 'Fix siap direview', PRD: 'PRD', GO_WITH_NOTES: 'GO_WITH_NOTES', BRD: 'BRD siap', TIKET: '3 tiket TODO', DONE: 'Commit selesai', SIGN_OFF: 'SIGN_OFF' }[ps.st] || ps.st);
+      sendCourier(prev, step.s, color, function () { if (mode === 'demo' && SCRIPT[stepIdx] === step) begin(); }, say + (step.t !== null ? ' \u00b7 ' + TICKETS[step.t].id : ''));
     } else begin();
   }
   function endStep(i) {
@@ -954,8 +1354,9 @@
     em: { desc: 'Orkestrator. Bicara dengan user, memanggil agent sesuai urutan, dan satu-satunya yang memindahkan status tiket, menulis Riwayat, commit, dan membuka PR.',
       skills: ['feature-flow', 'ticket-workflow', 'project-profile'], tools: 'Semua tools sesi utama', model: 'Model sesi', code: 'Tidak menulis kode, hanya commit hasil tiket', verdict: 'Memindahkan status berdasarkan verdict agent' }
   };
-  const ROLE = { em: 'Engineering Manager' };
-  AGENTS.forEach(function (a) { ROLE[a.key] = a.role; });
+  const ROLE = { em: 'Engineering Manager' }, NAME = { em: 'Hafiz' };
+  AGENTS.forEach(function (a) { ROLE[a.key] = a.role; NAME[a.key] = a.name; });
+  function who(k) { return NAME[k] + ' (' + ROLE[k] + ')'; }
   const lastBy = {};
   let selected = null;
   const infoEl = document.getElementById('info');
@@ -965,12 +1366,17 @@
     if (!selected) return;
     renderInfoBody();
     const w = walkers[selected];
-    if (w) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya. ' : 'Sedang berjalan mengantar tiket ke ' + ROLE[w.job.to] + '. ') + el('infoTask').textContent;
+    if (w && w.mode === 'place') el('infoTask').textContent = ({ meeting: 'Berjalan ke ruang rapat untuk tiket HOLD. ', lounge: 'Tidak ada pekerjaan, ke ruang ngopi. ', pantry: 'Tidak ada pekerjaan, ke pantri. ', toilet: 'Ke toilet. ', musholla: 'Waktu salat, ke musholla. ', kantin: 'Ke kantin. ' }[w.place] || '') + el('infoTask').textContent;
+    else if (w && w.mode === 'home') el('infoTask').textContent = 'Kembali ke mejanya. ' + el('infoTask').textContent;
+    else if (w && w.chat) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya setelah ngobrol. ' : 'Mampir ngobrol dengan ' + who(w.job.to) + '. ') + el('infoTask').textContent;
+    else if (w) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya. ' : 'Sedang berjalan mengantar tiket ke ' + who(w.job.to) + '. ') + el('infoTask').textContent;
+    else if (hang[selected] && hang[selected].place === 'meeting') el('infoTask').textContent = 'Di ruang rapat, menunggu keputusanmu untuk ' + (meetingFor[selected] || []).join(', ') + '. ' + el('infoTask').textContent;
+    else if (hang[selected]) el('infoTask').textContent = ({ lounge: 'Sedang ngopi di ruang ngopi lantai 3', pantry: 'Sedang di pantri lantai 1', toilet: 'Sedang ke toilet', musholla: 'Sedang salat di musholla lantai 2', kantin: 'Sedang makan di kantin' }[hang[selected].place] || 'Sedang istirahat') + ' karena tidak ada pekerjaan. ' + el('infoTask').textContent;
   }
   function renderInfoBody() {
     const s = ST[selected], d = INFO[selected], cur = SCRIPT[stepIdx];
     el('infoDot').style.background = hex(s.a.color);
-    el('infoRole').textContent = ROLE[selected];
+    el('infoRole').textContent = NAME[selected] + ' \u00b7 ' + ROLE[selected];
     el('infoAgent').textContent = s.a.agent;
     el('infoDesc').textContent = d.desc;
     const chips = el('infoSkills');
@@ -1060,6 +1466,7 @@
   const PATH_KEY = 'noskill-ticket-dir';
   let multi = false;
   let acts = [], actBy = {};
+  let meetingFor = {};      // agent key -> HOLD ticket ids it waits on in the meeting room
   // An activity counts while it is in progress and not older than 6 hours
   function activeAct(a) {
     if (a.status !== 'working' && a.status !== 'waiting_user') return false;
@@ -1108,7 +1515,8 @@
       // [timestamp, STATUS] per Riwayat line; timestamp is "YYYY-MM-DD HH:MM" or just the date
       hist: hist.map(function (l) {
         const m = l.match(/^- (\d{4}-\d{2}-\d{2}(?: \d{2}:\d{2})?)\s+([A-Z_]+)/);
-        return m ? [m[1], m[2]] : null;
+        const tok = l.match(/(\d+(?:[.,]\d+)?)\s*k\s*token/i);
+        return m ? [m[1], m[2], tok ? parseFloat(tok[1].replace(',', '.')) : 0] : null;
       }).filter(Boolean),
       ac: ac,
       riw: hist.slice(-8).map(function (l) { return l.replace(/^- /, '').slice(0, 160); })
@@ -1260,7 +1668,7 @@
       if (projFilter && a.project !== projFilter) return;
       const o = before.find(function (b) { return b.project === a.project; });
       if (!o || o.key === a.key || o.at === a.at) return;
-      sendCourier(o.key, a.status === 'waiting_user' ? 'em' : a.key, 0x3b7fc4, null);
+      sendCourier(o.key, a.status === 'waiting_user' ? 'em' : a.key, 0x3b7fc4, null, (o.stage || 'Selesai') + ' \u2192 ' + (a.stage || a.agent));
     });
   }
   // A ticket that changed desk since the last read is carried there by the agent who had it
@@ -1272,7 +1680,9 @@
       if (!o || o.status === tk.status || (projFilter && tk.project !== projFilter)) return;
       const from = stationFor(o) || (o.status === 'TODO' ? 'lead' : null);
       const dest = stationFor(tk) || (tk.status === 'DONE' ? 'em' : null);
-      if (from && dest && from !== dest) sendCourier(from, dest, tk.color, null);
+      const say = tk.status === 'REVIEW' ? 'READY_FOR_REVIEW' : tk.status === 'QA' ? 'APPROVED' : tk.status === 'DONE' ? 'PASS' : tk.status === 'BUG' ? 'FAIL'
+        : tk.status === 'HOLD' ? 'HOLD' : tk.status === 'IN_PROGRESS' ? (o.status === 'REVIEW' ? 'CHANGES_REQUESTED' : 'Kerjakan') : tk.status;
+      if (from && dest && from !== dest) sendCourier(from, dest, tk.color, null, say + ' \u00b7 ' + tk.id);
     });
   }
   function applyLive() {
@@ -1283,6 +1693,33 @@
     actBy = {};
     acts.filter(function (a) { return activeAct(a) && (!projFilter || a.project === projFilter); }).forEach(function (a) {
       actBy[a.status === 'waiting_user' ? 'em' : a.key] = a;
+    });
+    // Without activity.json, freshly created TODO tickets still mean the Tech Lead is writing tickets:
+    // created in the last 20 minutes, or (when the time is missing or a 00:00 placeholder) created today
+    // in a project where no ticket has started yet.
+    if (!actBy.lead) {
+      let newest = null;
+      const today = new Date(); const ymd = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      shownTk.forEach(function (tk) {
+        const h = tk.hist && tk.hist[0];
+        if (!h || tk.status !== 'TODO') return;
+        const timed = h[0].length >= 16 && h[0].slice(11) !== '00:00';
+        let fresh = false, t = Date.parse(h[0].slice(0, 10) + 'T' + (timed ? h[0].slice(11) : '00:00'));
+        if (timed) fresh = !isNaN(t) && Date.now() - t < 20 * 60000;
+        else fresh = h[0].slice(0, 10) === ymd && !shownTk.some(function (o) { return o.project === tk.project && stationFor(o); });
+        if (fresh && (!newest || t >= newest.t)) newest = { t: t, tk: tk };
+      });
+      if (newest) actBy.lead = { project: newest.tk.project, agent: 'task-planner', key: 'lead', status: 'working', stage: 'Stage 4 Tiket',
+        task: 'Menulis tiket, terakhir ' + newest.tk.id + (newest.tk.title ? ': ' + newest.tk.title.slice(0, 80) : ''), ticket: '', at: new Date(newest.t).toISOString() };
+    }
+    meetingFor = {};
+    shownTk.filter(function (tk) { return tk.status === 'HOLD'; }).forEach(function (tk) {
+      const h = tk.hist || [];
+      let prev = null;
+      for (let i = h.length - 1; i >= 0; i--) if (h[i][1] !== 'HOLD') { prev = h[i][1]; break; }
+      const who = prev ? deskFor(prev, tk.layer) : null;
+      const label = (multi ? tk.project + '/' : '') + tk.id;
+      ['em'].concat(who && who !== 'em' ? [who] : []).forEach(function (k) { (meetingFor[k] = meetingFor[k] || []).push(label); });
     });
     drawBoard((liveSource === 'db' ? 'Snapshot ' : 'Live ') + hhmm(liveAt), shownTk);
     card.visible = false;
@@ -1300,7 +1737,7 @@
     logStatus.textContent = (liveSource === 'db' ? 'SNAPSHOT · ' : 'LIVE · ') + shownTk.length + ' tiket · ' + active + ' aktif';
     logStep.textContent = liveSource === 'db' ? liveAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + hhmm(liveAt) : hhmm(liveAt);
     if (latestAct) {
-      logWho.textContent = (multi ? latestAct.project + ' / ' : '') + latestAct.agent;
+      logWho.textContent = (multi ? latestAct.project + ' / ' : '') + NAME[latestAct.key] + ' \u00b7 ' + latestAct.agent;
       logWho.style.color = hex(ST[latestAct.key].a.color);
       logWhat.textContent = (latestAct.status === 'waiting_user' ? 'Menunggu jawaban kamu: ' : '') + (latestAct.stage ? latestAct.stage + ' · ' : '') + latestAct.task;
     } else if (latest) {
@@ -1343,7 +1780,7 @@
   function stopLive(msg) {
     liveRun++;
     clearTimeout(liveTimer);
-    mode = 'demo'; live = []; liveBy = {}; liveSource = null; acts = []; actBy = {};
+    mode = 'demo'; live = []; liveBy = {}; liveSource = null; acts = []; actBy = {}; meetingFor = {};
     Object.keys(liveCards).forEach(function (k) { liveCards[k].g.visible = false; });
     card.visible = true;
     stepIdx = -1; stepT = 0; waiting = false; curKey = null; active = null;
@@ -1383,7 +1820,7 @@
     live = (dbBoard.tickets || []).filter(function (t) { return t && t.id && t.status; }).map(function (t) {
       return { id: String(t.id), title: String(t.title || ''), status: String(t.status).toUpperCase(), layer: t.layer === 'be' || t.layer === 'fe' ? t.layer : '—',
         rounds: String(t.rounds || '0'), last: String(t.last || ''), project: String(t.project || ''), color: Number(t.color) || 0x2b7569,
-        hist: Array.isArray(t.hist) ? t.hist.filter(function (h) { return Array.isArray(h) && h.length === 2; }).map(function (h) { return [String(h[0]), String(h[1])]; }) : [],
+        hist: Array.isArray(t.hist) ? t.hist.filter(function (h) { return Array.isArray(h) && h.length >= 2; }).map(function (h) { return [String(h[0]), String(h[1]), Number(h[2]) || 0]; }) : [],
         ac: Array.isArray(t.ac) ? t.ac.filter(Array.isArray).map(function (a) { return [!!a[0], String(a[1] || '')]; }) : [],
         riw: Array.isArray(t.riw) ? t.riw.map(String) : [] };
     });
@@ -1417,6 +1854,11 @@
         dbLastSig = boardSig(d.tickets.map(function (t) { return { project: t.project, id: t.id, status: t.status, layer: t.layer, rounds: t.rounds, last: t.last, title: t.title }; })) + JSON.stringify(d.activities || []);
         if (liveSource !== 'local' && !preferDemo) applySnapshot();
       }, function () { /* store unreachable: keep whatever is shown */ });
+      dbNs.collection('answers').onSnapshot(function (qs) {
+        Object.keys(answers).forEach(function (k) { delete answers[k]; });
+        qs.docs.forEach(function (d) { if (d.exists) answers[d.id] = d.data(); });
+        if (sideTicket && sideTicket.status === 'HOLD') renderTicket();
+      }, function () {});
     } catch (e) { if (unsub) unsub(); }
   })();
 
@@ -1557,13 +1999,14 @@
   el('mClose').addEventListener('click', closeSide);
   function refreshSide() {
     if (!metricsEl.hidden) renderMetrics();
+    renderTimeline();
     if (sideTicket) {
       const fresh = view().find(function (t) { return t.id === sideTicket.id && t.project === sideTicket.project; });
       if (fresh) { sideTicket = fresh; renderTicket(); }
     } else if (sideColumn) renderColumn();
   }
   function node(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
-  function holderOf(tk) { const k = stationFor(tk) || (tk.status === 'TODO' ? 'lead' : null); return k ? ROLE[k] + ' (' + ST[k].a.agent + ')' : 'Tidak ada, tiket selesai'; }
+  function holderOf(tk) { const k = stationFor(tk) || (tk.status === 'TODO' ? 'lead' : null); return k ? NAME[k] + ', ' + ROLE[k] + ' (' + ST[k].a.agent + ')' : 'Tidak ada, tiket selesai'; }
   function openTicket(tk) {
     closeInfo(); closeSide();
     sideTicket = tk; tinfo.hidden = false; renderTicket();
@@ -1591,12 +2034,46 @@
     const ul2 = node('ul', 'mono');
     (tk.riw && tk.riw.length ? tk.riw : ['Belum ada.']).forEach(function (r) { ul2.appendChild(node('li', null, r)); });
     rw.appendChild(ul2); tBody.appendChild(rw);
+    if (tk.status === 'HOLD' && mode === 'live') tBody.appendChild(holdBox(tk));
+    const tok = (tk.hist || []).reduce(function (a, e) { return a + (Number(e[2]) || 0); }, 0);
+    if (tok) { const tw = node('div'); tw.appendChild(node('h3', null, 'Token')); tw.appendChild(node('div', null, fmtTok(tok) + ' token tercatat di Riwayat')); tBody.appendChild(tw); }
     const acts = node('div', 'controls');
     const b = node('button', null, replaying ? 'Replay sedang berjalan…' : 'Putar ulang perjalanan');
     b.type = 'button'; b.disabled = replaying;
     b.addEventListener('click', function () { replayTicket(tk); });
     acts.appendChild(b); tBody.appendChild(acts);
   }
+  // ---------- HOLD answers: written to the artifact database, picked up by /noskill:tiket lanjut ----------
+  const answers = {};
+  function answerId(tk) { return ((tk.project || 'x') + '--' + tk.id).replace(/[^A-Za-z0-9_\-.~:@+]/g, '-').slice(0, 180); }
+  function holdBox(tk) {
+    const box = node('div'); box.appendChild(node('h3', null, 'Jawab HOLD'));
+    const a = answers[answerId(tk)];
+    if (a) box.appendChild(node('div', a.status === 'applied' ? 'ac-done' : null,
+      (a.status === 'applied' ? 'Sudah dipakai feature-flow. ' : 'Terkirim, menunggu /noskill:tiket lanjut. ') + 'Jawabanmu: ' + a.answer));
+    if (!dbNs) { box.appendChild(node('div', 'ac-done', 'Jawaban hanya bisa dikirim saat halaman dibuka di claude.ai atau aplikasi Claude.')); return box; }
+    const ta = document.createElement('textarea');
+    ta.id = 'holdAnswer'; ta.rows = 3; ta.placeholder = 'Tulis keputusanmu untuk ' + tk.id;
+    ta.style.cssText = 'width:100%;font:0.9rem var(--font-display);padding:8px;border-radius:10px;border:1px solid var(--edge);background:var(--panel);color:var(--ink)';
+    ta.setAttribute('aria-label', 'Jawaban untuk ' + tk.id);
+    if (a && a.status !== 'applied') ta.value = a.answer;
+    const send = node('button', null, a && a.status !== 'applied' ? 'Perbarui jawaban' : 'Kirim jawaban'); send.type = 'button';
+    const note = node('div', 'ac-done');
+    send.addEventListener('click', async function () {
+      const text = ta.value.trim();
+      if (!text) { note.textContent = 'Tulis jawabannya dulu.'; ta.focus(); return; }
+      send.disabled = true; note.textContent = 'Mengirim…';
+      try {
+        await dbNs.doc('answers/' + answerId(tk)).set({ project: tk.project || '', ticket: tk.id, question: (tk.last || '').slice(0, 300), answer: text.slice(0, 2000), at: new Date().toISOString(), status: 'pending' });
+        note.textContent = 'Terkirim. Jalankan /noskill:tiket lanjut di sesi Claude untuk memakainya.';
+      } catch (e) {
+        note.textContent = e && e.code === 'invalid_argument' ? 'Kamu tidak punya izin menulis jawaban di Kantor ini.' : 'Gagal mengirim (' + ((e && e.code) || 'error') + '). Coba lagi.';
+      } finally { send.disabled = false; }
+    });
+    box.appendChild(ta); box.appendChild(send); box.appendChild(note);
+    return box;
+  }
+
   function openColumn(col) {
     closeInfo(); closeSide();
     sideColumn = col; tinfo.hidden = false; renderColumn();
@@ -1638,7 +2115,7 @@
     });
     function avg(a) { return a.reduce(function (x, y) { return x + y; }, 0) / a.length; }
     const stageRows = Object.keys(stages).map(function (k) { return { name: k, avg: avg(stages[k]), n: stages[k].length }; });
-    const agentRows = Object.keys(agents).map(function (k) { return { name: ROLE[k], avg: avg(agents[k]), n: agents[k].length }; });
+    const agentRows = Object.keys(agents).map(function (k) { return { name: NAME[k] + ' \u00b7 ' + ROLE[k], avg: avg(agents[k]), n: agents[k].length }; });
     return { stageRows: stageRows, agentRows: agentRows.sort(function (a, b) { return b.avg - a.avg; }) };
   }
   function fmtMin(m) { return m < 60 ? Math.round(m) + ' mnt' : m < 1440 ? (m / 60).toFixed(1) + ' jam' : (m / 1440).toFixed(1) + ' hari'; }
@@ -1655,6 +2132,25 @@
     });
     host.appendChild(box);
   }
+  // Tokens written in Riwayat ("45.2k token") belong to the agent of the stage that line closes
+  function tokenMetrics(list) {
+    const byAgent = {}, byTicket = [];
+    list.forEach(function (tk) {
+      const h = tk.hist || [];
+      let total = 0;
+      h.forEach(function (e, i) {
+        const k = Number(e[2]) || 0;
+        if (!k) return;
+        total += k;
+        const desk = i === 0 ? 'lead' : deskFor(h[i - 1][1], tk.layer);
+        if (desk) byAgent[desk] = (byAgent[desk] || 0) + k;
+      });
+      if (total) byTicket.push({ tk: tk, total: total });
+    });
+    return { agents: Object.keys(byAgent).map(function (k) { return { name: NAME[k] + ' \u00b7 ' + ROLE[k], avg: byAgent[k], n: 0 }; }).sort(function (a, b) { return b.avg - a.avg; }),
+      tickets: byTicket.sort(function (a, b) { return b.total - a.total; }).slice(0, 5) };
+  }
+  function fmtTok(k) { return k >= 1000 ? (k / 1000).toFixed(2) + 'M' : k.toFixed(k < 10 ? 1 : 0) + 'k'; }
   function renderMetrics() {
     const list = view();
     el('mSub').textContent = mode === 'live' ? (liveSource === 'db' ? 'Snapshot' : 'Live') + (projFilter ? ' · ' + projFilter : '') : 'Demo';
@@ -1670,6 +2166,25 @@
     bars('Rata-rata durasi per tahap', m.stageRows.sort(function (a, b) { return order.indexOf(a.name) - order.indexOf(b.name); }), mBody);
     bars('Rata-rata durasi per agent', m.agentRows, mBody);
     if (m.agentRows.length) mBody.appendChild(node('p', 'desc', 'Paling lama: ' + m.agentRows[0].name + ' (' + fmtMin(m.agentRows[0].avg) + ' per tiket).'));
+    const tm = tokenMetrics(list);
+    const tb = node('div'); tb.appendChild(node('h3', null, 'Token per agent (dari Riwayat)'));
+    if (!tm.agents.length) tb.appendChild(node('div', 'ac-done', 'Belum ada catatan token. Riwayat dari noskill 1.13 ke atas menuliskannya, misalnya "45.2k token".'));
+    else {
+      const max = tm.agents[0].avg;
+      tm.agents.forEach(function (r) {
+        const row = node('div', 'bar' + (r.avg === max ? ' top' : ''));
+        row.appendChild(node('span', null, r.name));
+        const track = node('span'); const fill = node('i'); fill.style.width = Math.max(2, r.avg / max * 100) + '%'; track.appendChild(fill); row.appendChild(track);
+        row.appendChild(node('span', 'val', fmtTok(r.avg)));
+        tb.appendChild(row);
+      });
+      tb.appendChild(node('h3', null, 'Tiket paling boros token'));
+      tm.tickets.forEach(function (x) {
+        const b = node('button', 'tk-btn', (multi ? x.tk.project + ' / ' : '') + x.tk.id + ' \u00b7 ' + fmtTok(x.total));
+        b.type = 'button'; b.addEventListener('click', function () { openTicket(x.tk); }); tb.appendChild(b);
+      });
+    }
+    mBody.appendChild(tb);
     const top = list.filter(function (t) { return Number(t.rounds) > 0; }).sort(function (a, b) { return Number(b.rounds) - Number(a.rounds); }).slice(0, 5);
     const rb = node('div'); rb.appendChild(node('h3', null, 'Ronde revisi terbanyak'));
     if (!top.length) rb.appendChild(node('div', 'ac-done', 'Belum ada tiket yang direvisi.'));
@@ -1691,10 +2206,43 @@
     if (open) { metricsEl.hidden = false; btnMetrics.setAttribute('aria-expanded', 'true'); renderMetrics(); }
   });
 
+  // ---------- Today's timeline: every status change today, click to replay from that moment ----------
+  const tlEl = el('timeline'), tlTrack = el('tlTrack'), btnTimeline = el('btnTimeline');
+  const STATUS_COLOR = { TODO: '#8a9a8e', IN_PROGRESS: '#2f8a4e', REVIEW: '#c79a14', QA: '#d9682a', BUG: '#c8453a', HOLD: '#b7791f', DONE: '#2f6b4f' };
+  function todayYmd() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function renderTimeline() {
+    if (tlEl.hidden) return;
+    tlTrack.textContent = '';
+    const ymd = todayYmd(), events = [];
+    view().forEach(function (tk) {
+      (tk.hist || []).forEach(function (h) { if (h[0].slice(0, 10) === ymd && h[0].length >= 16) events.push({ tk: tk, at: h[0], st: h[1] }); });
+    });
+    el('tlSub').textContent = mode !== 'live' ? 'Tersedia saat data live atau snapshot aktif.' : events.length ? events.length + ' perpindahan status. Klik untuk memutar ulang dari titik itu.' : 'Belum ada perpindahan status hari ini.';
+    const now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes();
+    const line = node('span', 'tl-now'); line.style.left = (nowMin / 1440 * 100) + '%'; tlTrack.appendChild(line);
+    events.forEach(function (ev) {
+      const min = Number(ev.at.slice(11, 13)) * 60 + Number(ev.at.slice(14, 16));
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.style.left = (min / 1440 * 100) + '%';
+      b.style.background = STATUS_COLOR[ev.st] || '#55606e';
+      b.title = ev.at.slice(11) + ' · ' + (multi ? ev.tk.project + ' / ' : '') + ev.tk.id + ' → ' + ev.st;
+      b.setAttribute('aria-label', b.title);
+      b.addEventListener('click', function () { openTicket(ev.tk); replayTicket(ev.tk, ev.at); });
+      tlTrack.appendChild(b);
+    });
+  }
+  btnTimeline.addEventListener('click', function () {
+    tlEl.hidden = !tlEl.hidden;
+    btnTimeline.setAttribute('aria-expanded', String(!tlEl.hidden));
+    renderTimeline();
+  });
+  el('tlClose').addEventListener('click', function () { tlEl.hidden = true; btnTimeline.setAttribute('aria-expanded', 'false'); });
+
   // ---------- Replay one ticket's journey from its Riwayat ----------
   let replaying = false;
   function deskFor(status, layer) { return stationFor({ status: status, layer: layer }) || (status === 'TODO' ? 'lead' : status === 'DONE' ? 'em' : null); }
-  function replayTicket(tk) {
+  function replayTicket(tk, fromAt) {
     if (replaying) return;
     const seq = [];
     (tk.hist || []).forEach(function (h) { if (!seq.length || seq[seq.length - 1][1] !== h[1]) seq.push(h); });
@@ -1703,6 +2251,7 @@
       const a = deskFor(seq[i][1], tk.layer), b = deskFor(seq[i + 1][1], tk.layer);
       if (a && b && a !== b) hops.push({ from: a, to: b, label: seq[i][1] + ' → ' + seq[i + 1][1], at: seq[i + 1][0] });
     }
+    if (fromAt) { const from = hops.findIndex(function (h) { return h.at >= fromAt; }); if (from > 0) hops.splice(0, from); }
     if (!hops.length) { logWho.textContent = tk.id; logWhat.textContent = 'Riwayat tiket ini belum punya perpindahan meja untuk diputar.'; renderMini(); return; }
     replaying = true; renderTicket();
     if (!followOn) setFollow(true);
@@ -1716,10 +2265,10 @@
       }
       const h = hops[i++];
       logStatus.textContent = 'REPLAY · ' + tk.id + ' · ' + i + '/' + hops.length;
-      logWho.textContent = ST[h.from].a.agent; logWho.style.color = hex(ST[h.from].a.color);
-      logWhat.textContent = h.label + (h.at ? ' (' + h.at + ')' : '') + ': ' + ROLE[h.from] + ' mengantar ke ' + ROLE[h.to];
+      logWho.textContent = NAME[h.from] + ' \u00b7 ' + ST[h.from].a.agent; logWho.style.color = hex(ST[h.from].a.color);
+      logWhat.textContent = h.label + (h.at ? ' (' + h.at + ')' : '') + ': ' + who(h.from) + ' mengantar ke ' + who(h.to);
       renderMini();
-      sendCourier(h.from, h.to, tk.color, function () { setTimeout(next, 500); });
+      sendCourier(h.from, h.to, tk.color, function () { setTimeout(next, 500); }, h.label + ' \u00b7 ' + tk.id);
     })();
   }
 
@@ -1808,6 +2357,9 @@
   for (let tries = 0; tries < 500 && trees.length < 30; tries++) {
     const x = (rand() * 2 - 1) * 22.2, z = (rand() * 2 - 1) * 22.2;
     if (Math.max(Math.abs(x), Math.abs(z)) < 18) continue;
+    if (x > 14 && x < 23.5 && z > -7.5 && z < 8.5) continue;      // canteen
+    if (z > 12.5) continue;                                           // road and sidewalks
+    if (x < -14 && z > -14.5) continue;                               // parking lot
     let ok = true;
     for (const t of trees) if (Math.hypot(t.x - x, t.z - z) < 2.3) { ok = false; break; }
     if (!ok) continue;
@@ -1823,6 +2375,192 @@
     const pl = new THREE.PointLight(0xffc56b, 0, 16, 2);
     pl.position.set(pt[0], 3.0, pt[1]); scene.add(pl); lampLights.push(pl);
   });
+
+  const street = {};
+  // ---------- Street: road, sidewalks, zebra crossing, parking lot, traffic and people outside ----------
+  // Road runs east-west in front of the office (z 15..20); parking is on the west side with a guard post.
+  const ROAD = { z0: 15, z1: 20, lanes: [16.25, 18.75], cross: 2 };
+  const tailMat = new THREE.MeshStandardMaterial({ color: 0xff3b30, emissive: 0xff2a1f, emissiveIntensity: 0.6, flatShading: true });
+  const glassDark = new THREE.MeshStandardMaterial({ color: 0x23303b, roughness: 0.3, metalness: 0.2, flatShading: true });
+  (function buildStreet() {
+    box(46.2, 0.06, ROAD.z1 - ROAD.z0, 0x3a3f45, 0, 0.03, (ROAD.z0 + ROAD.z1) / 2, { cast: false });          // asphalt
+    for (let x = -22; x < 23; x += 3) box(1.5, 0.01, 0.14, 0xf7f5ef, x, 0.065, 17.5, { cast: false });          // lane dashes
+    box(46.2, 0.01, 0.1, 0xf3c623, 0, 0.065, ROAD.z0 + 0.25, { cast: false });                                  // edge lines
+    box(46.2, 0.01, 0.1, 0xf3c623, 0, 0.065, ROAD.z1 - 0.25, { cast: false });
+    for (let i = 0; i < 8; i++) box(2.4, 0.012, 0.36, 0xf7f5ef, ROAD.cross, 0.068, ROAD.z0 + 0.55 + i * 0.56, { cast: false });   // zebra
+    box(46.2, 0.18, 1.6, 0xc9c3b6, 0, 0.09, 14.2, { cast: false });                                              // sidewalks
+    box(46.2, 0.18, 1.6, 0xc9c3b6, 0, 0.09, 20.8, { cast: false });
+    box(46.2, 0.2, 0.12, 0x8d8a83, 0, 0.1, 14.98, { cast: false });                                              // curbs
+    box(46.2, 0.2, 0.12, 0x8d8a83, 0, 0.1, 20.02, { cast: false });
+    box(2.4, 0.08, 3.4, 0xc9c3b6, ROAD.cross, 0.05, 11.8, { cast: false });                                      // path office -> crossing
+    // street lights on the far sidewalk
+    [-16, -4, 8, 20].forEach(function (x) {
+      cyl(0.07, 0.09, 3.6, 6, 0x3b4048, x, 1.9, 21.3);
+      box(0.08, 0.08, 1.0, 0x3b4048, x, 3.66, 20.85, { cast: false });
+      box(0.5, 0.14, 0.32, 0, x, 3.6, 20.4, { material: lampMat, cast: false });
+    });
+    // traffic light by the crossing
+    cyl(0.06, 0.07, 3, 6, 0x2a2f36, ROAD.cross + 1.6, 1.6, 14.5);
+    box(0.36, 0.95, 0.3, 0x1d2126, ROAD.cross + 1.6, 3.2, 14.5);
+    // halte (bus stop) on the far side
+    const hx = -7;
+    box(3.6, 0.1, 1.4, 0x2f6b4f, hx, 2.6, 21.0); box(0.1, 2.5, 0.1, 0x3b4048, hx - 1.7, 1.3, 21.6); box(0.1, 2.5, 0.1, 0x3b4048, hx + 1.7, 1.3, 21.6);
+    box(3.4, 1.4, 0.06, 0, hx, 1.5, 21.65, { material: glassMat, cast: false });
+    box(2.6, 0.1, 0.45, 0x8d6e63, hx, 0.62, 21.35); box(0.1, 0.45, 0.4, 0x3b4048, hx - 1.1, 0.4, 21.35); box(0.1, 0.45, 0.4, 0x3b4048, hx + 1.1, 0.4, 21.35);
+    const hl = makeLabel('Halte', 'bus kota', 0x2f6b4f); hl.position.set(hx, 3.5, 21.0); hl.scale.set(2.2, 0.73, 1); scene.add(hl);
+    // gerobak bakso
+    const bx = 9;
+    box(1.6, 0.8, 0.8, 0xd94f3d, bx, 0.75, 21.3); box(1.7, 0.06, 0.9, 0xf3ead6, bx, 1.18, 21.3);
+    cyl(0.3, 0.3, 0.4, 10, 0x9aa0a6, bx - 0.4, 1.4, 21.3); box(0.5, 0.4, 0.5, 0, bx + 0.4, 1.4, 21.3, { material: glassMat, cast: false });
+    [-0.6, 0.6].forEach(function (w) { cyl(0.3, 0.3, 0.08, 12, 0x2a2f36, bx + w, 0.3, 21.75).rotation.x = Math.PI / 2; });
+    cyl(0.04, 0.04, 1.8, 6, 0x3b4048, bx, 2.0, 21.6);
+    const um = new THREE.Mesh(new THREE.ConeGeometry(1.2, 0.5, 8), mat(0x3d8bd9)); um.position.set(bx, 3.0, 21.6); scene.add(um);
+    const bl = makeLabel('Bakso', 'Pak Udin', 0xd94f3d); bl.position.set(bx, 3.9, 21.4); bl.scale.set(2.0, 0.66, 1); scene.add(bl);
+    // parking lot (west) with driveway, stall lines, guard post and barrier
+    box(7.4, 0.06, 24.2, 0x4a4f55, -18.9, 0.035, -1.1, { cast: false });
+    box(3.2, 0.06, 4.2, 0x4a4f55, -18.9, 0.036, 13.0, { cast: false });
+    for (let i = 0; i < 9; i++) { const z = -12.5 + i * 2.6; box(2.4, 0.012, 0.08, 0xf7f5ef, -21.4, 0.07, z, { cast: false }); box(2.4, 0.012, 0.08, 0xf7f5ef, -16.4, 0.07, z, { cast: false }); }
+    const pk = makeLabel('Parkir', 'tamu & karyawan', 0x3d5a80); pk.position.set(-18.9, 3.4, 11.4); pk.scale.set(2.6, 0.86, 1); scene.add(pk);
+    box(1.6, 2.1, 1.6, 0xf3ead6, -15.6, 1.05, 12.6); box(1.9, 0.14, 1.9, 0x2f6b4f, -15.6, 2.17, 12.6);
+    box(1.0, 0.7, 0.05, 0, -15.6, 1.4, 13.42, { material: glassMat, cast: false });
+    const ps = makeLabel('Pos Satpam', '24 jam', 0x2f6b4f); ps.position.set(-15.6, 3.1, 12.6); ps.scale.set(2.4, 0.8, 1); scene.add(ps);
+    box(0.25, 0.9, 0.25, 0x3b4048, -17.2, 0.45, 12.4);
+    const arm = new THREE.Group(); arm.position.set(-17.2, 0.85, 12.4); scene.add(arm);
+    for (let i = 0; i < 6; i++) box(0.5, 0.1, 0.1, i % 2 ? 0xf7f5ef : 0xd94f3d, -0.25 - i * 0.5, 0, 0, { parent: arm, cast: false });
+    street.barrier = arm;
+  })();
+  function makeCar(color, kind) {
+    const g = new THREE.Group();
+    if (kind === 'motor') {
+      box(0.22, 0.4, 1.4, color, 0, 0.55, 0, { parent: g });
+      box(0.3, 0.12, 0.6, 0x1d2126, 0, 0.82, -0.2, { parent: g });
+      box(0.5, 0.05, 0.05, 0x3b4048, 0, 1.05, 0.55, { parent: g, cast: false });
+      box(0.16, 0.12, 0.06, 0, 0, 0.8, 0.72, { parent: g, material: lampMat, cast: false });
+      [-0.55, 0.55].forEach(function (z) { cyl(0.28, 0.28, 0.12, 10, 0x1d2126, 0, 0.28, z, { parent: g }).rotation.z = Math.PI / 2; });
+      return g;
+    }
+    const L = kind === 'van' ? 4.2 : 3.6, H = kind === 'van' ? 1.0 : 0.62;
+    box(1.7, H, L, color, 0, 0.35 + H / 2, 0, { parent: g });
+    box(1.5, 0.6, kind === 'van' ? 2.8 : 1.9, color, 0, 0.35 + H + 0.3, kind === 'van' ? -0.4 : -0.2, { parent: g });
+    box(1.52, 0.42, kind === 'van' ? 2.7 : 1.8, 0, 0, 0.35 + H + 0.3, kind === 'van' ? -0.4 : -0.2, { parent: g, material: glassDark, cast: false });
+    [-0.6, 0.6].forEach(function (x) {
+      box(0.3, 0.16, 0.05, 0, x, 0.35 + H * 0.6, L / 2 + 0.01, { parent: g, material: lampMat, cast: false });
+      box(0.3, 0.14, 0.05, 0, x, 0.35 + H * 0.6, -L / 2 - 0.01, { parent: g, material: tailMat, cast: false });
+      [-L / 2 + 0.75, L / 2 - 0.75].forEach(function (z) { cyl(0.34, 0.34, 0.24, 12, 0x1d2126, x * 1.4, 0.34, z, { parent: g }).rotation.z = Math.PI / 2; });
+    });
+    return g;
+  }
+  const CAR_COLORS = [0xd94f3d, 0xf7f5ef, 0x2a2f36, 0x3d5a80, 0x9aa0a6, 0xf3a712, 0x2f6b4f];
+  // parked cars and motorbikes
+  for (let i = 0; i < 8; i++) {
+    [[-21.3, Math.PI / 2], [-16.5, -Math.PI / 2]].forEach(function (c, side) {
+      if ((i * 3 + side * 5) % 7 === 3) return;                   // a few empty stalls
+      const car = makeCar(CAR_COLORS[(i + side * 3) % CAR_COLORS.length], (i + side) % 4 === 0 ? 'van' : 'car');
+      car.position.set(c[0], 0.06, -11.2 + i * 2.6); car.rotation.y = c[1]; scene.add(car);
+    });
+  }
+  for (let i = 0; i < 7; i++) { const m = makeCar(CAR_COLORS[(i * 2) % CAR_COLORS.length], 'motor'); m.position.set(-21.8 + i * 0.8, 0.06, 9.6); m.rotation.y = 0.25; scene.add(m); }
+  // people outside: satpam, bakso seller, people at the halte, ojek drivers, walkers, and riders
+  const OUT_SKIN = [0xf1c9a5, 0xd9a47c, 0xc68e66, 0xb67a52, 0x8d5a3b];
+  function npc(o, x, y, z, ry) { o.scale = 0.75; o.skin = o.skin || pick(OUT_SKIN); o.pants = o.pants || pick([0x2b2d42, 0x3d5a80, 0x5c4033]); o.hair = o.hair || 0x1a1410; const p = makePerson(o); p.position.set(x, y, z); p.rotation.y = ry || 0; return p; }
+  function seat(p, drop) { p.userData.legL.rotation.x = p.userData.legR.rotation.x = -Math.PI / 2; p.position.y -= drop; }
+  const satpam = npc({ shirt: 0x2b3a55, pants: 0x1d2126, style: 'short', card: 0xf3c623 }, -16.6, 0.06, 13.3, Math.PI);
+  const seller = npc({ shirt: 0xf7f5ef, style: 'short', beard: true }, 9, 0.18, 22.2, Math.PI);
+  const buyer = npc({ shirt: 0x6aa84f, hijab: 0xd94f3d }, 10.5, 0.18, 20.6, -Math.PI / 2);
+  const waitA = npc({ shirt: 0x8d6e63, style: 'side' }, -7.6, 0.18, 21.35, Math.PI); seat(waitA, 0.22);
+  const waitB = npc({ shirt: 0xc0617a, hijab: 0x2e3a59 }, -5.8, 0.18, 20.8, Math.PI);
+  waitB.userData.armR.rotation.x = -1.3;                                              // looking at a phone
+  const ojekA = makeCar(0x2f6b4f, 'motor'); ojekA.position.set(-3.6, 0.18, 21.1); ojekA.rotation.y = Math.PI / 2; scene.add(ojekA);
+  const ojekB = makeCar(0x2a2f36, 'motor'); ojekB.position.set(-2.6, 0.18, 21.1); ojekB.rotation.y = Math.PI / 2; scene.add(ojekB);
+  const driver = npc({ shirt: 0x2fa84f, style: 'short' }, -3.6, 0.18, 20.4, Math.PI);
+  const NPC_TALK = [
+    [satpam, ['Selamat pagi, Pak', 'Parkir di sebelah kiri ya', 'Hati-hati di jalan']],
+    [seller, ['Bakso, bakso!', 'Pakai mie atau bihun?', 'Sambalnya di situ ya']],
+    [buyer, ['Bakso satu, Pak', 'Jangan pedas ya']],
+    [driver, ['Ojek, Mbak?', 'Mau ke mana, Mas?']],
+    [waitB, ['Busnya lama ya', 'Sebentar lagi sampai']]
+  ];
+  const npcSays = [];
+  let npcT = 4;
+  // vehicles on the road: lane 0 drives +x, lane 1 drives -x; motor riders carry a person
+  const traffic = [];
+  [[0, -18, 'car'], [0, -4, 'motor'], [0, 9, 'van'], [1, 15, 'car'], [1, 2, 'motor'], [1, -12, 'car']].forEach(function (v, i) {
+    const g = makeCar(v[2] === 'motor' ? CAR_COLORS[(i + 2) % 7] : CAR_COLORS[i % 7], v[2]);
+    g.position.set(v[1], 0.06, ROAD.lanes[v[0]]); g.rotation.y = v[0] ? -Math.PI / 2 : Math.PI / 2; scene.add(g);
+    if (v[2] === 'motor') {
+      const r = npc({ shirt: i % 2 ? 0x2fa84f : 0x3d5a80, style: 'short', parent: g }, 0, 0.12, -0.2, 0);
+      seat(r, 0); r.position.y = 0.2; r.userData.armL.rotation.x = r.userData.armR.rotation.x = -1.2;
+    }
+    traffic.push({ g: g, lane: v[0], x: v[1], v: 0, max: v[2] === 'motor' ? 5.2 : 4.0 + (i % 3) * 0.4, len: v[2] === 'motor' ? 1.6 : v[2] === 'van' ? 4.2 : 3.6 });
+  });
+  // people walking along the sidewalks, and one who crosses at the zebra now and then
+  const walkersOut = [
+    { p: npc({ shirt: 0xf3a712, style: 'curly' }, -20, 0.18, 14.3, 0), z: 14.3, x: -20, dir: 1, sp: 1.3 },
+    { p: npc({ shirt: 0x6b4f9a, hijab: 0xe9b9c3 }, 6, 0.18, 20.7, 0), z: 20.7, x: 6, dir: -1, sp: 1.1 },
+    { p: npc({ shirt: 0x55606e, style: 'side', glasses: true }, 16, 0.18, 14.3, 0), z: 14.3, x: 16, dir: -1, sp: 1.2 }
+  ];
+  const crosser = { p: npc({ shirt: 0xc8553d, style: 'short' }, ROAD.cross - 0.5, 0.18, 13.2, 0), z: 13.2, to: 21.0, wait: 6, state: 'wait' };
+  let crossing = false;
+  function swing(p, ph, on) {
+    const u = p.userData, a = on ? Math.sin(ph) * 0.6 : 0;
+    u.legL.rotation.x = a; u.legR.rotation.x = -a; u.armL.rotation.x = -a * 0.7; u.armR.rotation.x = a * 0.7;
+  }
+  function stepStreet(dt) {
+    // the crosser waits at the curb, cars stop, then it walks over (and later back)
+    const c = crosser;
+    if (c.state === 'wait') { c.wait -= dt; swing(c.p, 0, false); if (c.wait <= 0) c.state = 'curb'; }
+    else {
+      crossing = true;
+      const clear = traffic.every(function (v) { const d = (v.lane ? -1 : 1) * (ROAD.cross - v.x); return v.v < 0.3 || d < -1 || d > 9; });
+      if (c.state === 'curb') { swing(c.p, 0, false); if (clear) c.state = 'go'; }
+      else {
+        const dz = c.to - c.z, st = Math.sign(dz) * Math.min(Math.abs(dz), 1.4 * dt);
+        c.z += st; c.p.position.z = c.z; c.p.position.y = (c.z > ROAD.z0 && c.z < ROAD.z1) ? 0.06 : 0.18; c.p.rotation.y = dz > 0 ? 0 : Math.PI;
+        swing(c.p, t * 8, true);
+        if (Math.abs(dz) < 0.01) { c.state = 'wait'; c.wait = 10 + Math.random() * 10; c.to = c.to > 17 ? 13.2 : 21.0; crossing = false; }
+      }
+    }
+    // traffic: keep a gap to the car ahead, stop before the zebra while someone crosses
+    traffic.forEach(function (v) {
+      const dir = v.lane ? -1 : 1;
+      let gap = 99;
+      traffic.forEach(function (o) { if (o !== v && o.lane === v.lane) { let d = (o.x - v.x) * dir; if (d < 0) d += 46; gap = Math.min(gap, d - (o.len + v.len) / 2); } });
+      const toZebra = (ROAD.cross - v.x) * dir - v.len / 2 - 1.6;
+      let target = v.max;
+      if (gap < 4) target = Math.max(0, (gap - 1) * 1.2);
+      if (crossing && toZebra > -0.5 && toZebra < 7) target = Math.min(target, Math.max(0, toZebra * 0.8));
+      v.v += Math.max(-6 * dt, Math.min(2.5 * dt, target - v.v));
+      v.x += dir * v.v * dt;
+      if (v.x > 23.5) v.x -= 47; if (v.x < -23.5) v.x += 47;
+      v.g.position.x = v.x;
+      v.g.visible = Math.abs(v.x) < 23.2;
+    });
+    // walkers on the sidewalks turn around at the ends
+    walkersOut.forEach(function (w) {
+      w.x += w.dir * w.sp * dt;
+      if (w.x > 21.5 || w.x < -21.5) { w.dir *= -1; w.x = Math.max(-21.5, Math.min(21.5, w.x)); }
+      w.p.position.x = w.x; w.p.rotation.y = w.dir > 0 ? Math.PI / 2 : -Math.PI / 2;
+      swing(w.p, t * 7 * w.sp, true);
+    });
+    // the satpam lifts the barrier and waves at cars now and then; the seller stirs the pot
+    const wave = Math.sin(t * 0.4) > 0.7;
+    satpam.userData.armR.rotation.x = wave ? -2.6 + Math.sin(t * 8) * 0.3 : 0;
+    street.barrier.rotation.z = wave ? -1.2 : 0;
+    seller.userData.armR.rotation.x = -1.0 + Math.sin(t * 3) * 0.3;
+    // someone outside says something every few seconds
+    npcT -= dt;
+    if (npcT <= 0) {
+      npcT = 5 + Math.random() * 4;
+      const n = NPC_TALK[Math.floor(Math.random() * NPC_TALK.length)];
+      npcSays.push({ p: n[0], sp: makeBubble(n[1][Math.floor(Math.random() * n[1].length)]), ttl: 2.6 });
+    }
+    for (let i = npcSays.length - 1; i >= 0; i--) {
+      const b = npcSays[i];
+      b.p.getWorldPosition(wp); b.sp.position.set(wp.x, wp.y + 2.7, wp.z);
+      b.ttl -= dt;
+      if (b.ttl <= 0) { scene.remove(b.sp); b.sp.material.map.dispose(); b.sp.material.dispose(); npcSays.splice(i, 1); }
+    }
+  }
 
   // ---------- Sky ----------
   const clouds = [];
@@ -1904,9 +2642,39 @@
   // ---------- Animation ----------
   const clock = new THREE.Clock();
   let t = 0;
+  // agents wait this long with nothing to do before going for coffee (plus a per-agent offset)
+  const IDLE_S = 20, lastBusy = {}, idleJitter = {};
+  Object.keys(ST).forEach(function (k, i) { idleJitter[k] = (i * 7.3) % 15; });
+
+  // What an idle agent does next, by the viewer's clock: salat times -> musholla, lunch -> canteen,
+  // otherwise coffee, pantry, a chat at a colleague's desk, the toilet, or the canteen.
+  function nowMin() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+  const PRAYER = [[11 * 60 + 55, 12 * 60 + 25], [15 * 60 + 5, 15 * 60 + 30], [17 * 60 + 50, 18 * 60 + 15], [19 * 60 + 5, 19 * 60 + 30]];
+  function pickActivity(k) {
+    const m = nowMin();
+    if (PRAYER.some(function (w) { return m >= w[0] && m <= w[1]; }) && Math.random() < 0.8) return 'musholla';
+    if (m >= 11 * 60 + 45 && m <= 13 * 60 && Math.random() < 0.7) return 'kantin';
+    const r = Math.random();
+    return r < 0.3 ? 'lounge' : r < 0.52 ? 'pantry' : r < 0.74 ? 'chat' : r < 0.84 ? 'toilet' : r < 0.94 ? 'kantin' : 'stay';
+  }
+  function startActivity(k) {
+    const act = pickActivity(k);
+    if (act === 'stay') return false;
+    if (act === 'chat') {
+      const hosts = Object.keys(ST).filter(function (h) { return h !== k && !walkers[h] && !hang[h] && !queue.some(function (j) { return j.from === h || j.to === h; }); });
+      if (!hosts.length) return goPlace(k, 'lounge');
+      const h = anyOf(hosts), i = Math.floor(Math.random() * OPENERS.length);
+      queue.push({ from: k, to: h, color: ST[k].a.color, onArrive: null, say: null, chat: [OPENERS[i], REPLIES[i]] });
+      return true;
+    }
+    return goPlace(k, act) || goPlace(k, 'lounge');
+  }
 
   function update(dt) {
     t += dt;
+    stepSays(dt);
+    smallTalk(dt);
+    stepStreet(dt);
     if (mode === 'demo' && !replaying) {
       if (!waiting) stepT += dt;
       if (stepIdx < 0 || (!waiting && stepT >= WORK)) {
@@ -1935,11 +2703,51 @@
     Object.keys(ST).forEach(function (k) {
       const s = ST[k], u = s.person.userData;
       const isAct = mode === 'live' ? !!(liveBy[k] || actBy[k]) : s === active;
-      const on = isAct && !walkers[k];
+      const on = isAct && !walkers[k] && !hang[k];
+      // Idle agents drift to the coffee corner; work (or a ticket to carry) brings them back
+      // HOLD tickets send the Eng. Manager and the agent who held the ticket to the meeting room
+      const inMeeting = hang[k] && hang[k].place === 'meeting';
+      const wantMeeting = !!meetingFor[k];
+      const deskWork = k === 'em' ? !!actBy.em : isAct;
+      if (!walkers[k] && !replaying) {
+        if (wantMeeting && !deskWork) {
+          if (hang[k] && !inMeeting) comeBack(k);
+          else if (!hang[k] && !queue.some(function (j) { return j.from === k; })) goPlace(k, 'meeting');
+        } else if (inMeeting) comeBack(k);
+      }
+      if (k !== 'em' && !wantMeeting) {
+        const busy = isAct || walkers[k] || queue.some(function (j) { return j.from === k; });
+        if (busy) lastBusy[k] = t;
+        if (isAct && hang[k] && !walkers[k]) comeBack(k);
+        else if (!busy && !hang[k] && !walkers[k] && !replaying && t - (lastBusy[k] || 0) > IDLE_S + idleJitter[k]) {
+          if (!startActivity(k)) lastBusy[k] = t;
+        } else if (hang[k] && !walkers[k] && hang[k].until && t > hang[k].until && hang[k].place !== 'meeting') {
+          comeBack(k); lastBusy[k] = t - Math.random() * IDLE_S * 0.5;   // back at the desk for a while, then another break
+        }
+      }
+      if (hang[k] && !walkers[k] && hang[k].place === 'meeting') {
+        u.armL.rotation.x = -0.6 + Math.sin(t * 0.9 + idleJitter[k]) * 0.15;   // waiting, hands on the table
+        u.armR.rotation.x = -0.6 - Math.sin(t * 1.1 + idleJitter[k]) * 0.15;
+        s.person.visible = shown(s.person.position.y);
+      } else if (hang[k] && !walkers[k] && hang[k].place === 'toilet') {
+        s.person.visible = false;
+      } else if (hang[k] && !walkers[k] && hang[k].place === 'musholla') {
+        u.armL.rotation.x = u.armR.rotation.x = -0.9;                         // hands folded
+        s.person.visible = shown(s.person.position.y);
+      } else if (hang[k] && !walkers[k] && hang[k].place === 'kantin') {
+        u.armR.rotation.x = -1.2 - Math.max(0, Math.sin(t * 1.6 + idleJitter[k])) * 0.9;   // eating
+        u.armL.rotation.x = -1.1;
+        s.person.visible = shown(s.person.position.y);
+      } else if (hang[k] && !walkers[k]) {
+        const ph = t * 0.7 + idleJitter[k];
+        u.armR.rotation.x = Math.sin(ph) > 0.85 ? -2.3 : -1.0;           // sip now and then
+        u.armL.rotation.x = -0.2 + Math.sin(t * 1.3 + idleJitter[k]) * 0.25; // talking with the hand
+        s.person.visible = shown(s.person.position.y);
+      }
       const glowTo = isAct ? 0.9 : k === selected ? 0.45 : 0;
       s.glow.opacity += (glowTo - s.glow.opacity) * Math.min(1, dt * 6);
       if (s.screen) s.screen.emissiveIntensity += ((on ? 1.1 : 0.15) - s.screen.emissiveIntensity) * Math.min(1, dt * 5);
-      if (!walkers[k]) {
+      if (!walkers[k] && !hang[k]) {
         if (s.standing) {
           u.armR.rotation.x = on ? -1.6 + Math.sin(t * 5) * 0.4 : -0.1;
           u.armL.rotation.x = on ? -0.4 : 0;
@@ -1954,7 +2762,8 @@
 
     // follow: keep the walking courier in view, on its own storey
     if (followOn) {
-      const wk = lastWalker && walkers[lastWalker] ? lastWalker : Object.keys(walkers)[0];
+      const ticketWalk = function (x) { return walkers[x] && !walkers[x].mode && !walkers[x].chat; };
+      const wk = ticketWalk(lastWalker) ? lastWalker : Object.keys(walkers).find(ticketWalk);
       if (wk) {
         lastWalker = wk;
         const pp = ST[wk].person.position;

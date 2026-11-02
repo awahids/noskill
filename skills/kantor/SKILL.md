@@ -15,6 +15,10 @@ The page is `kantor-noskill.html` in this skill's base directory. It is written 
 
 The live board reads ticket files and `activity.json` (written by `feature-flow`), so the Product Manager, CTO and Analyst light up while they write the PRD, ADR or BRD, before any ticket exists.
 
+HOLD tickets can be answered on the page (stored in the `answers` collection, applied by `/noskill:tiket lanjut`), and the Eng. Manager plus the agent who held a HOLD ticket wait in the meeting room on floor 3. Agents have names (Rayyan PM, Faris CTO, Zahra Analyst, Hamzah Tech Lead, Zayn Backend, Alya Frontend, Fathan Fullstack, Arkan Reviewer, Naura QA, Hafiz Eng. Manager). Walking agents show a speech bubble with the verdict they carry, Metrik shows tokens per agent and per ticket from Riwayat, and **Timeline** shows today's status changes (click one to replay from there).
+
+Idle agents from every floor take breaks: the shared coffee corner ("Ruang ngopi") on floor 3, the pantry on floor 1, the toilets or musholla on floor 2 (musholla at prayer times), the canteen outside (lunch time), or a chat at a colleague's desk. They talk to each other in speech bubbles and come back to their desk when work arrives. Outside there is a road with traffic that stops for people at the zebra crossing, a parking lot with a guard post, a bus stop, an ojek stand, and a bakso cart.
+
 Features on the page: click an agent (role, skills, current ticket), click a ticket on the board (AC, Riwayat, who holds it, replay its journey), **Metrik** (time per stage and per agent, most revised tickets, HOLD list), project filter, **Ikuti tiket** (camera follows the agent carrying a ticket), floor buttons, and a collapsible panel.
 
 ## 1. If the Artifact tool is available (Cowork, claude.ai)
@@ -27,7 +31,7 @@ Features on the page: click an agent (role, skills, current ticket), click a tic
    - `capabilities`:
      ```json
      {"mcp": {"servers": [{"server": "host:filesystem", "tools": ["list_directory", "read_multiple_files"]}]},
-      "db": {"rules": [{"path": "boards", "read": "view", "write": "admin"}]},
+      "db": {"rules": [{"path": "boards", "read": "view", "write": "admin"}, {"path": "answers", "read": "view", "write": "admin"}]},
       "room": {},
       "user": {"scopes": ["profile"]}}
      ```
