@@ -17,7 +17,7 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 
 ## Kantor noskill
 
-`/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent chibi bergaya pixel-art yang berjalan mengantar tiket, Ruang uji tempat Arkan (Reviewer + QA) memverifikasi tiket, dan suasana kantor di sekitarnya. Panelnya menampilkan langkah yang sedang berjalan, pemilih lantai, dan toolbar (metrik, ikuti tiket, timeline, mode malam).
+`/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent sprite pixel chibi yang berjalan mengantar tiket, Ruang uji tempat Arkan (Reviewer + QA) memverifikasi tiket, dan suasana kantor di sekitarnya. Panelnya menampilkan langkah yang sedang berjalan, pemilih lantai, dan toolbar (metrik, ikuti tiket, timeline, mode malam).
 
 ![Kantor noskill: kantor tiga lantai dengan panel baru, ruang uji, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran](docs/img/kantor-overview.jpg)
 

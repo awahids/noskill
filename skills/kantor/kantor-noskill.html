@@ -601,129 +601,163 @@
   const HAIR = [0x2b1d14, 0x3a2a1e, 0x1a1410, 0x5a3a22];
   const PANTS = [0x2b2d42, 0x3d5a80, 0x5c4033, 0x8d99ae];
 
-  // Smooth (not flat-shaded) materials and shared geometries for people, so a crowd stays cheap
-  const smatCache = {}, geoCache = {};
-  function smat(color, rough, side) {
-    const k = color + ':' + (rough || 0.7) + ':' + (side || 0);
-    if (!smatCache[k]) smatCache[k] = new THREE.MeshStandardMaterial({ color: color, roughness: rough || 0.7, metalness: 0, side: side || THREE.FrontSide });
-    return smatCache[k];
+  // ---------- People: chibi pixel sprites that always face the camera ----------
+  // Each person is a small group holding a billboard sprite. The group keeps the same pivots the animation code
+  // already drives (legL/legR/armL/armR rotations), and updatePeople() turns those values into a pose:
+  // stand, two walking frames, seated at a desk, and seated with a raised finger and sparkles ("idea").
+  const PERSON_MATS = [], personCache = {}, personTint = new THREE.Color(0xffffff);
+  const PX = 0.075;                   // world units per sprite pixel
+  const SIT_Y = 0.43;                 // a seated sprite's bottom sits this far above the person's position
+  const OUTLINE = 0x3a2a36;
+  function css(c) { return '#' + c.toString(16).padStart(6, '0'); }
+  function mixc(c, t, f) {
+    const a = [(c >> 16) & 255, (c >> 8) & 255, c & 255], b = [(t >> 16) & 255, (t >> 8) & 255, t & 255];
+    return (Math.round(a[0] + (b[0] - a[0]) * f) << 16) | (Math.round(a[1] + (b[1] - a[1]) * f) << 8) | Math.round(a[2] + (b[2] - a[2]) * f);
   }
-  function geo(key, make) { return geoCache[key] || (geoCache[key] = make()); }
-  function part(g, geom, material, x, y, z, o) {
-    const m = new THREE.Mesh(geom, material);
-    m.position.set(x, y, z);
-    if (o && o.s) m.scale.set(o.s[0], o.s[1], o.s[2]);
-    if (o && o.r) m.rotation.set(o.r[0], o.r[1], o.r[2]);
-    m.castShadow = !!(o && o.cast);
-    g.add(m);
-    return m;
-  }
-  const SPHERE = function (r) { return geo('s' + r, function () { return new THREE.SphereGeometry(r, 20, 14); }); };
-  // a slice of a sphere: phi runs around the vertical axis (PI/2 is the face, +z), theta down from the crown
-  const SHELL = function (r, p0, pl, t0, tl) { return geo(['h', r, p0, pl, t0, tl].join(), function () { return new THREE.SphereGeometry(r, 24, 16, p0, pl, t0, tl); }); };
-  const TUBE = function (rt, rb, h) { return geo(['c', rt, rb, h].join(), function () { return new THREE.CylinderGeometry(rt, rb, h, 16); }); };
+  // face and head silhouette rows (x0, x1) on a 14-wide head
+  const HEAD_ROWS = [[4, 9], [2, 11], [1, 12], [1, 12], [1, 12], [1, 12], [1, 12], [1, 12], [2, 11], [3, 10]];
 
-  // People with human proportions: rounded torso and limbs, shoes, belt, a face with eyes, irises, brows,
-  // nose, lips and ears, per-person hair styles, beard, glasses, tie, ID card, and a hijab that frames the
-  // face. Pivots stay where the poses expect them: legs at the hip, arms at the shoulder, hand 0.72 below it.
-  const CHIBI = 1.7, CHIBI_LEG = 0.75;
+  function drawPerson(o, pose) {
+    const OX = 2, W = 20, sitting = pose === 'sit' || pose === 'idea', H = sitting ? 18 : 24;
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const x = cv.getContext('2d');
+    function px(cx, cy, w, h, c) { x.fillStyle = css(c); x.fillRect(cx + OX + 1, cy + 1, w, h); }
+    function row(cy, x0, x1, c) { px(x0, cy, x1 - x0 + 1, 1, c); }
+    const skin = o.skin, skinD = mixc(o.skin, 0x6b3b2a, 0.22), hairC = o.hair || 0x2b1d14;
+    const shirt = o.shirt, shirtD = mixc(o.shirt, 0x000000, 0.22), shirtL = mixc(o.shirt, 0xffffff, 0.25);
+    const pants = o.pants || 0x2b2d42, hij = o.hijab || null, hijD = hij ? mixc(hij, 0x000000, 0.2) : 0, hijL = hij ? mixc(hij, 0xffffff, 0.22) : 0;
+
+    // head
+    if (hij) {
+      HEAD_ROWS.forEach(function (r, i) { row(i, r[0], r[1], hij); px(r[0], i, 1, 1, hijD); px(r[1], i, 1, 1, hijD); });
+      row(1, 4, 9, hijL);
+      for (let i = 3; i <= 8; i++) row(i, i === 8 ? 4 : 3, i === 8 ? 9 : 10, skin);
+    } else {
+      HEAD_ROWS.forEach(function (r, i) { row(i, r[0], r[1], i < 2 ? hairC : skin); });
+      row(2, 1, 12, hairC);
+      px(1, 3, 1, 2, hairC); px(12, 3, 1, 2, hairC);                       // sideburns
+      const st = o.style || 'short';
+      if (st === 'side') { px(9, 2, 4, 1, skin); px(10, 2, 2, 1, skin); }  // fringe swept to one side
+      if (st === 'curly') { [3, 5, 7, 9].forEach(function (cx) { px(cx, 0, 1, 1, mixc(hairC, 0xffffff, 0.1)); }); row(0, 4, 9, hairC); px(3, 1, 1, 1, hairC); px(10, 1, 1, 1, hairC); }
+      if (st === 'quiff') { px(4, 0, 7, 1, mixc(hairC, 0xffffff, 0.15)); }
+    }
+    // eyes (big, with a highlight), blush, mouth
+    [4, 8].forEach(function (ex) { px(ex, 4, 2, 2, 0x2b1d14); px(ex, 4, 1, 1, 0xffffff); });
+    if (!o.glasses) { px(3, 6, 2, 1, 0xf2a3a0); px(9, 6, 2, 1, 0xf2a3a0); }
+    px(6, 7, 2, 1, 0xb0554e);
+    if (o.beard) {
+      row(8, 2, 11, hairC); row(9, 3, 10, hairC); px(2, 7, 2, 1, hairC); px(10, 7, 2, 1, hairC); px(5, 7, 4, 1, hairC);
+      px(6, 8, 2, 1, 0xb0554e);
+    }
+    if (o.glasses) {
+      const gc = 0x7a6470;
+      [3, 7].forEach(function (gx) { px(gx, 3, 4, 1, gc); px(gx, 6, 4, 1, gc); px(gx, 3, 1, 4, gc); px(gx + 3, 3, 1, 4, gc); });
+    }
+
+    // body
+    const by = 10, bodyH = sitting ? 5 : 6;
+    px(3, by, 8, bodyH, shirt); px(10, by, 1, bodyH, shirtD);
+    const armTopRaised = pose === 'idea';
+    if (sitting) {
+      px(1, by + 1, 2, 3, shirt); px(11, by + 1, 2, 3, shirtD);                                  // arms bent forward
+      px(3, by + 4, 2, 1, skin); px(9, by + 4, 2, 1, skin);                                     // hands on the desk
+      row(by + 5, 2, 11, hij ? pants : pants);                                                  // lap
+      if (armTopRaised) {
+        px(11, by + 1, 2, 3, shirt);                                                           // arm goes up beside the head
+        px(13, by - 3, 2, 5, shirtD); px(13, by - 5, 2, 2, skin); px(14, by - 7, 1, 2, skin);  // sleeve, fist, raised index finger
+        [[15, by - 8], [16, by - 6], [15, by - 4]].forEach(function (s) { px(s[0], s[1], 2, 1, 0xf7d046); });   // sparkles
+      }
+    } else {
+      px(1, by, 2, 5, shirt); px(11, by, 2, 5, shirtD);
+      px(1, by + 5, 2, 1, skin); px(11, by + 5, 2, 1, skin);
+    }
+    if (hij) {                                                                                 // drape over the shoulders and chest, like a short cape
+      row(by, 1, 12, hij); row(by + 1, 1, 12, hij); row(by + 2, 2, 11, hij); row(by + 3, 3, 10, hijD);
+      if (!sitting) row(by + 4, 4, 9, hijD);
+      px(1, by, 1, 2, hijD); px(12, by, 1, 2, hijD);
+    }
+    if (o.tie) { px(6, by, 2, 4, o.tie); px(9, by + 2, 2, 2, 0xf7f5ef); px(9, by + 2, 2, 1, o.card || 0xc8453a); }
+    else {
+      if (!hij) { px(5, by, 1, 1, 0xf7f5ef); px(8, by, 1, 1, 0xf7f5ef); }
+      if (o.card) {
+        const lc = o.card;
+        px(4, by, 1, 1, lc); px(5, by + 1, 1, 1, lc); px(6, by + 2, 1, 1, lc); px(9, by, 1, 1, lc); px(8, by + 1, 1, 1, lc); px(7, by + 2, 1, 1, lc);
+        px(6, by + 3, 2, 1, lc); px(6, by + 4, 2, 1, 0xf7f5ef);
+      }
+    }
+
+    // legs or skirt (standing and walking only)
+    if (!sitting) {
+      const f = pose === 'walkA' ? 1 : pose === 'walkB' ? 2 : 0;                                  // 1: left foot lifted, 2: right foot lifted
+      const shoe = o.shoes || 0x2a2320;
+      if (hij) {
+        row(16, 3, 10, pants); row(17, 3, 10, pants); row(18, 2, 11, pants); row(19, 2, 11, pants); row(20, 2, 11, pants);
+        px(2, 18, 10, 1, mixc(pants, 0x000000, 0.12));
+        if (f !== 1) px(4, 21, 2, 1, shoe); if (f !== 2) px(8, 21, 2, 1, shoe);
+      } else {
+        row(16, 3, 10, 0x3b2a1e);
+        const lh = f === 1 ? 4 : 5, rh = f === 2 ? 4 : 5;
+        px(4, 17, 2, lh, pants); px(8, 17, 2, rh, pants);
+        px(3, 17 + lh, 3, 1, shoe); px(8, 17 + rh, 3, 1, shoe);
+      }
+    }
+
+    // 1px dark outline around the whole silhouette
+    const id = x.getImageData(0, 0, W, H), d = id.data, out = new Uint8ClampedArray(d.length);
+    const oc = [(OUTLINE >> 16) & 255, (OUTLINE >> 8) & 255, OUTLINE & 255];
+    function solid(ix, iy) { return ix >= 0 && iy >= 0 && ix < W && iy < H && d[(iy * W + ix) * 4 + 3] > 0; }
+    for (let iy = 0; iy < H; iy++) for (let ix = 0; ix < W; ix++) {
+      const k = (iy * W + ix) * 4;
+      if (d[k + 3] > 0) { out[k] = d[k]; out[k + 1] = d[k + 1]; out[k + 2] = d[k + 2]; out[k + 3] = 255; }
+      else if (solid(ix - 1, iy) || solid(ix + 1, iy) || solid(ix, iy - 1) || solid(ix, iy + 1)) { out[k] = oc[0]; out[k + 1] = oc[1]; out[k + 2] = oc[2]; out[k + 3] = 255; }
+    }
+    id.data.set(out); x.putImageData(id, 0, 0);
+    return cv;
+  }
+  function personMat(o, pose) {
+    const key = [o.skin, o.hair, o.shirt, o.pants, o.hijab, o.glasses ? 1 : 0, o.beard ? 1 : 0, o.style, o.tie, o.card, pose].join('|');
+    if (!personCache[key]) {
+      const tex = new THREE.CanvasTexture(drawPerson(o, pose));
+      tex.magFilter = tex.minFilter = THREE.NearestFilter; tex.generateMipmaps = false;
+      const m = new THREE.SpriteMaterial({ map: tex, transparent: true, alphaTest: 0.5, depthWrite: true, fog: false });
+      m.userData.h = (pose === 'sit' || pose === 'idea' ? 18 : 24) * PX;
+      m.color.copy(personTint); PERSON_MATS.push(m); personCache[key] = m;
+    }
+    return personCache[key];
+  }
+  const PEOPLE = [];
+  const shadowGeo = new THREE.CircleGeometry(0.42, 14), shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false });
   function makePerson(o) {
     const g = new THREE.Group();
-    const hip = 0.95, hy = hip + 1.1;
-    const skin = smat(o.skin, 0.55), shirt = smat(o.shirt, 0.75), pants = smat(o.pants, 0.8);
-    const hairM = smat(o.hair || 0x2b1d14, 0.85), dark = smat(0x1a1410, 0.4), white = smat(0xfbfaf6, 0.35);
-    function limb(px, py) { const p = new THREE.Group(); p.position.set(px, py, 0); g.add(p); return p; }
-
-    // legs: tapered trousers and rounded shoes
-    const legL = limb(0.12, hip), legR = limb(-0.12, hip);
-    [legL, legR].forEach(function (leg) {
-      part(leg, TUBE(0.11, 0.08, 0.84), pants, 0, -0.42, 0, { cast: true });
-      part(leg, SPHERE(0.1), smat(o.shoes || 0x2a2320, 0.45), 0, -0.86, 0.06, { s: [0.95, 0.55, 1.7] });
-    });
-    // pelvis, belt, torso with rounded chest and shoulders
-    part(g, TUBE(0.2, 0.21, 0.22), pants, 0, hip + 0.02, 0, { s: [1, 1, 0.7], cast: true });
-    part(g, TUBE(0.205, 0.205, 0.05), smat(0x3b2a1e, 0.5), 0, hip + 0.12, 0, { s: [1, 1, 0.72] });
-    part(g, TUBE(0.25, 0.2, 0.6), shirt, 0, hip + 0.43, 0, { s: [1, 1, 0.64], cast: true });
-    part(g, SPHERE(0.25), shirt, 0, hip + 0.72, 0, { s: [1.12, 0.36, 0.66] });
-    if (!o.hijab) {
-      [1, -1].forEach(function (sd) { part(g, geo('collar', function () { return new THREE.BoxGeometry(0.11, 0.05, 0.02); }), smat(o.collar || 0xf7f5ef, 0.6), sd * 0.055, hip + 0.79, 0.135, { r: [0.25, 0, sd * 0.55] }); });
-      if (o.tie) {
-        part(g, geo('tie', function () { return new THREE.BoxGeometry(0.07, 0.4, 0.015); }), smat(o.tie, 0.5), 0, hip + 0.56, 0.152, { r: [-0.08, 0, 0] });
-        part(g, SPHERE(0.035), smat(o.tie, 0.5), 0, hip + 0.76, 0.15, { s: [1, 0.8, 0.6] });
-      } else part(g, geo('placket', function () { return new THREE.BoxGeometry(0.03, 0.42, 0.01); }), smat(0xf7f5ef, 0.6), 0, hip + 0.55, 0.151);
-    }
-    if (o.card) {
-      part(g, geo('card', function () { return new THREE.BoxGeometry(0.12, 0.16, 0.012); }), smat(0xf7f5ef, 0.4), 0.13, hip + 0.47, 0.158);
-      part(g, geo('cardband', function () { return new THREE.BoxGeometry(0.12, 0.035, 0.013); }), smat(o.card, 0.5), 0.13, hip + 0.53, 0.159);
-    }
-    // arms: sleeve, cuff, hand
-    const armL = limb(0.3, hip + 0.7), armR = limb(-0.3, hip + 0.7);
-    [armL, armR].forEach(function (arm) {
-      part(arm, SPHERE(0.074), shirt, -Math.sign(arm.position.x) * 0.01, -0.015, 0, { s: [1.05, 0.9, 1] });   // shoulder, moves with the arm
-      arm.rotation.z = Math.sign(arm.position.x) * 0.05;                                 // arms hang slightly away from the body
-      part(arm, TUBE(0.074, 0.06, 0.34), shirt, 0, -0.17, 0, { cast: true });          // upper arm
-      part(arm, TUBE(0.06, 0.05, 0.3), shirt, 0, -0.47, 0.01, { cast: true });          // forearm
-      part(arm, TUBE(0.054, 0.054, 0.04), smat(o.cuff || o.shirt, 0.7), 0, -0.62, 0.01);
-      part(arm, SPHERE(0.052), skin, 0, -0.69, 0.015, { s: [0.75, 1.3, 0.55] });
-    });
-    // neck and head
-    part(g, TUBE(0.07, 0.08, 0.18), skin, 0, hip + 0.84, 0);
-    part(g, SPHERE(0.19), skin, 0, hy + 0.01, -0.005, { s: [0.9, 1.08, 0.98], cast: true });
-    part(g, SPHERE(0.13), skin, 0, hy - 0.09, 0.045, { s: [0.95, 0.85, 0.95] });        // jaw and chin
-    [0.172, -0.172].forEach(function (ex) { part(g, SPHERE(0.042), skin, ex, hy - 0.01, -0.01, { s: [0.45, 1, 0.8] }); });
-    // face: eyes with irises, brows, nose, lips
-    [0.068, -0.068].forEach(function (ex) {
-      part(g, SPHERE(0.032), white, ex * 0.95, hy + 0.02, 0.156, { s: [1.0, 1.1, 0.45] });        // big chibi eyes
-      part(g, SPHERE(0.028), smat(0x2b1d14, 0.3), ex * 0.95, hy + 0.012, 0.165, { s: [0.95, 1.15, 0.5] });
-      part(g, SPHERE(0.008), white, ex * 0.95 + 0.009, hy + 0.028, 0.18);                         // eye highlight
-      part(g, SPHERE(0.03), smat(0xf2a3a0, 0.6), ex * 1.45, hy - 0.045, 0.14, { s: [1.1, 0.6, 0.35] });   // blush
-      part(g, geo('brow', function () { return new THREE.BoxGeometry(0.062, 0.013, 0.018); }), o.hijab ? smat(0x2b1d14, 0.85) : hairM, ex * 0.92, hy + 0.068, 0.162, { r: [0, 0, ex > 0 ? -0.1 : 0.1] });
-    });
-    part(g, SPHERE(0.026), skin, 0, hy - 0.022, 0.18, { s: [0.7, 1.35, 1.15] });
-    part(g, geo('lips', function () { return new THREE.TorusGeometry(0.028, 0.0075, 6, 12, Math.PI * 0.7); }), smat(0xa8645a, 0.5), 0, hy - 0.083, 0.165, { r: [0.1, 0, Math.PI * 1.15] });
-    if (o.glasses) {
-      const fr = smat(0x22262c, 0.3);
-      [0.068, -0.068].forEach(function (ex) {
-        part(g, geo('lens', function () { return new THREE.TorusGeometry(0.036, 0.0055, 6, 18); }), fr, ex * 0.92, hy + 0.025, 0.178);
-        part(g, geo('temple', function () { return new THREE.BoxGeometry(0.006, 0.006, 0.18); }), fr, ex > 0 ? 0.162 : -0.162, hy + 0.035, 0.09);
-      });
-      part(g, geo('bridge', function () { return new THREE.BoxGeometry(0.04, 0.006, 0.006); }), fr, 0, hy + 0.035, 0.18);
-    }
-    if (o.hijab) {
-      // a wrap with an opening for the face, a band over the forehead, and a drape over neck and shoulders
-      const hj = smat(o.hijab, 0.85, THREE.DoubleSide), W = 1.9;
-      part(g, SHELL(0.215, Math.PI / 2 + W / 2, Math.PI * 2 - W, 0, Math.PI * 0.8), hj, 0, hy + 0.01, -0.01, { s: [0.97, 1.12, 1.02], cast: true });
-      part(g, SHELL(0.215, Math.PI / 2 - W / 2, W, 0, Math.PI * 0.27), hj, 0, hy + 0.01, -0.01, { s: [0.97, 1.12, 1.02] });
-      part(g, TUBE(0.15, 0.27, 0.3), hj, 0, hip + 0.83, 0.01, { s: [1, 1, 0.72], cast: true }).userData.head = true;
-    } else {
-      const style = o.style || 'short';
-      part(g, SHELL(0.2, 0, Math.PI * 2, 0, Math.PI * 0.4), hairM, 0, hy + 0.01, -0.005, { s: [1.0, 1.15, 1.04], cast: true });
-      part(g, SHELL(0.2, Math.PI, Math.PI, Math.PI * 0.3, Math.PI * 0.32), hairM, 0, hy, -0.008, { s: [1.0, 1.12, 1.04] });
-      if (style === 'side') part(g, SPHERE(0.09), hairM, 0.06, hy + 0.17, 0.11, { s: [1.5, 0.45, 0.9], r: [0, 0, -0.25] });
-      if (style === 'quiff') part(g, SPHERE(0.09), hairM, 0, hy + 0.16, 0.11, { s: [1.55, 0.6, 0.95] });
-      if (style === 'curly') for (let i = 0; i < 8; i++) {
-        const a = i / 8 * Math.PI * 2;
-        part(g, SPHERE(0.06), hairM, Math.cos(a) * 0.13, hy + 0.19, Math.sin(a) * 0.12 - 0.01);
-      }
-      if (o.beard) {
-        part(g, SHELL(0.14, 0.05, Math.PI - 0.1, Math.PI * 0.42, Math.PI * 0.58), hairM, 0, hy - 0.09, 0.045, { s: [1.0, 0.9, 1.0] });
-        part(g, SHELL(0.196, 0.05, Math.PI - 0.1, Math.PI * 0.55, Math.PI * 0.2), hairM, 0, hy + 0.01, -0.005, { s: [0.92, 1.1, 1.0] });
-        part(g, geo('stache', function () { return new THREE.BoxGeometry(0.075, 0.016, 0.02); }), hairM, 0, hy - 0.058, 0.17);
-      }
-    }
-    // chibi: everything above the neck (and the hijab drape) moves into one group that grows from the neck,
-    // so the head and face read at pixel-art size, like the agents in a pixel office
-    const head = new THREE.Group(); head.position.set(0, hip + 0.9, 0); g.add(head);
-    g.children.slice().forEach(function (c) { if (c.isMesh && (c.position.y > hip + 0.95 || c.userData.head)) head.attach(c); });
-    head.scale.setScalar(CHIBI);
-    // chibi legs: shorter, with the whole body lowered so the shoes still touch the floor
-    const drop = 0.915 * (1 - CHIBI_LEG);
-    legL.scale.y = legR.scale.y = CHIBI_LEG;
-    g.children.forEach(function (c) { c.position.y -= drop; });
-    g.scale.setScalar(o.scale || 0.72);
-    g.userData = { legL: legL, legR: legR, armL: armL, armR: armR, female: !!o.hijab };
+    function limb(px, py, pz) { const p = new THREE.Group(); p.position.set(px, py, pz || 0); g.add(p); return p; }
+    const legL = limb(0.1, 0.5), legR = limb(-0.1, 0.5), armL = limb(0.25, 1.1, 0.15), armR = limb(0, 1.1, 0.2);
+    const base = { skin: o.skin, hair: o.hair, shirt: o.shirt, pants: o.pants, hijab: o.hijab, glasses: o.glasses, beard: o.beard, style: o.style, tie: o.tie, card: o.card, shoes: o.shoes };
+    const sp = new THREE.Sprite(personMat(base, 'stand'));
+    sp.center.set(0.5, 0);
+    const k = (o.scale || 0.72) / 0.72;
+    sp.scale.set(20 * PX * k, 24 * PX * k, 1);
+    g.add(sp);
+    const sh = new THREE.Mesh(shadowGeo, shadowMat); sh.rotation.x = -Math.PI / 2; sh.position.y = 0.03; sh.scale.setScalar(k); g.add(sh);
+    g.userData = { legL: legL, legR: legR, armL: armL, armR: armR, female: !!o.hijab, sprite: sp, look: base, pose: 'stand', k: k, phase: PEOPLE.length * 0.7 };
     (o.parent || scene).add(g);
+    PEOPLE.push(g);
     return g;
+  }
+  // pick the pose from the limb values the animation code sets, and show the matching sprite
+  function updatePeople(t) {
+    for (let i = 0; i < PEOPLE.length; i++) {
+      const g = PEOPLE[i], u = g.userData, lr = u.legL.rotation.x;
+      let pose = 'stand', bob = 0;
+      if (lr < -1.2) pose = u.working && Math.floor(t * 0.9 + u.phase) % 3 === 0 ? 'idea' : 'sit';
+      else if (Math.abs(lr) > 0.12) { pose = lr > 0 ? 'walkA' : 'walkB'; bob = Math.abs(lr) * 0.07; }
+      if (pose !== u.pose) {
+        u.pose = pose;
+        const m = personMat(u.look, pose), sit = pose === 'sit' || pose === 'idea';
+        u.sprite.material = m; u.sprite.scale.set(20 * PX * u.k, m.userData.h * u.k, 1);
+        u.sprite.userData.sit = sit;
+      }
+      u.sprite.position.y = (u.sprite.userData.sit ? SIT_Y : 0) + bob;
+    }
   }
 
 
@@ -2847,6 +2881,7 @@
   // ---------- Day / night ----------
   let nightTarget = 0, night = 0;
   const SUN_DAY = new THREE.Color(0xfff1d6), SUN_NIGHT = new THREE.Color(0x9fb6ff);
+  const PERSON_NIGHT = new THREE.Color(0x4a5f9a);
   const HEMI_DAY = new THREE.Color(0xffffff), HEMI_NIGHT = new THREE.Color(0x6f86c7);
   function applyNight(n) {
     scene.background.copy(DAY_BG).lerp(NIGHT_BG, n);
@@ -2860,6 +2895,7 @@
     boardMat.emissiveIntensity = 0.12 + n * 0.45;
     lampLights.forEach(function (l) { l.intensity = n * 1.3; });
     deskLampMat.emissiveIntensity = n * 1.6;
+    personTint.setHex(0xffffff).lerp(PERSON_NIGHT, n * 0.55); PERSON_MATS.forEach(function (m) { m.color.copy(personTint); });
     deskLights.forEach(function (l) { l.intensity = n * 1.3; });
     starMat.opacity = n;
     clouds.forEach(function (c) { c.g.visible = n < 0.95; });
@@ -3006,6 +3042,7 @@
       const glowTo = isAct ? 0.9 : k === selected ? 0.45 : 0;
       s.glow.opacity += (glowTo - s.glow.opacity) * Math.min(1, dt * 6);
       if (s.screen) s.screen.emissiveIntensity += ((on ? 1.1 : 0.15) - s.screen.emissiveIntensity) * Math.min(1, dt * 5);
+      u.working = !!on;
       if (!walkers[k] && !hang[k]) {
         if (s.standing) {
           u.armR.rotation.x = on ? -1.6 + Math.sin(t * 5) * 0.4 : -0.1;
@@ -3018,6 +3055,7 @@
       }
       if (s.label) s.label.position.y = s.labelY + (isAct ? Math.sin(t * 4) * 0.08 + 0.15 : 0);
     });
+    updatePeople(t);
 
     // follow: keep the walking courier in view, on its own storey
     if (followOn) {

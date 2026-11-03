@@ -7,7 +7,7 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 ### Diubah — Kantor bergaya pixel-art
 - **Render pixel-art isometrik.** Dunia 3D dirender di resolusi rendah (1/3) lalu diperbesar tanpa penghalusan, dengan kamera FOV sempit dari jauh sehingga terlihat hampir isometrik. Tetap bisa diputar dan di-zoom.
 - **Label tetap tajam.** Papan nama dan gelembung bicara dirender terpisah di resolusi penuh di atas dunia pixel; label agent yang tertutup lantai di atasnya dibuat samar.
-- **Karakter chibi.** Kepala 1,7× lebih besar, kaki lebih pendek, mata besar dengan kilau, pipi merona; hijab, jenggot, kacamata, dan rambut tetap khas per agent.
+- **Karakter sprite pixel chibi.** Semua orang kini sprite 2D bergaya pixel (kepala besar, mata besar berkilau, pipi merona, ID card, hijab dengan drape, rok panjang) yang selalu menghadap kamera di dunia 3D, dengan bayangan di lantai. Pose otomatis: berdiri, dua frame jalan, duduk, dan duduk dengan jari terangkat dan percikan saat agent aktif. Warna ikut gelap di mode malam.
 - **Papan nama gaya pixel office:** pill gelap, titik warna agent, font Pixelify Sans. Judul panel ikut memakai font pixel.
 - Branding tetap noskill; tidak memakai simbol atau karakter dari IP pihak lain.
 
