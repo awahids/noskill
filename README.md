@@ -23,7 +23,7 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 
 | Klik agent untuk melihat tugas dan skill | Jalan raya, halte, dan warga sekitar | Mode malam |
 |---|---|---|
-| ![Kartu agent Naura (QA) dengan deskripsi, skill, tools, dan verdict](docs/img/kantor-agent.jpg) | ![Mobil dan motor melintas, penumpang menunggu di halte, agent bekerja di lantai 1](docs/img/kantor-jalan.jpg) | ![Kantor saat malam dengan lampu meja dan lampu jalan menyala](docs/img/kantor-malam.jpg) |
+| ![Kartu agent Arkan (Reviewer + QA) dengan deskripsi, skill, tools, dan verdict](docs/img/kantor-agent.jpg) | ![Mobil dan motor melintas, penumpang menunggu di halte, agent bekerja di lantai 1](docs/img/kantor-jalan.jpg) | ![Kantor saat malam dengan lampu meja dan lampu jalan menyala](docs/img/kantor-malam.jpg) |
 
 ## Skills
 

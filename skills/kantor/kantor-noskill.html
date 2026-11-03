@@ -211,7 +211,7 @@
   }
 </style>
 
-<div id="stage" aria-label="Diorama 3D kantor tiga lantai tim agent noskill: Product Manager, CTO, analyst, tech lead, developer backend, frontend dan fullstack, reviewer, dan QA mengerjakan tiket dari PRD sampai PR"></div>
+<div id="stage" aria-label="Diorama 3D kantor tiga lantai tim agent noskill: Product Manager, CTO, analyst, tech lead, developer backend, frontend dan fullstack, serta reviewer (sekaligus QA) mengerjakan tiket dari PRD sampai PR"></div>
 
 <div class="panel" id="panel">
   <div class="panel-head">
@@ -615,8 +615,7 @@
     { key: 'be', name: 'Zayn',       role: 'Backend Dev',     agent: 'backend-developer',  color: 0x2f8a4e, extra: 'server', f: 1, x: -8,   z: -5, rot: 0 },
     { key: 'fe', name: 'Alya',       role: 'Frontend Dev',    agent: 'frontend-developer', color: 0x5aa83a, extra: 'plant',  f: 1, x: -1.5, z: -5, rot: 0 },
     { key: 'dev', name: 'Fathan',      role: 'Fullstack Dev',   agent: 'developer',          color: 0x2b7569, extra: 'plant',  f: 1, x: 5,    z: -5, rot: 0 },
-    { key: 'reviewer', name: 'Arkan', role: 'Reviewer',        agent: 'ticket-reviewer',    color: 0xc79a14, extra: 'dual',   f: 2, x: -6,   z: -5, rot: 0 },
-    { key: 'qa', name: 'Naura',       role: 'QA',              agent: 'qa-tester',          color: 0xd9682a, extra: 'rack',   f: 2, x: 2,    z: -5, rot: 0 }
+    { key: 'reviewer', name: 'Arkan', role: 'Reviewer + QA',   agent: 'ticket-reviewer',    color: 0xc79a14, extra: 'dual',   f: 2, x: -6,   z: -5, rot: 0, rack: true }
   ];
   const ST = {};
   // How each agent looks: skin, hair style, beard, glasses, hijab colour
@@ -629,7 +628,6 @@
     fe:       { skin: 0xe8b894, hijab: 0xe9b9c3, pants: 0x8d99ae },
     dev:      { skin: 0x8d5a3b, hair: 0x1a1410, style: 'short', beard: true, pants: 0x5c4033 },
     reviewer: { skin: 0xc68e66, hair: 0x2b1d14, style: 'side', beard: true, glasses: true, pants: 0x2b2d42 },
-    qa:       { skin: 0xd9a47c, hijab: 0x2e3a59, pants: 0x3d5a80 },
     em:       { skin: 0xb67a52, hair: 0x2b1d14, style: 'short', beard: true, pants: 0x2b2d42 }
   };
   ['Produk & Arsitektur', 'Engineering', 'Quality'].forEach(function (name, k) {
@@ -693,12 +691,13 @@
     } else if (a.extra === 'server') {
       box(0.8, 1.8, 0.7, 0x2a2f36, 1.9, 0.9, -0.6, { parent: g });
       for (let s = 0; s < 5; s++) box(0.04, 0.06, 0.04, 0, 1.6, 0.4 + s * 0.3, -0.24, { parent: g, cast: false, material: lampMat });
-    } else if (a.extra === 'rack') {
+    }
+    if (a.rack) {
+      // test rack: its light shows the last verification result (green pass, red fail)
       box(1, 1.3, 0.6, 0x55606e, 1.9, 0.65, -0.5, { parent: g });
       a.qaLight = new THREE.MeshStandardMaterial({ color: 0x3a3f46, emissive: 0x3a3f46, emissiveIntensity: 0.6, flatShading: true });
       box(0.3, 0.3, 0.3, 0, 1.9, 1.45, -0.5, { parent: g, material: a.qaLight });
-    }
-    if (a.extra === 'plant' || a.extra === 'dual') plant(g, 1.8, -0.6);
+    } else if (a.extra === 'plant' || a.extra === 'dual') plant(g, 1.8, -0.6);
 
     // the agent at the desk, seated
     const look = LOOKS[a.key] || {};
@@ -1172,7 +1171,7 @@
   ];
   // Demo tickets carry the same fields as live ones so detail, metrics and replay work on them too
   TICKETS.forEach(function (tk) { tk.project = 'demo'; tk.title = ''; tk.rounds = '0'; tk.last = ''; tk.ac = []; tk.riw = []; tk.hist = []; });
-  const COLS = ['TODO', 'IN_PROGRESS', 'REVIEW', 'QA', 'BUG', 'HOLD', 'DONE'];
+  const COLS = ['TODO', 'IN_PROGRESS', 'REVIEW', 'BUG', 'HOLD', 'DONE'];
   // s: station, t: ticket index (null = document), st: status shown/applied at start, after: status after the step
   const SCRIPT = [
     { s: 'pm', t: null, st: 'PRD', w: 'Menyusun 6 pertanyaan klarifikasi untuk user' },
@@ -1184,20 +1183,17 @@
     { s: 'be', t: 0, st: 'IN_PROGRESS', w: 'Test RED dulu, lalu implementasi endpoint GR' },
     { s: 'reviewer', t: 0, st: 'REVIEW', w: 'CHANGES_REQUESTED: helper getOutstandingQty belum dipakai', after: 'IN_PROGRESS' },
     { s: 'be', t: 0, st: 'IN_PROGRESS', w: 'Revisi: pakai helper yang sudah ada' },
-    { s: 'reviewer', t: 0, st: 'REVIEW', w: 'APPROVED' },
-    { s: 'qa', t: 0, st: 'QA', w: 'PASS: 4/4 AC, test positif, negatif, dan batas', qa: 'pass' },
+    { s: 'reviewer', t: 0, st: 'REVIEW', w: 'APPROVED: 4/4 AC, test positif, negatif, dan batas (repository di-mock)', qa: 'pass' },
     { s: 'em', t: 0, st: 'DONE', w: 'Commit "WMS-BE-004: Validasi outstanding qty"' },
-    { s: 'fe', t: 1, st: 'IN_PROGRESS', w: 'Form Goods Receipt sesuai Kontrak API WMS-BE-004' },
-    { s: 'reviewer', t: 1, st: 'REVIEW', w: 'APPROVED' },
-    { s: 'qa', t: 1, st: 'QA', w: 'FAIL: pesan error 422 tidak tampil di form', after: 'BUG', qa: 'fail' },
-    { s: 'fe', t: 1, st: 'BUG', w: 'debug-assistant: tampilkan QTY_EXCEEDS_OUTSTANDING', after: 'IN_PROGRESS' },
-    { s: 'reviewer', t: 1, st: 'REVIEW', w: 'APPROVED' },
-    { s: 'qa', t: 1, st: 'QA', w: 'PASS: diuji bersama BE yang sudah DONE', qa: 'pass' },
+    { s: 'fe', t: 1, st: 'IN_PROGRESS', w: 'Form Goods Receipt, API di-mock dari Kontrak API WMS-BE-004' },
+    { s: 'reviewer', t: 1, st: 'REVIEW', w: 'CHANGES_REQUESTED: pesan error 422 tidak tampil di form', after: 'IN_PROGRESS', qa: 'fail' },
+    { s: 'fe', t: 1, st: 'IN_PROGRESS', w: 'Revisi: tampilkan QTY_EXCEEDS_OUTSTANDING' },
+    { s: 'reviewer', t: 1, st: 'REVIEW', w: 'APPROVED: mock cocok dengan kontrak, error state lulus', qa: 'pass' },
     { s: 'em', t: 1, st: 'DONE', w: 'Commit "WMS-FE-002: Form Goods Receipt"' },
     { s: 'dev', t: 2, st: 'IN_PROGRESS', w: 'Perbaiki format tanggal di laporan stok' },
-    { s: 'reviewer', t: 2, st: 'REVIEW', w: 'APPROVED' },
-    { s: 'qa', t: 2, st: 'QA', w: 'PASS: 2/2 AC', qa: 'pass' },
+    { s: 'reviewer', t: 2, st: 'REVIEW', w: 'APPROVED: 2/2 AC', qa: 'pass' },
     { s: 'em', t: 2, st: 'DONE', w: 'Commit "FIX-007: Format tanggal laporan"' },
+    { s: 'em', t: null, st: 'CEK_AKHIR', w: 'Cek akhir: typecheck, lint, test penuh, lalu test integrasi DB + E2E sekali' },
     { s: 'cto', t: null, st: 'SIGN_OFF', w: 'Sign-off akhir seluruh branch: siap PR' },
     { s: 'em', t: null, st: 'PR', w: 'Push feat/wms-gr dan buka PR' }
   ];
@@ -1288,12 +1284,12 @@
       color = tk.color;
       phase = 'Ticket loop';
     } else {
-      phase = step.st === 'SIGN_OFF' || step.st === 'PR' ? 'Stage 6' : step.st === 'TIKET' ? 'Stage 4' : step.st === 'BRD' ? 'Stage 3' : step.st === 'GO_WITH_NOTES' ? 'Stage 2b' : 'Stage 1-2';
+      phase = step.st === 'SIGN_OFF' || step.st === 'PR' || step.st === 'CEK_AKHIR' ? 'Stage 6' : step.st === 'TIKET' ? 'Stage 4' : step.st === 'BRD' ? 'Stage 3' : step.st === 'GO_WITH_NOTES' ? 'Stage 2b' : 'Stage 1-2';
     }
     stripeMat.color.setHex(color); stripeMat.emissive.setHex(color);
-    if (ST.qa.a.qaLight) {
+    if (ST.reviewer.a.qaLight) {
       const c = step.qa === 'pass' ? 0x5bd17a : step.qa === 'fail' ? 0xe5484d : 0x3a3f46;
-      ST.qa.a.qaLight.color.setHex(c); ST.qa.a.qaLight.emissive.setHex(c);
+      ST.reviewer.a.qaLight.color.setHex(c); ST.reviewer.a.qaLight.emissive.setHex(c);
     }
     drawBoard(phase);
     logStatus.textContent = (step.t !== null ? TICKETS[step.t].id + ' · ' : '') + step.st;
@@ -1347,10 +1343,8 @@
       skills: ['ticket-implementation', 'coding-standards', 'debug-assistant'], tools: 'Read, Write, Edit, Bash, Glob, Grep', model: 'Model sesi (Sonnet untuk tiket simple)', code: 'Ya, hanya file di File/Lokasi', verdict: 'READY_FOR_REVIEW atau BLOCKED' },
     dev: { desc: 'Developer fullstack untuk tiket tanpa layer: monolith, mobile, script, konfigurasi, atau tiket lama.',
       skills: ['ticket-implementation', 'coding-standards', 'debug-assistant'], tools: 'Read, Write, Edit, Bash, Glob, Grep', model: 'Model sesi (Sonnet untuk tiket simple)', code: 'Ya, hanya file di File/Lokasi', verdict: 'READY_FOR_REVIEW atau BLOCKED' },
-    reviewer: { desc: 'Senior reviewer. Mencocokkan perubahan dengan AC, Kontrak API, scope, reuse helper, kesederhanaan, efisiensi query, test, dan ADR.',
+    reviewer: { desc: 'Senior reviewer sekaligus QA. Mencocokkan perubahan dengan AC, Kontrak API, scope, reuse helper, kesederhanaan, efisiensi query, test, dan ADR, lalu membuktikannya dengan menjalankan test positif, negatif, dan batas tanpa database atau server (repository dan API di-mock). DB asli dan E2E dicek sekali di akhir.',
       skills: ['coding-standards'], tools: 'Read, Bash, Glob, Grep', model: 'Sonnet', code: 'Tidak, hanya laporan review', verdict: 'APPROVED, CHANGES_REQUESTED, atau BLOCKED' },
-    qa: { desc: 'QA engineer. Membuktikan tiket memenuhi AC dan Test Case dengan menjalankan test sungguhan: positif, negatif, dan batas.',
-      skills: ['ticket-workflow'], tools: 'Read, Bash, Glob, Grep', model: 'Sonnet', code: 'Tidak, bug dikembalikan ke developer', verdict: 'PASS, FAIL (bug report), atau BLOCKED' },
     em: { desc: 'Orkestrator. Bicara dengan user, memanggil agent sesuai urutan, dan satu-satunya yang memindahkan status tiket, menulis Riwayat, commit, dan membuka PR.',
       skills: ['feature-flow', 'ticket-workflow', 'project-profile'], tools: 'Semua tools sesi utama', model: 'Model sesi', code: 'Tidak menulis kode, hanya commit hasil tiket', verdict: 'Memindahkan status berdasarkan verdict agent' }
   };
@@ -1523,6 +1517,7 @@
     let status = f.status.toUpperCase();
     const lastTo = h.length ? h[h.length - 1][1] : '';
     if (lastTo && lastTo !== status && STATUSES.indexOf(lastTo) >= 0 && /\u2192|->/.test(hist[hist.length - 1])) status = lastTo;
+    if (status === 'QA') status = 'REVIEW'; // QA was folded into the reviewer in noskill 2.1
     return {
       id: f.id, title: f.title || '', status: status,
       layer: layer === 'be' || layer === 'fe' ? layer : '—', rounds: f.rounds || '0',
@@ -1537,8 +1532,7 @@
   // Which desk a ticket sits on, from its status (same mapping feature-flow uses)
   function stationFor(tk) {
     if (tk.status === 'IN_PROGRESS' || tk.status === 'BUG') return tk.layer === 'be' ? 'be' : tk.layer === 'fe' ? 'fe' : 'dev';
-    if (tk.status === 'REVIEW') return 'reviewer';
-    if (tk.status === 'QA') return 'qa';
+    if (tk.status === 'REVIEW' || tk.status === 'QA') return 'reviewer';
     if (tk.status === 'HOLD') return 'em';
     return null;
   }
@@ -1612,7 +1606,7 @@
   }
   // activity.json is written by feature-flow (noskill 1.11+) at every stage: who is working on what right now
   const AGENT_DESK = { 'product-manager': 'pm', 'cto': 'cto', 'brd-tracer': 'analyst', 'task-planner': 'lead', 'backend-developer': 'be',
-    'frontend-developer': 'fe', 'developer': 'dev', 'ticket-reviewer': 'reviewer', 'qa-tester': 'qa', 'feature-flow': 'em' };
+    'frontend-developer': 'fe', 'developer': 'dev', 'ticket-reviewer': 'reviewer', 'qa-tester': 'reviewer', 'feature-flow': 'em' };
   function parseActivity(text, project) {
     let a;
     try { a = JSON.parse(text); } catch (e) { return null; }
@@ -1695,7 +1689,7 @@
       if (!o || o.status === tk.status || (projFilter && tk.project !== projFilter)) return;
       const from = stationFor(o) || (o.status === 'TODO' ? 'lead' : null);
       const dest = stationFor(tk) || (tk.status === 'DONE' ? 'em' : null);
-      const say = tk.status === 'REVIEW' ? 'READY_FOR_REVIEW' : tk.status === 'QA' ? 'APPROVED' : tk.status === 'DONE' ? 'PASS' : tk.status === 'BUG' ? 'FAIL'
+      const say = tk.status === 'REVIEW' ? 'READY_FOR_REVIEW' : tk.status === 'QA' ? 'APPROVED' : tk.status === 'DONE' ? 'APPROVED' : tk.status === 'BUG' ? 'FAIL'
         : tk.status === 'HOLD' ? 'HOLD' : tk.status === 'IN_PROGRESS' ? (o.status === 'REVIEW' ? 'CHANGES_REQUESTED' : 'Kerjakan') : tk.status;
       if (from && dest && from !== dest) sendCourier(from, dest, tk.color, null, say + ' \u00b7 ' + tk.id);
     });
@@ -1764,7 +1758,7 @@
       logWho.style.color = '';
       logWhat.textContent = live.length ? 'Belum ada baris Riwayat di tiket.' : 'Folder tiket kosong.';
     }
-    if (ST.qa.a.qaLight) { ST.qa.a.qaLight.color.setHex(0x3a3f46); ST.qa.a.qaLight.emissive.setHex(0x3a3f46); }
+    if (ST.reviewer.a.qaLight) { ST.reviewer.a.qaLight.color.setHex(0x3a3f46); ST.reviewer.a.qaLight.emissive.setHex(0x3a3f46); }
     renderInfo();
     renderMini();
     refreshSide();
@@ -1783,7 +1777,7 @@
     } else if (selected === 'lead') {
       const todo = live.filter(function (tk) { return tk.status === 'TODO'; }).length;
       el('infoTicket').textContent = todo + ' tiket TODO menunggu developer';
-      el('infoTask').textContent = 'Tiket dibuat oleh agent ini; statusnya kini dipegang developer, reviewer, dan QA.';
+      el('infoTask').textContent = 'Tiket dibuat oleh agent ini; statusnya kini dipegang developer dan reviewer.';
     } else if (before) {
       el('infoTicket').textContent = '';
       el('infoTask').textContent = 'Belum ada aktivitas di tahap ' + before + '. Aktivitas tahap ini terbaca dari activity.json yang ditulis feature-flow (noskill 1.11 ke atas).';
@@ -2114,7 +2108,7 @@
     const ta = Date.parse(a.replace(' ', 'T')), tb = Date.parse(b.replace(' ', 'T'));
     return isNaN(ta) || isNaN(tb) || tb < ta ? null : (tb - ta) / 60000;
   }
-  const STAGE_OF = { IN_PROGRESS: 'Develop', BUG: 'Develop', REVIEW: 'Review', QA: 'QA', HOLD: 'HOLD' };
+  const STAGE_OF = { IN_PROGRESS: 'Develop', BUG: 'Develop', REVIEW: 'Review', QA: 'Review', HOLD: 'HOLD' };
   function computeMetrics(list) {
     const stages = {}, agents = {};
     list.forEach(function (tk) {
@@ -2177,7 +2171,7 @@
     });
     mBody.appendChild(stat);
     const m = computeMetrics(list);
-    const order = ['Develop', 'Review', 'QA', 'HOLD'];
+    const order = ['Develop', 'Review', 'HOLD'];
     bars('Rata-rata durasi per tahap', m.stageRows.sort(function (a, b) { return order.indexOf(a.name) - order.indexOf(b.name); }), mBody);
     bars('Rata-rata durasi per agent', m.agentRows, mBody);
     if (m.agentRows.length) mBody.appendChild(node('p', 'desc', 'Paling lama: ' + m.agentRows[0].name + ' (' + fmtMin(m.agentRows[0].avg) + ' per tiket).'));
