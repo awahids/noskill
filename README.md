@@ -19,11 +19,11 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 
 `/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent yang berjalan mengantar tiket, dan suasana kantor di sekitarnya.
 
-![Kantor noskill: kantor tiga lantai dengan board tiket, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran](docs/img/kantor-overview.jpg)
+![Kantor noskill: kantor tiga lantai dengan panel baru, ruang uji, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran](docs/img/kantor-overview.jpg)
 
 | Klik agent untuk melihat tugas dan skill | Jalan raya, halte, dan warga sekitar | Mode malam |
 |---|---|---|
-| ![Kartu agent Arkan (Reviewer + QA) dengan deskripsi, skill, tools, dan verdict](docs/img/kantor-agent.jpg) | ![Mobil dan motor melintas, penumpang menunggu di halte, agent bekerja di lantai 1](docs/img/kantor-jalan.jpg) | ![Kantor saat malam dengan lampu meja dan lampu jalan menyala](docs/img/kantor-malam.jpg) |
+| ![Kartu agent Arkan (Reviewer + QA) dengan avatar, deskripsi, skill, tools, dan verdict](docs/img/kantor-agent.jpg) | ![Lantai 1 berlantai parket: agent bekerja di meja, mobil dan motor melintas di jalan](docs/img/kantor-jalan.jpg) | ![Kantor saat malam dengan lampu meja dan lampu jalan menyala](docs/img/kantor-malam.jpg) |
 
 ## Skills
 

@@ -152,6 +152,7 @@
   button:active { transform: scale(0.97); }
   button.ghost, .panel .min, .info .close, .tl-head .close { background: var(--btn-soft); color: var(--ink); border-color: transparent; }
   button:focus-visible { outline: 3px solid var(--btn); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
   @media (hover: hover) {
     .tool:hover, .seg button:hover, button.ghost:hover { background: var(--btn-soft); }
     .tool[aria-pressed="true"]:hover, .tool[aria-expanded="true"]:hover { background: var(--btn); }
