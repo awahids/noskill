@@ -1,12 +1,12 @@
 <title>Kantor noskill</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* Layout: full-screen 3D office diorama, one floating panel bottom-left with the live ticket log */
   :root {
     --sky: #bfe3f2;
-    --panel: rgba(255, 255, 255, 0.86);
+    --panel: rgba(255, 255, 255, 0.82);
     --ink: #24352a;
     --muted: #55675a;
     --btn: #2f6b4f;
@@ -14,7 +14,11 @@
     --btn-soft: rgba(47, 107, 79, 0.12);
     --edge: rgba(36, 53, 42, 0.14);
     --log: rgba(47, 107, 79, 0.08);
-    --font-display: "Baloo 2", "Nunito", "Trebuchet MS", system-ui, sans-serif;
+    --font-display: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-title: "Baloo 2", "Nunito", "Trebuchet MS", system-ui, sans-serif;
+    --card: rgba(255, 255, 255, 0.7);
+    --panel-solid: #ffffff;
+    --shadow: 0 12px 32px rgba(20, 40, 30, 0.16), 0 2px 6px rgba(20, 40, 30, 0.08);
     --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
@@ -28,6 +32,9 @@
       --btn-soft: rgba(124, 195, 156, 0.16);
       --edge: rgba(230, 239, 232, 0.14);
       --log: rgba(124, 195, 156, 0.1);
+      --card: rgba(255, 255, 255, 0.05);
+      --panel-solid: #2a352e;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
       color-scheme: dark;
     }
   }
@@ -41,6 +48,9 @@
     --btn-soft: rgba(124, 195, 156, 0.16);
     --edge: rgba(230, 239, 232, 0.14);
     --log: rgba(124, 195, 156, 0.1);
+    --card: rgba(255, 255, 255, 0.05);
+    --panel-solid: #2a352e;
+    --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
     color-scheme: dark;
   }
   *, *::before, *::after { box-sizing: border-box; }
@@ -58,61 +68,94 @@
     position: fixed;
     left: 16px;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    width: min(380px, calc(100% - 32px));
-    padding: 14px 16px 16px;
+    width: min(372px, calc(100% - 32px));
+    padding: 14px;
     background: var(--panel);
     border: 1px solid var(--edge);
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
     display: grid;
-    gap: 10px;
+    gap: 12px;
   }
   .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .panel .min { padding: 0; width: 32px; height: 32px; line-height: 1; font-size: 1.2rem; flex: none; }
-  .panel-body { display: grid; gap: 10px; }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .logo {
+    flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+    background: linear-gradient(140deg, #3f8f68, var(--btn)); color: #fff;
+    font: 700 1.35rem/1 var(--font-title); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+  }
+  .sub { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); min-width: 0; }
+  .sub span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .panel .min { padding: 0; width: 32px; height: 32px; line-height: 1; font-size: 1.1rem; flex: none; }
+  .panel-body { display: grid; gap: 12px; }
   .panel-body[hidden], .mini[hidden] { display: none; }
-  .mini { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); min-width: 0; }
+  .mini { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); min-width: 0; }
   .mini span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .panel.collapsed { width: auto; max-width: min(360px, calc(100% - 32px)); gap: 6px; padding: 10px 12px; }
-  .panel.collapsed h1 { font-size: 1.15rem; }
-  .panel h1 { margin: 0; font-size: 1.6rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
-  .panel p { margin: 0; font-size: 0.92rem; line-height: 1.35; color: var(--muted); }
+  .panel.collapsed .logo { width: 30px; height: 30px; font-size: 1.05rem; border-radius: 9px; }
+  .panel.collapsed .sub { display: none; }
+  .panel.collapsed h1 { font-size: 1.05rem; }
+  .panel h1 { margin: 0; font: 700 1.2rem/1.15 var(--font-title); letter-spacing: -0.01em; }
+  .panel p { margin: 0; font-size: 0.88rem; line-height: 1.4; color: var(--muted); }
   .log {
-    background: var(--log);
-    border-radius: 12px;
-    padding: 8px 10px;
+    background: var(--card);
+    border: 1px solid var(--edge);
+    border-radius: 16px;
+    padding: 10px 12px 12px;
     min-height: 4.4em;
     display: grid;
-    gap: 2px;
+    gap: 3px;
   }
   .log .meta {
     font-family: var(--font-mono);
-    font-size: 0.74rem;
-    letter-spacing: 0.02em;
+    font-size: 0.72rem;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 8px;
   }
-  .log .who { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 500; }
-  .log .what { font-size: 0.95rem; line-height: 1.3; }
+  .log .tag { padding: 2px 8px; border-radius: 999px; background: var(--btn-soft); color: var(--ink); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log .who { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500; margin-top: 4px; }
+  .log .what { font-size: 0.95rem; line-height: 1.35; font-weight: 600; }
+  .progress { height: 4px; border-radius: 4px; background: var(--btn-soft); overflow: hidden; margin-top: 6px; }
+  .progress[hidden] { display: none; }
+  .progress i { display: block; height: 100%; width: 0; background: var(--btn); border-radius: 4px; transition: width 0.4s ease; }
   .controls { display: flex; flex-wrap: wrap; gap: 8px; }
-  .floors button { padding: 4px 12px; font-size: 0.88rem; }
+  .seg { display: grid; grid-template-columns: repeat(4, 1fr); padding: 3px; gap: 3px; border-radius: 12px; background: var(--btn-soft); }
+  .seg button { border: 0; background: transparent; border-radius: 9px; padding: 6px 4px; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: var(--panel-solid); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+  .toolbar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .tool {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px 4px; border-radius: 12px; border: 1px solid var(--edge); background: var(--card);
+    font-size: 0.74rem; font-weight: 600; color: var(--ink);
+  }
+  .tool .ic { width: 18px; height: 18px; }
+  .tool[aria-pressed="true"], .tool[aria-expanded="true"] { background: var(--btn); border-color: var(--btn); color: var(--btn-ink); }
+  .ic { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   button {
     font: inherit;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     padding: 6px 14px;
     border-radius: 999px;
     border: 1.5px solid var(--btn);
-    background: var(--btn-soft);
-    color: var(--ink);
+    background: var(--btn);
+    color: var(--btn-ink);
     cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
   }
-  button[aria-pressed="true"] { background: var(--btn); color: var(--btn-ink); }
+  button:active { transform: scale(0.97); }
+  button.ghost, .panel .min, .info .close, .tl-head .close { background: var(--btn-soft); color: var(--ink); border-color: transparent; }
   button:focus-visible { outline: 3px solid var(--btn); outline-offset: 2px; }
+  @media (hover: hover) {
+    .tool:hover, .seg button:hover, button.ghost:hover { background: var(--btn-soft); }
+    .tool[aria-pressed="true"]:hover, .tool[aria-expanded="true"]:hover { background: var(--btn); }
+  }
 
   .err[hidden] { display: none; }
   .timeline { position: fixed; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(560px, calc(100% - 432px));
@@ -129,9 +172,10 @@
   @media (max-width: 900px) {
     .timeline { left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px)); width: auto; top: calc(10px + env(safe-area-inset-top, 0px)); bottom: auto; }
   }
-  .src { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 0.85rem; color: var(--muted); }
-  .src span:nth-child(2) { flex: 1 1 160px; min-width: 0; }
-  .src button { padding: 2px 10px; font-size: 0.82rem; }
+  .src { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; line-height: 1.35; color: var(--muted); padding-top: 10px; border-top: 1px solid var(--edge); }
+  .src .ic { width: 16px; height: 16px; }
+  .src span { flex: 1 1 auto; min-width: 0; }
+  .src button { padding: 4px 10px; font-size: 0.78rem; flex: none; }
   .src-form { display: grid; gap: 6px; }
   .src-form[hidden] { display: none; }
   .src-form label { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
@@ -139,7 +183,7 @@
   .src-form textarea:focus-visible { outline: 3px solid var(--btn); outline-offset: 1px; }
   .src-form input { font: 0.85rem/1.3 var(--font-mono); padding: 6px 8px; border-radius: 10px; border: 1px solid var(--edge); background: var(--panel); color: var(--ink); width: 100%; min-width: 0; }
   .src-form input:focus-visible { outline: 3px solid var(--btn); outline-offset: 1px; }
-  .panel .hint { font-size: 0.85rem; color: var(--muted); margin: 0; }
+  .panel .hint { font-size: 0.74rem; color: var(--muted); margin: 0; text-align: center; }
 
   /* Agent detail card */
   .info {
@@ -152,20 +196,25 @@
     padding: 16px;
     background: var(--panel);
     border: 1px solid var(--edge);
-    border-radius: 20px;
+    border-radius: 22px;
+    box-shadow: var(--shadow);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     display: grid;
     gap: 12px;
   }
   .info[hidden] { display: none; }
-  .info header { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
-  .info .dot { width: 14px; height: 14px; border-radius: 50%; }
-  .info h2 { margin: 0; font-size: 1.35rem; line-height: 1.1; }
+  .info header { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+  .avatar {
+    width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; color: #fff;
+    font: 700 1.25rem/1 var(--font-title); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+  }
+  .avatar .ic { width: 22px; height: 22px; }
+  .info h2 { margin: 0; font: 700 1.25rem/1.15 var(--font-title); }
   .info .agent { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); }
-  .info .close { padding: 2px 10px; font-size: 1.1rem; line-height: 1.4; }
+  .info .close { padding: 0; width: 32px; height: 32px; font-size: 1.1rem; line-height: 1; }
   .info .desc { margin: 0; font-size: 0.95rem; line-height: 1.4; }
-  .now { background: var(--log); border-radius: 12px; padding: 10px; display: grid; gap: 4px; }
+  .now { background: var(--card); border: 1px solid var(--edge); border-radius: 16px; padding: 12px; display: grid; gap: 6px; }
   .now .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .now .lbl, .info dt { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
   .pill { font-family: var(--font-mono); font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--edge); color: var(--muted); }
@@ -215,58 +264,62 @@
 
 <div class="panel" id="panel">
   <div class="panel-head">
-    <h1>Kantor noskill</h1>
+    <div class="brand">
+      <span class="logo" aria-hidden="true">n</span>
+      <div>
+        <h1>Kantor noskill</h1>
+        <div class="sub"><span class="pill" id="srcPill">Demo</span><span>Tim agent dari PRD sampai PR</span></div>
+      </div>
+    </div>
     <button type="button" class="min" id="btnMin" aria-expanded="true" aria-controls="panelBody" aria-label="Kecilkan panel" title="Kecilkan panel">&#8211;</button>
   </div>
   <div class="mini" id="panelMini" hidden></div>
   <div class="panel-body" id="panelBody">
-  <p>Tim agent mengerjakan tiket dari PRD sampai PR. Seret untuk memutar, scroll untuk zoom.</p>
-  <p class="hint">Klik salah satu agent untuk melihat tugas, skill, dan pekerjaannya sekarang.</p>
+  <div class="log" aria-live="polite">
+    <div class="meta"><span class="tag" id="logStatus">PRD</span><span id="logStep">1 / 25</span></div>
+    <div class="who" id="logWho">product-manager</div>
+    <div class="what" id="logWhat">Menyusun 6 pertanyaan klarifikasi untuk user</div>
+    <div class="progress" id="logProgress"><i id="logBar"></i></div>
+  </div>
+  <div class="seg floors" role="group" aria-label="Pilih lantai">
+    <button type="button" data-floor="-1" aria-pressed="true">Semua</button>
+    <button type="button" data-floor="0" aria-pressed="false">Lantai 1</button>
+    <button type="button" data-floor="1" aria-pressed="false">Lantai 2</button>
+    <button type="button" data-floor="2" aria-pressed="false">Lantai 3</button>
+  </div>
+  <div class="row-filter" id="projRow" hidden>
+    <label for="projFilter">Proyek</label>
+    <select id="projFilter"><option value="">Semua proyek</option></select>
+  </div>
+  <div class="toolbar">
+    <button type="button" class="tool" id="btnMetrics" aria-expanded="false" aria-controls="metrics"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="lbl">Metrik</span></button>
+    <button type="button" class="tool" id="btnFollow" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="lbl">Ikuti tiket</span></button>
+    <button type="button" class="tool" id="btnTimeline" aria-expanded="false" aria-controls="timeline"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="lbl">Timeline</span></button>
+    <button type="button" class="tool" id="btnNight" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span class="lbl">Mode malam</span></button>
+    <button type="button" class="tool" id="btnPause" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg><span class="lbl">Jeda</span></button>
+    <button type="button" class="tool" id="btnSpin" aria-pressed="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Putar kamera</span></button>
+  </div>
+  <div class="viewers" id="viewers" hidden aria-live="polite"></div>
   <div class="src">
-    <span class="pill" id="srcPill">Demo</span>
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
     <span id="srcText">Data contoh. Hubungkan folder tiket untuk melihat tiket asli.</span>
-    <button type="button" id="btnSrc" aria-expanded="false" aria-controls="srcForm">Folder tiket</button>
+    <button type="button" class="ghost" id="btnSrc" aria-expanded="false" aria-controls="srcForm">Folder tiket</button>
   </div>
   <form class="src-form" id="srcForm" hidden>
     <label for="srcPath">Folder docs/noskill atau tickets, satu path per baris</label>
     <textarea id="srcPath" name="srcPath" rows="3" autocomplete="off" spellcheck="false" placeholder="/Users/kamu/code/proyek-a/docs/noskill&#10;/Users/kamu/Desktop/work/proyek-b/docs/noskill"></textarea>
     <div class="controls">
       <button type="submit" id="btnLive">Pakai data live</button>
-      <button type="button" id="btnDemo">Kembali ke demo</button>
+      <button type="button" class="ghost" id="btnDemo">Kembali ke demo</button>
     </div>
   </form>
-  <div class="log" aria-live="polite">
-    <div class="meta"><span id="logStatus">PRD</span><span id="logStep">1 / 25</span></div>
-    <div class="who" id="logWho">product-manager</div>
-    <div class="what" id="logWhat">Menyusun 6 pertanyaan klarifikasi untuk user</div>
-  </div>
-  <div class="controls floors" role="group" aria-label="Pilih lantai">
-    <button type="button" data-floor="-1" aria-pressed="true">Semua lantai</button>
-    <button type="button" data-floor="0" aria-pressed="false">L1</button>
-    <button type="button" data-floor="1" aria-pressed="false">L2</button>
-    <button type="button" data-floor="2" aria-pressed="false">L3</button>
-  </div>
-  <div class="row-filter" id="projRow" hidden>
-    <label for="projFilter">Proyek</label>
-    <select id="projFilter"><option value="">Semua proyek</option></select>
-  </div>
-  <div class="controls">
-    <button type="button" id="btnMetrics" aria-expanded="false" aria-controls="metrics">Metrik</button>
-    <button type="button" id="btnFollow" aria-pressed="false">Ikuti tiket</button>
-    <button type="button" id="btnTimeline" aria-expanded="false" aria-controls="timeline">Timeline</button>
-  </div>
-  <div class="viewers" id="viewers" hidden aria-live="polite"></div>
-  <div class="controls">
-    <button id="btnNight" aria-pressed="false">Mode malam</button>
-    <button id="btnPause" aria-pressed="false">Jeda</button>
-    <button id="btnSpin" aria-pressed="true">Kamera berputar</button>
-  </div>
+  <p class="hint">Seret untuk memutar &middot; scroll untuk zoom &middot; klik agent untuk detail</p>
   </div>
 </div>
 
 <aside class="info" id="info" hidden aria-labelledby="infoRole">
   <header>
-    <span class="dot" id="infoDot"></span>
+    <span class="avatar" id="infoDot" aria-hidden="true"></span>
     <div><h2 id="infoRole">Agent</h2><div class="agent" id="infoAgent"></div></div>
     <button class="close" id="infoClose" aria-label="Tutup detail agent">×</button>
   </header>
@@ -287,7 +340,7 @@
 
 <aside class="info" id="tinfo" hidden aria-labelledby="tTitle">
   <header>
-    <span class="dot" id="tDot"></span>
+    <span class="avatar" id="tDot" aria-hidden="true"></span>
     <div><h2 id="tTitle">Tiket</h2><div class="agent" id="tSub"></div></div>
     <button class="close" id="tClose" aria-label="Tutup detail tiket">×</button>
   </header>
@@ -296,7 +349,7 @@
 
 <aside class="info" id="metrics" hidden aria-labelledby="mTitle">
   <header>
-    <span class="dot" style="background: var(--btn)"></span>
+    <span class="avatar" style="background: var(--btn)" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
     <div><h2 id="mTitle">Metrik tim</h2><div class="agent" id="mSub"></div></div>
     <button class="close" id="mClose" aria-label="Tutup metrik">×</button>
   </header>
@@ -451,16 +504,48 @@
   let focus = -1, targetY = 6, targetX = 0, targetZ = 0;
   function shown(y) { return focus < 0 || y < FY[focus] + FLOOR_H - 0.6; }
 
+  // Floor finishes drawn once on a canvas: oak planks on the ground floor, large tiles upstairs.
+  // Each slab piece gets its own repeat so a plank or tile has the same size everywhere.
+  const floorTex = [0, 1, 2].map(function (k) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+    const x = cv.getContext('2d');
+    if (k === 0) {
+      const tones = ['#d9bf8f', '#d3b784', '#dcc496', '#cfb07c'];
+      for (let r = 0; r < 8; r++) {
+        const off = (r % 2) * 128;
+        for (let c = -1; c < 2; c++) {
+          x.fillStyle = tones[(r * 3 + c + 4) % 4]; x.fillRect(off + c * 256, r * 32, 256, 32);
+          x.fillStyle = 'rgba(90, 60, 30, 0.35)'; x.fillRect(off + c * 256, r * 32, 2, 32);
+        }
+        x.fillStyle = 'rgba(90, 60, 30, 0.3)'; x.fillRect(0, r * 32, 256, 1.5);
+        x.strokeStyle = 'rgba(120, 85, 45, 0.12)'; x.lineWidth = 1;
+        for (let l = 0; l < 3; l++) { x.beginPath(); x.moveTo(0, r * 32 + 8 + l * 8); x.bezierCurveTo(80, r * 32 + 4 + l * 9, 170, r * 32 + 14 + l * 7, 256, r * 32 + 9 + l * 8); x.stroke(); }
+      }
+    } else {
+      x.fillStyle = k === 1 ? '#cbc4b4' : '#c2c7cf'; x.fillRect(0, 0, 256, 256);
+      for (let i = 0; i < 40; i++) { x.fillStyle = 'rgba(0, 0, 0, 0.025)'; x.fillRect(rand() * 256, rand() * 256, 2 + rand() * 6, 1 + rand() * 2); }
+      x.fillStyle = 'rgba(60, 60, 60, 0.35)'; x.fillRect(0, 0, 256, 3); x.fillRect(0, 0, 3, 256);
+    }
+    const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+    return t;
+  });
+  function floorPiece(k, w, d, x, y, z, o) {
+    const t = floorTex[k].clone(); t.needsUpdate = true;
+    const tile = k === 0 ? 4 : 1.6;
+    t.repeat.set(w / tile, d / tile);
+    const m = box(w, 0.3, d, 0, x, y, z, Object.assign({ material: new THREE.MeshStandardMaterial({ map: t, roughness: k === 0 ? 0.7 : 0.45 }) }, o));
+    return m;
+  }
   function slab(k) {
-    const g = floors[k], y = FY[k] - 0.15, h = HOLE[k], col = [0xd6bd8c, 0xd2c7ae, 0xc9cfd6][k];
+    const g = floors[k], y = FY[k] - 0.15, h = HOLE[k];
     const o = { parent: g, cast: false };
-    if (!h) box(BX1 - BX0, 0.3, BZ1 - BZ0, col, (BX0 + BX1) / 2, y, 0, o);
+    if (!h) floorPiece(k, BX1 - BX0, BZ1 - BZ0, (BX0 + BX1) / 2, y, 0, o);
     else {
       const z0 = -3.4, z1 = 7.6;
-      box(h.x0 - BX0, 0.3, BZ1 - BZ0, col, (BX0 + h.x0) / 2, y, 0, o);
-      box(BX1 - h.x1, 0.3, BZ1 - BZ0, col, (h.x1 + BX1) / 2, y, 0, o);
-      box(h.x1 - h.x0, 0.3, z0 - BZ0, col, (h.x0 + h.x1) / 2, y, (BZ0 + z0) / 2, o);
-      box(h.x1 - h.x0, 0.3, BZ1 - z1, col, (h.x0 + h.x1) / 2, y, (z1 + BZ1) / 2, o);
+      floorPiece(k, h.x0 - BX0, BZ1 - BZ0, (BX0 + h.x0) / 2, y, 0, o);
+      floorPiece(k, BX1 - h.x1, BZ1 - BZ0, (h.x1 + BX1) / 2, y, 0, o);
+      floorPiece(k, h.x1 - h.x0, z0 - BZ0, (h.x0 + h.x1) / 2, y, (BZ0 + z0) / 2, o);
+      floorPiece(k, h.x1 - h.x0, BZ1 - z1, (h.x0 + h.x1) / 2, y, (z1 + BZ1) / 2, o);
     }
     box(BX1 - BX0 + 0.1, 0.3, 0.14, C.trim, (BX0 + BX1) / 2, y, BZ1 + 0.02, o);
     box(0.14, 0.3, BZ1 - BZ0, C.trim, BX1 + 0.02, y, 0, o);
@@ -501,82 +586,111 @@
   const HAIR = [0x2b1d14, 0x3a2a1e, 0x1a1410, 0x5a3a22];
   const PANTS = [0x2b2d42, 0x3d5a80, 0x5c4033, 0x8d99ae];
 
-  // People: shoes, belt, tapered torso, neck, face (eyes, brows, nose, mouth, ears), hair styles,
-  // optional beard, glasses, tie, ID card, and a hijab that frames the face. Pivots stay where the
-  // poses expect them: legs at the hip, arms at the shoulder, the hand 0.75 below the shoulder.
+  // Smooth (not flat-shaded) materials and shared geometries for people, so a crowd stays cheap
+  const smatCache = {}, geoCache = {};
+  function smat(color, rough, side) {
+    const k = color + ':' + (rough || 0.7) + ':' + (side || 0);
+    if (!smatCache[k]) smatCache[k] = new THREE.MeshStandardMaterial({ color: color, roughness: rough || 0.7, metalness: 0, side: side || THREE.FrontSide });
+    return smatCache[k];
+  }
+  function geo(key, make) { return geoCache[key] || (geoCache[key] = make()); }
+  function part(g, geom, material, x, y, z, o) {
+    const m = new THREE.Mesh(geom, material);
+    m.position.set(x, y, z);
+    if (o && o.s) m.scale.set(o.s[0], o.s[1], o.s[2]);
+    if (o && o.r) m.rotation.set(o.r[0], o.r[1], o.r[2]);
+    m.castShadow = !!(o && o.cast);
+    g.add(m);
+    return m;
+  }
+  const SPHERE = function (r) { return geo('s' + r, function () { return new THREE.SphereGeometry(r, 20, 14); }); };
+  // a slice of a sphere: phi runs around the vertical axis (PI/2 is the face, +z), theta down from the crown
+  const SHELL = function (r, p0, pl, t0, tl) { return geo(['h', r, p0, pl, t0, tl].join(), function () { return new THREE.SphereGeometry(r, 24, 16, p0, pl, t0, tl); }); };
+  const TUBE = function (rt, rb, h) { return geo(['c', rt, rb, h].join(), function () { return new THREE.CylinderGeometry(rt, rb, h, 16); }); };
+
+  // People with human proportions: rounded torso and limbs, shoes, belt, a face with eyes, irises, brows,
+  // nose, lips and ears, per-person hair styles, beard, glasses, tie, ID card, and a hijab that frames the
+  // face. Pivots stay where the poses expect them: legs at the hip, arms at the shoulder, hand 0.72 below it.
   function makePerson(o) {
     const g = new THREE.Group();
-    const hip = 0.95, hair = o.hair, skin = o.skin, dark = 0x1a1410;
-    const o2 = function (extra) { const r = { parent: g, cast: false }; for (const k in extra) r[k] = extra[k]; return r; };
+    const hip = 0.95, hy = hip + 1.1;
+    const skin = smat(o.skin, 0.55), shirt = smat(o.shirt, 0.75), pants = smat(o.pants, 0.8);
+    const hairM = smat(o.hair || 0x2b1d14, 0.85), dark = smat(0x1a1410, 0.4), white = smat(0xfbfaf6, 0.35);
     function limb(px, py) { const p = new THREE.Group(); p.position.set(px, py, 0); g.add(p); return p; }
-    // legs: trousers + shoes
-    const legL = limb(0.14, hip), legR = limb(-0.14, hip);
+
+    // legs: tapered trousers and rounded shoes
+    const legL = limb(0.12, hip), legR = limb(-0.12, hip);
     [legL, legR].forEach(function (leg) {
-      box(0.22, 0.8, 0.24, o.pants, 0, -0.4, 0, { parent: leg });
-      box(0.23, 0.11, 0.34, o.shoes || 0x2a2320, 0, -0.85, 0.05, { parent: leg });
+      part(leg, TUBE(0.11, 0.08, 0.84), pants, 0, -0.42, 0, { cast: true });
+      part(leg, SPHERE(0.1), smat(o.shoes || 0x2a2320, 0.45), 0, -0.86, 0.06, { s: [0.95, 0.55, 1.7] });
     });
-    // hips, belt, torso, collar
-    box(0.52, 0.16, 0.28, o.pants, 0, hip + 0.02, 0, { parent: g });
-    box(0.54, 0.05, 0.3, 0x3b2a1e, 0, hip + 0.1, 0, o2());
-    box(0.5, 0.34, 0.28, o.shirt, 0, hip + 0.28, 0, { parent: g });
-    box(0.62, 0.36, 0.32, o.shirt, 0, hip + 0.6, 0, { parent: g });
-    if (!o.hijab) box(0.26, 0.07, 0.06, o.collar || 0xf7f5ef, 0, hip + 0.8, 0.15, o2());
-    if (o.tie) box(0.08, 0.42, 0.02, o.tie, 0, hip + 0.56, 0.165, o2());
-    else if (!o.hijab) box(0.05, 0.3, 0.02, 0xf7f5ef, 0, hip + 0.62, 0.162, o2({ material: undefined }));
-    if (o.card) { box(0.13, 0.17, 0.02, 0xf7f5ef, 0.15, hip + 0.48, 0.17, o2()); box(0.13, 0.04, 0.021, o.card, 0.15, hip + 0.55, 0.172, o2()); }
-    // arms: sleeves + hands (long sleeves, office style)
-    const armL = limb(0.38, hip + 0.74), armR = limb(-0.38, hip + 0.74);
+    // pelvis, belt, torso with rounded chest and shoulders
+    part(g, TUBE(0.2, 0.21, 0.22), pants, 0, hip + 0.02, 0, { s: [1, 1, 0.7], cast: true });
+    part(g, TUBE(0.205, 0.205, 0.05), smat(0x3b2a1e, 0.5), 0, hip + 0.12, 0, { s: [1, 1, 0.72] });
+    part(g, TUBE(0.25, 0.2, 0.6), shirt, 0, hip + 0.43, 0, { s: [1, 1, 0.64], cast: true });
+    part(g, SPHERE(0.25), shirt, 0, hip + 0.72, 0, { s: [1.12, 0.36, 0.66] });
+    if (!o.hijab) {
+      [1, -1].forEach(function (sd) { part(g, geo('collar', function () { return new THREE.BoxGeometry(0.11, 0.05, 0.02); }), smat(o.collar || 0xf7f5ef, 0.6), sd * 0.055, hip + 0.79, 0.135, { r: [0.25, 0, sd * 0.55] }); });
+      if (o.tie) {
+        part(g, geo('tie', function () { return new THREE.BoxGeometry(0.07, 0.4, 0.015); }), smat(o.tie, 0.5), 0, hip + 0.56, 0.152, { r: [-0.08, 0, 0] });
+        part(g, SPHERE(0.035), smat(o.tie, 0.5), 0, hip + 0.76, 0.15, { s: [1, 0.8, 0.6] });
+      } else part(g, geo('placket', function () { return new THREE.BoxGeometry(0.03, 0.42, 0.01); }), smat(0xf7f5ef, 0.6), 0, hip + 0.55, 0.151);
+    }
+    if (o.card) {
+      part(g, geo('card', function () { return new THREE.BoxGeometry(0.12, 0.16, 0.012); }), smat(0xf7f5ef, 0.4), 0.13, hip + 0.47, 0.158);
+      part(g, geo('cardband', function () { return new THREE.BoxGeometry(0.12, 0.035, 0.013); }), smat(o.card, 0.5), 0.13, hip + 0.53, 0.159);
+    }
+    // arms: sleeve, cuff, hand
+    const armL = limb(0.3, hip + 0.7), armR = limb(-0.3, hip + 0.7);
     [armL, armR].forEach(function (arm) {
-      box(0.16, 0.66, 0.18, o.shirt, 0, -0.33, 0, { parent: arm });
-      box(0.17, 0.05, 0.19, o.cuff || o.shirt, 0, -0.64, 0, { parent: arm, cast: false });
-      box(0.13, 0.14, 0.15, skin, 0, -0.74, 0.01, { parent: arm });
+      part(arm, SPHERE(0.074), shirt, -Math.sign(arm.position.x) * 0.01, -0.015, 0, { s: [1.05, 0.9, 1] });   // shoulder, moves with the arm
+      arm.rotation.z = Math.sign(arm.position.x) * 0.05;                                 // arms hang slightly away from the body
+      part(arm, TUBE(0.074, 0.06, 0.34), shirt, 0, -0.17, 0, { cast: true });          // upper arm
+      part(arm, TUBE(0.06, 0.05, 0.3), shirt, 0, -0.47, 0.01, { cast: true });          // forearm
+      part(arm, TUBE(0.054, 0.054, 0.04), smat(o.cuff || o.shirt, 0.7), 0, -0.62, 0.01);
+      part(arm, SPHERE(0.052), skin, 0, -0.69, 0.015, { s: [0.75, 1.3, 0.55] });
     });
-    // neck + head
-    cyl(0.085, 0.095, 0.14, 8, skin, 0, hip + 0.86, 0, { parent: g });
-    const hy = hip + 1.13;
-    box(0.4, 0.44, 0.4, skin, 0, hy, 0, { parent: g });
-    box(0.05, 0.1, 0.08, skin, 0.215, hy, 0, o2());
-    box(0.05, 0.1, 0.08, skin, -0.215, hy, 0, o2());
-    // face
-    [0.095, -0.095].forEach(function (ex) {
-      box(0.09, 0.055, 0.015, 0xffffff, ex, hy + 0.03, 0.2, o2());
-      box(0.045, 0.05, 0.016, dark, ex, hy + 0.03, 0.208, o2());
-      box(0.11, 0.025, 0.02, o.hijab ? 0x2b1d14 : hair, ex, hy + 0.1, 0.205, o2());
+    // neck and head
+    part(g, TUBE(0.07, 0.08, 0.18), skin, 0, hip + 0.84, 0);
+    part(g, SPHERE(0.19), skin, 0, hy + 0.01, -0.005, { s: [0.9, 1.08, 0.98], cast: true });
+    part(g, SPHERE(0.13), skin, 0, hy - 0.09, 0.045, { s: [0.95, 0.85, 0.95] });        // jaw and chin
+    [0.172, -0.172].forEach(function (ex) { part(g, SPHERE(0.042), skin, ex, hy - 0.01, -0.01, { s: [0.45, 1, 0.8] }); });
+    // face: eyes with irises, brows, nose, lips
+    [0.068, -0.068].forEach(function (ex) {
+      part(g, SPHERE(0.026), white, ex * 0.92, hy + 0.025, 0.158, { s: [1.2, 0.68, 0.45] });
+      part(g, SPHERE(0.014), dark, ex * 0.92, hy + 0.025, 0.169, { s: [1, 1, 0.5] });
+      part(g, geo('brow', function () { return new THREE.BoxGeometry(0.062, 0.013, 0.018); }), o.hijab ? smat(0x2b1d14, 0.85) : hairM, ex * 0.92, hy + 0.068, 0.162, { r: [0, 0, ex > 0 ? -0.1 : 0.1] });
     });
-    box(0.05, 0.08, 0.05, skin, 0, hy - 0.03, 0.22, o2());
-    box(0.12, 0.025, 0.015, 0x9a4f45, 0, hy - 0.12, 0.202, o2());
+    part(g, SPHERE(0.026), skin, 0, hy - 0.022, 0.18, { s: [0.7, 1.35, 1.15] });
+    part(g, geo('lips', function () { return new THREE.TorusGeometry(0.028, 0.0075, 6, 12, Math.PI * 0.7); }), smat(0xa8645a, 0.5), 0, hy - 0.083, 0.165, { r: [0.1, 0, Math.PI * 1.15] });
     if (o.glasses) {
-      [0.095, -0.095].forEach(function (ex) {
-        box(0.13, 0.015, 0.012, 0x22262c, ex, hy + 0.065, 0.214, o2());
-        box(0.13, 0.015, 0.012, 0x22262c, ex, hy - 0.005, 0.214, o2());
-        box(0.012, 0.08, 0.012, 0x22262c, ex - 0.065, hy + 0.03, 0.214, o2());
-        box(0.012, 0.08, 0.012, 0x22262c, ex + 0.065, hy + 0.03, 0.214, o2());
+      const fr = smat(0x22262c, 0.3);
+      [0.068, -0.068].forEach(function (ex) {
+        part(g, geo('lens', function () { return new THREE.TorusGeometry(0.036, 0.0055, 6, 18); }), fr, ex * 0.92, hy + 0.025, 0.178);
+        part(g, geo('temple', function () { return new THREE.BoxGeometry(0.006, 0.006, 0.18); }), fr, ex > 0 ? 0.162 : -0.162, hy + 0.035, 0.09);
       });
-      box(0.06, 0.015, 0.012, 0x22262c, 0, hy + 0.04, 0.214, o2());
+      part(g, geo('bridge', function () { return new THREE.BoxGeometry(0.04, 0.006, 0.006); }), fr, 0, hy + 0.035, 0.18);
     }
     if (o.hijab) {
-      // a wrap that frames the face, falls over the shoulders, and covers the hair
-      box(0.48, 0.5, 0.34, o.hijab, 0, hy + 0.04, -0.06, { parent: g });
-      box(0.48, 0.09, 0.44, o.hijab, 0, hy + 0.26, 0, { parent: g });
-      box(0.05, 0.48, 0.38, o.hijab, 0.235, hy - 0.01, 0.02, { parent: g });
-      box(0.05, 0.48, 0.38, o.hijab, -0.235, hy - 0.01, 0.02, { parent: g });
-      box(0.46, 0.14, 0.42, o.hijab, 0, hy - 0.27, 0.01, { parent: g });
-      box(0.7, 0.2, 0.4, o.hijab, 0, hip + 0.76, 0, { parent: g });
-      box(0.4, 0.28, 0.06, o.hijab, 0, hip + 0.58, 0.16, { parent: g });
+      // a wrap with an opening for the face, a band over the forehead, and a drape over neck and shoulders
+      const hj = smat(o.hijab, 0.85, THREE.DoubleSide), W = 1.9;
+      part(g, SHELL(0.215, Math.PI / 2 + W / 2, Math.PI * 2 - W, 0, Math.PI * 0.8), hj, 0, hy + 0.01, -0.01, { s: [0.97, 1.12, 1.02], cast: true });
+      part(g, SHELL(0.215, Math.PI / 2 - W / 2, W, 0, Math.PI * 0.27), hj, 0, hy + 0.01, -0.01, { s: [0.97, 1.12, 1.02] });
+      part(g, TUBE(0.15, 0.27, 0.3), hj, 0, hip + 0.83, 0.01, { s: [1, 1, 0.72], cast: true });
     } else {
       const style = o.style || 'short';
-      box(0.42, 0.1, 0.42, hair, 0, hy + 0.26, 0, { parent: g });
-      box(0.42, 0.3, 0.07, hair, 0, hy + 0.1, -0.2, o2());
-      box(0.05, 0.16, 0.36, hair, 0.205, hy + 0.15, -0.02, o2());
-      box(0.05, 0.16, 0.36, hair, -0.205, hy + 0.15, -0.02, o2());
-      if (style === 'side') box(0.24, 0.07, 0.12, hair, 0.08, hy + 0.3, 0.12, o2());
-      if (style === 'curly') for (let i = 0; i < 5; i++) box(0.12, 0.08, 0.12, hair, -0.16 + i * 0.08, hy + 0.32, (i % 2) * 0.1 - 0.05, o2());
-      if (style === 'quiff') box(0.3, 0.12, 0.14, hair, 0, hy + 0.33, 0.12, o2());
+      part(g, SHELL(0.2, 0, Math.PI * 2, 0, Math.PI * 0.4), hairM, 0, hy + 0.01, -0.005, { s: [1.0, 1.15, 1.04], cast: true });
+      part(g, SHELL(0.2, Math.PI, Math.PI, Math.PI * 0.3, Math.PI * 0.32), hairM, 0, hy, -0.008, { s: [1.0, 1.12, 1.04] });
+      if (style === 'side') part(g, SPHERE(0.09), hairM, 0.06, hy + 0.17, 0.11, { s: [1.5, 0.45, 0.9], r: [0, 0, -0.25] });
+      if (style === 'quiff') part(g, SPHERE(0.09), hairM, 0, hy + 0.16, 0.11, { s: [1.55, 0.6, 0.95] });
+      if (style === 'curly') for (let i = 0; i < 8; i++) {
+        const a = i / 8 * Math.PI * 2;
+        part(g, SPHERE(0.06), hairM, Math.cos(a) * 0.13, hy + 0.19, Math.sin(a) * 0.12 - 0.01);
+      }
       if (o.beard) {
-        box(0.4, 0.1, 0.06, hair, 0, hy - 0.17, 0.18, o2());
-        box(0.05, 0.22, 0.2, hair, 0.19, hy - 0.08, 0.1, o2());
-        box(0.05, 0.22, 0.2, hair, -0.19, hy - 0.08, 0.1, o2());
-        box(0.16, 0.03, 0.02, hair, 0, hy - 0.08, 0.205, o2());
+        part(g, SHELL(0.14, 0.05, Math.PI - 0.1, Math.PI * 0.42, Math.PI * 0.58), hairM, 0, hy - 0.09, 0.045, { s: [1.0, 0.9, 1.0] });
+        part(g, SHELL(0.196, 0.05, Math.PI - 0.1, Math.PI * 0.55, Math.PI * 0.2), hairM, 0, hy + 0.01, -0.005, { s: [0.92, 1.1, 1.0] });
+        part(g, geo('stache', function () { return new THREE.BoxGeometry(0.075, 0.016, 0.02); }), hairM, 0, hy - 0.058, 0.17);
       }
     }
     g.scale.setScalar(o.scale || 0.75);
@@ -1345,6 +1459,7 @@
   const logStep = document.getElementById('logStep');
   const logWho = document.getElementById('logWho');
   const logWhat = document.getElementById('logWhat');
+  const logProgress = document.getElementById('logProgress'), logBar = document.getElementById('logBar');
 
   const WORK = 2.7;
   let stepIdx = -1, stepT = 0, to = ST.pm.work.clone(), active = null, phase = 'PRD', waiting = false, curKey = null;
@@ -1380,6 +1495,7 @@
     drawBoard(phase);
     logStatus.textContent = (step.t !== null ? TICKETS[step.t].id + ' · ' : '') + step.st;
     logStep.textContent = (i + 1) + ' / ' + SCRIPT.length;
+    logProgress.hidden = false; logBar.style.width = ((i + 1) / SCRIPT.length * 100) + '%';
     to = station.work.clone();
     function begin() {
       waiting = false; stepT = 0; active = station;
@@ -1456,8 +1572,9 @@
   function renderInfoBody() {
     const s = ST[selected], d = INFO[selected], cur = SCRIPT[stepIdx];
     el('infoDot').style.background = hex(s.a.color);
-    el('infoRole').textContent = NAME[selected] + ' \u00b7 ' + ROLE[selected];
-    el('infoAgent').textContent = s.a.agent;
+    el('infoDot').textContent = NAME[selected].charAt(0);
+    el('infoRole').textContent = NAME[selected];
+    el('infoAgent').textContent = ROLE[selected] + ' · ' + s.a.agent;
     el('infoDesc').textContent = d.desc;
     const chips = el('infoSkills');
     chips.textContent = '';
@@ -1829,6 +1946,7 @@
     const latest = shownTk.filter(function (tk) { return tk.last; }).sort(function (a, b) { return b.last.localeCompare(a.last); })[0];
     const latestAct = Object.keys(actBy).map(function (k) { return actBy[k]; }).sort(function (a, b) { return b.at.localeCompare(a.at); })[0];
     if (replaying) { renderInfo(); refreshSide(); return; }   // keep the replay narration in the log
+    logProgress.hidden = true;
     logStatus.textContent = (liveSource === 'db' ? 'SNAPSHOT · ' : 'LIVE · ') + shownTk.length + ' tiket · ' + active + ' aktif';
     logStep.textContent = liveSource === 'db' ? liveAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + hhmm(liveAt) : hhmm(liveAt);
     if (latestAct) {
@@ -2110,6 +2228,7 @@
   function renderTicket() {
     const tk = sideTicket;
     el('tDot').style.background = hex(tk.color);
+    el('tDot').textContent = tk.layer === '—' ? '#' : tk.layer.toUpperCase();
     el('tTitle').textContent = tk.id;
     el('tSub').textContent = (tk.project && tk.project !== 'demo' ? tk.project + ' · ' : '') + 'layer ' + tk.layer;
     tBody.textContent = '';
@@ -2177,6 +2296,7 @@
   function renderColumn() {
     const list = view().filter(function (t) { return t.status === sideColumn; });
     el('tDot').style.background = 'var(--btn)';
+    el('tDot').textContent = '#';
     el('tTitle').textContent = sideColumn;
     el('tSub').textContent = list.length + ' tiket';
     tBody.textContent = '';
@@ -2716,13 +2836,13 @@
   btnNight.addEventListener('click', function () {
     nightTarget = nightTarget ? 0 : 1;
     btnNight.setAttribute('aria-pressed', String(!!nightTarget));
-    btnNight.textContent = nightTarget ? 'Mode siang' : 'Mode malam';
+    btnNight.querySelector('.lbl').textContent = nightTarget ? 'Mode siang' : 'Mode malam';
     if (reduceMotion) { night = nightTarget; applyNight(night); }
   });
   btnPause.addEventListener('click', function () {
     paused = !paused;
     btnPause.setAttribute('aria-pressed', String(paused));
-    btnPause.textContent = paused ? 'Lanjutkan' : 'Jeda';
+    btnPause.querySelector('.lbl').textContent = paused ? 'Lanjutkan' : 'Jeda';
   });
   function setFocus(n) {
     focus = n;
