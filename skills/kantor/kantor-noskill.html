@@ -622,7 +622,7 @@
   // it for a far camera pushes it up instead of over the agent's head. Then it scales with camera distance:
   // small when zoomed in on a storey, larger from the overview, within limits.
   function scaleLabels() {
-    const f = Math.max(0.85, Math.min(1.8, camera.position.distanceTo(controls.target) / 55));
+    const f = Math.max(0.85, Math.min(1.6, camera.position.distanceTo(controls.target) / 55));
     for (let i = LABELS.length - 1; i >= 0; i--) {
       const sp = LABELS[i];
       if (!sp.parent) { LABELS.splice(i, 1); continue; }
@@ -956,14 +956,14 @@
   const em = makePerson({ skin: LOOKS.em.skin, hair: LOOKS.em.hair, style: LOOKS.em.style, beard: true, shirt: 0x55606e, pants: LOOKS.em.pants, card: 0x55606e, parent: centre });
   em.userData.key = 'em';
   const emLabel = makeLabel('Hafiz', 'Eng. Manager', 0x55606e);
-  emLabel.position.set(0, 3.6, -1.2);
+  emLabel.position.set(0, 3.3, 0.3);
   centre.add(emLabel);
   const emGlow = new THREE.MeshBasicMaterial({ color: 0x55606e, transparent: true, opacity: 0 });
   const emRing = new THREE.Mesh(new THREE.RingGeometry(1.4, 1.62, 40), emGlow);
   emRing.rotation.x = -Math.PI / 2; emRing.position.set(0, 0.06, 0.2); centre.add(emRing);
   centre.updateMatrixWorld(true);
   ST.em = { a: { key: 'em', agent: 'feature-flow', color: 0x55606e }, g: centre, f: 0, person: em, glow: emGlow, screen: null,
-    work: centre.localToWorld(new THREE.Vector3(0, 2.2, 0.9)), label: emLabel, labelY: 3.6, standing: true };
+    work: centre.localToWorld(new THREE.Vector3(0, 2.2, 0.9)), label: emLabel, labelY: 3.3, standing: true };
 
   // ---------- Walking: corridors, stairs, and agents carrying tickets ----------
   const CORR_Z = 0.5, STAIR_X = 9.5, WALK_SPEED = 4.2;
@@ -1009,6 +1009,22 @@
         [0.65, -1.2, Math.PI / 2], [0.65, 0.4, Math.PI / 2], [0.65, 2.0, Math.PI / 2], [2.15, -1.2, -Math.PI / 2], [2.15, 0.4, -Math.PI / 2]] }
   };
   PLACES.lounge.stay = [30, 60];
+  // Entry routes for rooms whose furniture blocks a straight walk from the corridor: each returns the points from
+  // the corridor (or the place's `via`) up to, but not including, the spot.
+  PLACES.meeting.approach = function (s, y) {          // back-row chairs: round the left side, then along the back
+    if (s.z <= MEETING.z + 0.1) return [V(s.x, y, CORR_Z)];
+    const ex = MEETING.x - 2.3, bz = MEETING.z + 1.7;
+    return [V(ex, y, CORR_Z), V(ex, y, bz), V(s.x, y, bz)];
+  };
+  PLACES.kantin.approach = function (s, y) {           // in front of the tables, then up the nearest aisle
+    const az = KANTIN.z - 3.2;
+    const ax = [16.1, 18.7, 21.09].reduce(function (b, a) { return Math.abs(a - s.x) < Math.abs(b - s.x) ? a : b; });
+    return [V(14.8, y, az), V(ax, y, az), V(ax, y, s.z)];
+  };
+  PLACES.musholla.approach = function (s, y) {         // in past the partition, behind the wudhu tap and shoe rack
+    const bz = MUSHOLLA.z + 1.7;
+    return [V(9.3, y, CORR_Z), V(9.3, y, bz), V(s.x, y, bz)];
+  };
   function takeSpot(pl, only) {
     for (let i = 0; i < pl.spots.length; i++) if (!pl.taken[i] && (only == null || only === i)) { pl.taken[i] = true; return i; }
     return -1;
@@ -1021,6 +1037,7 @@
     (pl.via || []).forEach(function (v) { pts.push(V(v[0], v[1], v[2])); });
     const yL = pl.y != null ? pl.y : FY[L];
     if (pl.hide) { pts.push(V(spot.x, yL, CORR_Z), V(spot.x, yL, spot.z)); return pts; }   // straight through the door
+    if (pl.approach) { pts.push.apply(pts, pl.approach(spot, yL)); pts.push(spot); return pts; }
     const ax = spot.z > pl.z ? spot.x + (spot.x < pl.x ? -1.05 : 1.05) : spot.x;
     pts.push(V(ax, yL, CORR_Z));
     if (ax !== spot.x) pts.push(V(ax, yL, spot.z));
