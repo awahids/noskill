@@ -9,7 +9,9 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - **Label tetap tajam.** Papan nama dan gelembung bicara dirender terpisah di resolusi penuh di atas dunia pixel; label agent yang tertutup lantai di atasnya dibuat samar.
 - **Karakter sprite pixel chibi.** Semua orang kini sprite 2D bergaya pixel (kepala besar, mata besar berkilau, pipi merona, ID card, hijab dengan drape, rok panjang) yang selalu menghadap kamera di dunia 3D, dengan bayangan di lantai. Pose otomatis: berdiri, dua frame jalan, duduk, dan duduk dengan jari terangkat dan percikan saat agent aktif. Warna ikut gelap di mode malam.
 - **Papan nama gaya pixel office:** pill gelap, titik warna agent, font Pixelify Sans. Judul panel ikut memakai font pixel.
-- Branding tetap noskill; tidak memakai simbol atau karakter dari IP pihak lain.
+- **Taman bergaya Jepang, tetap branding noskill.** Atap genteng (merah di dinding belakang, biru-abu di dinding barat), pohon sakura, gerbang torii dengan plakat "n noskill", kolam koi dengan ikan berenang, dan lentera batu yang menyala di mode malam.
+- **Ruang rapat berdinding kaca** (sisi timur dan selatan; sisi barat terbuka sebagai pintu). Tombol lantai memperbesar kamera lebih dekat ke lantai yang dipilih supaya karakter terlihat jelas.
+- Branding tetap noskill; tidak memakai simbol, nama, atau karakter dari IP pihak lain.
 
 ## 2.1.0 — 2026-11-03
 

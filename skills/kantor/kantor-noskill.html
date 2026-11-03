@@ -413,7 +413,7 @@
   // camera distance for the whole office (n = -1) or one storey; narrow screens step back to fit the width
   function viewDist(n, aspect) {
     aspect = aspect || stage.clientWidth / stage.clientHeight;
-    const base = n < 0 ? 98 : 68;
+    const base = n < 0 ? 98 : 52;
     return base * Math.max(1, Math.min(2, 1.75 / aspect));
   }
   let distGoal = null;
@@ -582,7 +582,37 @@
     if (k === 0) { box(0.1, 0.08, 9.4, 0x3b4048, BX1, y + 1.02, -5.3, { parent: g }); box(0.1, 0.08, 8.4, 0x3b4048, BX1, y + 1.02, 5.8, { parent: g }); }
     else box(0.1, 0.08, d, 0x3b4048, BX1, y + 1.02, 0, { parent: g });
     [[BX1, BZ1], [BX1, BZ0], [BX0, BZ1]].forEach(function (c) { box(0.4, FLOOR_H, 0.4, C.trim, c[0], y + FLOOR_H / 2 - 0.15, c[1], { parent: g }); });
-    if (k === 2) { box(len, 0.25, 0.5, C.trim, (BX0 + BX1) / 2, y + H, BZ0, { parent: g }); box(0.5, 0.25, d, C.trim, BX0, y + H, 0, { parent: g }); }
+    if (k === 2) {
+      box(len, 0.25, 0.5, C.trim, (BX0 + BX1) / 2, y + H, BZ0, { parent: g }); box(0.5, 0.25, d, C.trim, BX0, y + H, 0, { parent: g });
+      roofCaps(g, y + H + 0.12, len, d);
+    }
+  }
+  // Clay-tile roof caps over the two far walls (the ones the camera looks at from inside): two sloped slabs meeting
+  // at a ridge, red on the back wall and blue-grey on the west wall, with a darker ridge line.
+  function tileMat(base, line) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+    const x = cv.getContext('2d');
+    x.fillStyle = base; x.fillRect(0, 0, 64, 64);
+    x.fillStyle = line;
+    for (let r = 0; r < 4; r++) { x.fillRect(0, r * 16 + 14, 64, 2); for (let c = 0; c < 4; c++) x.fillRect(c * 16 + (r % 2) * 8, r * 16, 2, 14); }
+    const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    return { map: t, mat: new THREE.MeshStandardMaterial({ map: t, roughness: 0.8 }) };
+  }
+  function roofCaps(g, ytop, len, d) {
+    const SL = 0.5, W = 1.35, T = 0.16, off = 0.56, rise = 0.46;
+    [['back', 0xb9412f, '#8f2f22', len, BZ0, 0], ['west', 0x4a6a96, '#35507a', d, BX0, 1]].forEach(function (c) {
+      const tm = tileMat('#' + c[1].toString(16), c[2]);
+      [-1, 1].forEach(function (side) {
+        const tex = tm.map.clone(); tex.needsUpdate = true; tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(c[3] / 1.6, W / 1.6);
+        const m = new THREE.Mesh(new THREE.BoxGeometry(c[5] ? W : c[3], T, c[5] ? c[3] : W), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 }));
+        if (c[5]) { m.position.set(c[4] + side * off, ytop + rise, 0); m.rotation.z = side * SL; }
+        else { m.position.set(0.3, ytop + rise, c[4] + side * off); m.rotation.x = -side * SL; }
+        m.castShadow = true; m.receiveShadow = true; g.add(m);
+      });
+      if (c[5]) box(0.26, 0.16, c[3], 0x2a2f36, c[4], ytop + rise + 0.3, 0, { parent: g, cast: false });
+      else box(c[3], 0.16, 0.26, 0x2a2f36, 0.3, ytop + rise + 0.3, c[4], { parent: g, cast: false });
+    });
   }
   // from storey k up to k + 1, starting at z0 and rising towards z1 (must match upRoute)
   function stairs(k, x, z0, z1) {
@@ -1037,6 +1067,16 @@
     plant(g, -7.4, BZ0 + 0.9, y);
     const sign = makeLabel('Ruang uji', 'test tanpa DB', 0xc79a14);
     sign.position.set(x, y + 3.9, z + 0.6); sign.scale.set(3.8, 1.24, 1); g.add(sign);
+  })();
+
+  // Glass walls round the meeting room on its east and south sides; the west side stays open as the door
+  (function buildMeetingGlass() {
+    const g = floors[MEETING_FLOOR], y = FY[MEETING_FLOOR], H = 2.3, zS = 9.35, xE = 8.35;
+    box(5.75, H, 0.06, 0, 5.5, y + H / 2, zS, { parent: g, material: glassMat, cast: false });
+    box(4.75, H, 0.06, 0, xE, y + H / 2, 7.0, { parent: g, material: glassMat, cast: false }).rotation.y = Math.PI / 2;
+    box(5.85, 0.09, 0.1, 0x3b4048, 5.5, y + H, zS, { parent: g });
+    box(0.1, 0.09, 4.85, 0x3b4048, xE, y + H, 7.0, { parent: g });
+    [[2.6, zS], [xE, zS], [xE, 4.6]].forEach(function (p) { box(0.12, H, 0.12, 0x3b4048, p[0], y + H / 2, p[1], { parent: g }); });
   })();
 
   // ---------- Pantry (floor 1), toilets and musholla (floor 2), canteen (outside, east) ----------
@@ -2632,6 +2672,13 @@
         const m = new THREE.Mesh(new THREE.ConeGeometry(c[0], c[1], 7), mat(col));
         m.position.y = c[2]; m.castShadow = true; g.add(m);
       });
+    } else if (kind === 'sakura') {
+      const PINK = [0xf4a6c0, 0xf8c1d3, 0xe98fb0, 0xfad4e0];
+      cyl(0.17, 0.25, 1.5, 6, 0x5a3a2a, 0, 0.75, 0, { parent: g });
+      [[0, 2.35, 0, 1.25], [0.85, 2.0, 0.3, 0.85], [-0.8, 2.1, -0.3, 0.9], [0.1, 2.9, 0.4, 0.8]].forEach(function (b) {
+        const m = new THREE.Mesh(new THREE.IcosahedronGeometry(b[3], 0), mat(pick(PINK)));
+        m.position.set(b[0], b[1], b[2]); m.castShadow = true; g.add(m);
+      });
     } else {
       cyl(0.15, 0.22, 1.3, 6, 0x7a4b2e, 0, 0.65, 0, { parent: g });
       const a = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15, 0), mat(pick(GREENS)));
@@ -2663,6 +2710,61 @@
     const pl = new THREE.PointLight(0xffc56b, 0, 16, 2);
     pl.position.set(pt[0], 3.0, pt[1]); scene.add(pl); lampLights.push(pl);
   });
+
+  // ---------- Taman: sakura, gerbang noskill, kolam koi, lentera batu ----------
+  const koi = [];
+  (function buildGarden() {
+    // sakura around the office and in the back garden
+    [[6.2, 12.0], [9.8, 12.4], [-11.8, 11.8], [-9, -14], [-1.5, -15.2], [7, -14.2], [12.5, -13.6], [16.5, -11.5], [19.5, -12.5], [-12.6, -13.5]].forEach(function (p) { makeTree(p[0], p[1], 0.95 + rand() * 0.3, 'sakura'); });
+    // gerbang (torii) over the path to the road, with the noskill plaque
+    const gx = 2, gz = 12.4, RED = 0xc23b2e;   // gx matches ROAD.cross (declared further down)
+    [-1.55, 1.55].forEach(function (s) { cyl(0.19, 0.23, 3.4, 8, RED, gx + s, 1.7, gz); box(0.5, 0.18, 0.5, 0x2a2f36, gx + s, 0.09, gz); });
+    box(4.1, 0.2, 0.22, RED, gx, 2.75, gz);                                  // nuki
+    box(4.5, 0.2, 0.3, RED, gx, 3.38, gz);                                   // shimaki
+    box(5.2, 0.26, 0.42, 0x2a2f36, gx, 3.62, gz);                            // kasagi
+    [-1, 1].forEach(function (s) { const e = box(0.9, 0.26, 0.42, 0x2a2f36, gx + s * 2.75, 3.8, gz, {}); e.rotation.z = s * 0.4; });
+    const pc = document.createElement('canvas'); pc.width = 256; pc.height = 112;
+    (function drawPlaque() {
+      const x = pc.getContext('2d');
+      x.fillStyle = '#2f6b4f'; x.beginPath(); if (x.roundRect) x.roundRect(4, 4, 248, 104, 14); else x.rect(4, 4, 248, 104); x.fill();
+      x.strokeStyle = '#f3ead6'; x.lineWidth = 4; x.stroke();
+      x.fillStyle = '#ffffff'; x.textBaseline = 'middle'; x.textAlign = 'left';
+      x.font = '700 78px "Pixelify Sans", "Baloo 2", sans-serif'; x.fillText('n', 26, 58);
+      x.font = '700 50px "Pixelify Sans", "Baloo 2", sans-serif'; x.fillText('noskill', 84, 60);
+    })();
+    const ptex = new THREE.CanvasTexture(pc);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { ptex.needsUpdate = true; });
+    const plaque = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.14), new THREE.MeshBasicMaterial({ map: ptex, transparent: true }));
+    plaque.position.set(gx, 3.0, gz + 0.14); scene.add(plaque);
+    const gl = makeLabel('Gerbang', 'pintu masuk', 0x2f6b4f); gl.position.set(gx, 5.0, gz); gl.scale.set(2.4, 0.8, 1); scene.add(gl);
+    // lentera batu (ishidoro): glows at night through the shared lamp material
+    function lantern(x, z) {
+      const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+      box(0.6, 0.18, 0.6, 0x9aa0a6, 0, 0.09, 0, { parent: g });
+      box(0.24, 0.6, 0.24, 0xb4b9bd, 0, 0.48, 0, { parent: g });
+      box(0.5, 0.1, 0.5, 0x9aa0a6, 0, 0.83, 0, { parent: g });
+      box(0.34, 0.34, 0.34, 0, 0, 1.05, 0, { parent: g, material: lampMat, cast: false });
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(0.46, 0.32, 4), mat(0x6f767c)); roof.position.y = 1.38; roof.rotation.y = Math.PI / 4; roof.castShadow = true; g.add(roof);
+      cyl(0.07, 0.07, 0.12, 6, 0x9aa0a6, 0, 1.6, 0, { parent: g });
+    }
+    [[gx - 2.0, 11.4], [gx + 2.0, 11.4], [-7.6, 13.0], [-1.6, 13.0], [9.0, 11.2]].forEach(function (p) { lantern(p[0], p[1]); });
+    // kolam koi: water ellipse, stone rim, lily pads, and three fish that swim in circles
+    const px = -4.6, pz = 12.0, RX = 2.5, RZ = 1.3;
+    const water = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.12, 24), new THREE.MeshStandardMaterial({ color: 0x4aa8c9, roughness: 0.25, emissive: 0x1d5f7a, emissiveIntensity: 0.35, flatShading: true }));
+    water.scale.set(RX, 1, RZ); water.position.set(px, 0.1, pz); water.receiveShadow = true; scene.add(water);
+    for (let i = 0; i < 18; i++) {
+      const a = i / 18 * Math.PI * 2;
+      const s = box(0.62, 0.3, 0.5, [0x8d9399, 0x9aa0a6, 0xaab0b5][i % 3], px + Math.cos(a) * (RX + 0.2), 0.15, pz + Math.sin(a) * (RZ + 0.2));
+      s.rotation.y = -a;
+    }
+    [[-0.9, 0.2], [0.8, -0.4], [1.5, 0.35]].forEach(function (l) { cyl(0.28, 0.28, 0.03, 8, 0x5ea04a, px + l[0], 0.17, pz + l[1], { cast: false }); });
+    [[0xf08a24, 0.9, 0.0, 1.0], [0xf7f5ef, 1.3, 2.1, -0.8], [0xe0452f, 0.7, 4.2, 0.9]].forEach(function (f) {
+      const m = box(0.5, 0.08, 0.2, f[0], px, 0.19, pz, { cast: false });
+      koi.push({ m: m, r: f[1], ph: f[2], sp: f[3] });
+    });
+    // a stone path from the gate to the pond
+    for (let i = 0; i < 4; i++) box(0.9, 0.05, 0.7, 0xc9c3b6, px + 3.2 + i * 0.95, 0.04, pz + 0.9 + (i % 2) * 0.3, { cast: false });
+  })();
 
   const street = {};
   // ---------- Street: road, sidewalks, zebra crossing, parking lot, traffic and people outside ----------
@@ -3083,6 +3185,11 @@
       if (Math.abs(distGoal - next) < 0.2) distGoal = null;
     }
 
+    koi.forEach(function (f) {
+      const a = t * f.sp * 0.7 + f.ph;
+      f.m.position.x = -4.6 + Math.cos(a) * f.r * 1.4; f.m.position.z = 12.0 + Math.sin(a) * f.r * 0.6;
+      f.m.rotation.y = -a - (f.sp > 0 ? Math.PI / 2 : -Math.PI / 2);
+    });
     // clouds drift on a wide ring high above the island, so they never cross the building
     clouds.forEach(function (c) {
       c.a += c.speed * dt * 0.012;
