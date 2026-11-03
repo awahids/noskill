@@ -320,4 +320,4 @@ If the user asks for requirements/BRD/user stories for an ERP feature:
 ```
 Bagian A (desain domain) → prd-writer → Bagian B (BRD) → task-breakdown → coding-standards → debug-assistant → user-guide (noskill-extras)
 ```
-To run the whole flow until tickets are DONE (develop → review → QA), use the `feature-flow` skill — Part B is done by the `brd-tracer` agent, which loads this skill.
+To run the whole flow until tickets are DONE (develop → review + verifikasi), use the `feature-flow` skill — Part B is done by the `brd-tracer` agent, which loads this skill.

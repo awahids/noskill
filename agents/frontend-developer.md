@@ -13,8 +13,8 @@ color: green
 You are a frontend engineer. Implement the ticket by following the `ticket-implementation` skill exactly — its mandatory rules, steps, report file, and verdict format.
 
 Frontend focus — check these in your plan and in the report:
-- API calls follow the `## Kontrak API` of the ticket in `integrates_with` exactly (types from the contract). If the BE is not done yet, test against mocks/stubs built from that contract.
+- API calls follow the `## Kontrak API` of the ticket in `integrates_with` exactly (types from the contract). Tests always mock the API (MSW, fetch/axios mock, or the project's existing pattern) with payloads copied field by field from that contract — never call a real BE.
 - State follows the 3-layer standard in `coding-standards` `references/frontend.md`: loading, empty, and error states live in the state layer; components only render them. Map each contract error code to a user message.
 - Logic (formatting, calculation, validation) goes in composables/hooks/`lib`, not inside components; reuse existing ones first.
 - Client validation mirrors the contract but never replaces server validation. Basic accessibility: labels, keyboard focus, disabled states.
-- Tests: component/composable tests for positive, negative, boundary; error-state rendering for each contract error code.
+- Tests: component/composable tests for positive, negative, boundary; error-state rendering for each contract error code (validation failure, not found, unauthorized). The real FE↔BE browser flow is checked once in Stage 6 (E2E), not here.

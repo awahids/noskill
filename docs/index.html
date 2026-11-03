@@ -201,17 +201,17 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <div class="flow">
         <span class="pill s-rev">REVIEW</span><span class="arrow">revisi →</span><span class="pill s-prog">IN_PROGRESS</span>
         <span class="arrow">&nbsp;·&nbsp;</span>
-        <span class="arrow">tiket FE integrates_with:</span><span class="pill s-rev">REVIEW</span><span class="arrow">→</span><span class="pill s-qa">QA</span><span class="arrow">gagal →</span><span class="pill s-bug">BUG</span>
+        <span class="arrow">gagal di cek akhir →</span><span class="pill s-bug">BUG</span>
         <span class="arrow">&nbsp;·&nbsp;</span>
         <span class="arrow">blocker / 3x gagal →</span><span class="pill s-hold">HOLD</span>
       </div>
-      <p class="side">Reviewer menjalankan test tiket, cara verifikasi, dan cek negatif/batas; tanpa bukti jalan tidak ada <code>APPROVED</code>. QA terpisah hanya untuk tiket FE yang diuji terhadap BE asli. Tiket berstatus HOLD ditanyakan ke kamu. Tiket lain yang tidak bergantung padanya tetap jalan.</p>
+      <p class="side">Reviewer sekaligus QA: menjalankan test tiket, cara verifikasi, dan cek negatif/batas, semuanya tanpa database atau server; tanpa bukti jalan tidak ada <code>APPROVED</code>. Tiket berstatus HOLD ditanyakan ke kamu. Tiket lain yang tidak bergantung padanya tetap jalan.</p>
       <p>Setiap tiket adalah satu file Markdown di <code>docs/noskill/tickets/</code>. Isinya acceptance criteria, file yang boleh diubah, cara verifikasi, dan bagian <code>Riwayat</code> yang mencatat keputusan.</p>
 
       <h3>Aturan tiket</h3>
       <p>Satu tiket per endpoint (BE), per fitur atau halaman (FE), atau per bug. Migration, test, dan Swagger ikut ke tiket endpoint-nya, tidak dipecah per layer. Perubahan kecil digabung: maksimal 3 endpoint <code>simple</code> di resource yang sama, atau perubahan kecil di halaman/layar yang sama.</p>
       <p>Kalau BE dan FE sama-sama berubah, tiket BE memuat Kontrak API sejak dibuat: path, request, response sukses, dan kode error. Tiket FE merujuk kontrak itu lewat <code>integrates_with</code>.</p>
-      <p>Selama loop, test hanya dijalankan untuk yang tersentuh tiket. Typecheck, lint, dan seluruh test dijalankan sekali di akhir, lalu CTO me-review seluruh branch (mode lengkap atau lebih dari tiga tiket).</p>
+      <p>Selama loop, test hanya dijalankan untuk yang tersentuh tiket, tanpa database atau server (BE: repository di-mock dan endpoint diuji in-process, misalnya Jest + supertest; FE: API di-mock dari Kontrak API). Typecheck, lint, seluruh test, serta test integrasi dengan DB asli dan E2E dijalankan sekali di akhir, lalu CTO me-review seluruh branch (mode lengkap atau lebih dari tiga tiket).</p>
 
       <h3>Mode paralel</h3>
       <p>Bisa dipilih saat tiket disetujui. Selagi reviewer mengecek tiket A, developer sudah mengerjakan tiket B. Setiap tiket aktif mendapat git worktree sendiri, jadi perubahan tidak tercampur.</p>
@@ -220,11 +220,11 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <ul>
         <li>Revisi dilanjutkan oleh developer yang sama, jadi tiket dan kode tidak dibaca ulang dari nol.</li>
         <li>Setiap tiket punya <code>complexity</code>. Tiket <code>simple</code> dikerjakan developer dengan Sonnet, tiket <code>complex</code> dengan model sesi.</li>
-        <li>Server dan database tes dinyalakan sekali per sesi oleh orkestrator lalu dipakai bersama oleh developer, reviewer, dan QA. Agent tidak pernah membuat database sendiri.</li>
-        <li>Reviewer, QA, task-planner, dan brd-tracer selalu memakai Sonnet; model sesi tidak dipaksakan ke mereka.</li>
+        <li>Tidak ada database atau server selama loop tiket. Yang benar-benar butuh DB asli (migration, constraint, query mentah, transaksi) dijalankan sekali di cek akhir bersama E2E. Agent tidak pernah membuat database sendiri.</li>
+        <li>Reviewer, task-planner, dan brd-tracer selalu memakai Sonnet; model sesi tidak dipaksakan ke mereka.</li>
         <li>Agent membaca kode per rentang, menggabungkan perintah, dan menulis laporan ringkas, supaya jumlah giliran (dan token) tetap kecil.</li>
         <li>Typecheck dan lint per tiket memakai versi cepat dengan cache (<code>tsc --incremental</code>, <code>eslint --cache</code>).</li>
-        <li>Riwayat tiket mencatat jam, dan <code>/noskill:tiket board</code> menampilkan berapa lama tiap tiket di tahap developer, review, dan QA (kalau ada).</li>
+        <li>Riwayat tiket mencatat jam, dan <code>/noskill:tiket board</code> menampilkan berapa lama tiap tiket di tahap developer dan review.</li>
       </ul>
 
       <h3>Multi-repo</h3>
@@ -239,8 +239,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
           <tr><td><code>backend-developer</code></td><td>Mengerjakan tiket <code>layer: be</code>: API, service, migration. Rencana dulu, helper yang ada, test RED, quality gate.</td><td>Ya</td><td>Model sesi</td></tr>
           <tr><td><code>frontend-developer</code></td><td>Mengerjakan tiket <code>layer: fe</code>: halaman, komponen, state, sesuai Kontrak API.</td><td>Ya</td><td>Model sesi</td></tr>
           <tr><td><code>developer</code></td><td>Developer fullstack untuk tiket tanpa <code>layer</code> (monolith, mobile, script, tiket lama).</td><td>Ya</td><td>Model sesi</td></tr>
-          <tr><td><code>ticket-reviewer</code></td><td>Mengecek kesesuaian dengan AC, scope, reuse, kesederhanaan, efisiensi, dan test, lalu menjalankan test tiket dan cara verifikasi (positif, negatif, batas). Hasilnya <code>APPROVED</code>, <code>CHANGES_REQUESTED</code>, atau <code>BLOCKED</code>.</td><td>Tidak</td><td>Sonnet</td></tr>
-          <tr><td><code>qa-tester</code></td><td>Hanya untuk tiket FE dengan <code>integrates_with</code> (FE diuji terhadap BE asli) atau bila diminta. Hasilnya <code>PASS</code> atau <code>FAIL</code> dengan bug report.</td><td>Tidak</td><td>Sonnet</td></tr>
+          <tr><td><code>ticket-reviewer</code></td><td>Review dan QA dalam satu agent: mengecek kesesuaian dengan AC, Kontrak API, scope, reuse, kesederhanaan, efisiensi, dan test, lalu menjalankan test tiket tanpa DB dan cara verifikasi (positif, negatif, batas). Hasilnya <code>APPROVED</code>, <code>CHANGES_REQUESTED</code>, atau <code>BLOCKED</code>.</td><td>Tidak</td><td>Sonnet</td></tr>
           <tr><td><code>brd-tracer</code></td><td>Menurunkan PRD menjadi BR, PROC, US, AC, TECH, dan TC.</td><td>Tidak</td><td>Sonnet</td></tr>
           <tr><td><code>task-planner</code></td><td>Mengubah permintaan (atau PRD dan BRD di mode lengkap) menjadi file tiket berstatus TODO.</td><td>Tidak</td><td>Sonnet</td></tr>
         </tbody>
@@ -316,15 +315,14 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
 └── reports/
     └── WMS-BE-004/         laporan lengkap agent per putaran
         ├── dev-1.md
-        ├── review-1.md
-        └── qa-1.md</pre>
+        └── review-1.md</pre>
       <h3>Bahasa</h3>
       <p>Instruksi di dalam skill, agent, dan hook ditulis dalam bahasa Inggris supaya lebih hemat token (±20–40% lebih sedikit). Semua yang dibaca pengguna tetap berbahasa Indonesia: jawaban, prompt, dan hasil kerja.</p>
       <h3>Tracker</h3>
       <p>Isi <code>tracker: github</code> atau <code>tracker: notion</code> di profil project supaya board tercermin di GitHub Issues atau database Notion. Sinkronnya satu arah dari file ke tracker, bukan sebaliknya.</p>
 
       <h2 id="eval">Eval</h2>
-      <p>Repo ini menyertakan 19 case uji perilaku:</p>
+      <p>Repo ini menyertakan 18 case uji perilaku:</p>
       <ul>
         <li>developer memakai helper yang ada dan menulis test negatif/batas</li>
         <li>reviewer menolak duplikasi</li>
@@ -337,8 +335,8 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
         <li><code>/noskill:lazy</code> memakai helper yang ada, tanpa tiket atau abstraksi baru</li>
         <li><code>/noskill:tiket rapikan</code> mengusulkan penggabungan tiket per layer tanpa mengubah file sebelum disetujui, lalu menerapkannya setelah disetujui</li>
         <li><code>/noskill:tiket rapikan review</code> membuat tiket BUG dari temuan review ulang tiket DONE</li>
-        <li>QA menolak implementasi yang AC negatifnya gagal, dan meloloskan implementasi yang benar</li>
-        <li>QA langsung BLOCKED tanpa menyalakan DB/server sendiri kalau URL environment tidak diberikan</li>
+        <li>reviewer meloloskan implementasi yang benar dengan bukti per AC</li>
+        <li>reviewer memverifikasi tiket FE <code>integrates_with</code> dengan mock Kontrak API, tanpa menyalakan DB/server dan tanpa BLOCKED</li>
         <li><code>brd-tracer</code> menurunkan PRD jadi dokumen BRD ringkas dengan ID traceable</li>
         <li>tiket <code>layer: be</code> dikerjakan <code>backend-developer</code></li>
         <li><code>product-manager</code> mengajukan minimal 5 pertanyaan dan belum menulis PRD</li>

@@ -11,7 +11,7 @@
   <img alt="Version 1.15.2" src="https://img.shields.io/badge/version-1.15.2-1d6b57?style=flat-square&logo=github" />
 </div>
 
-Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, reviewer, dan QA.
+Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, dan reviewer (sekaligus QA).
 
 📖 **Dokumentasi lengkap:** [awahids.github.io/noskill](https://awahids.github.io/noskill/) (sumber: [`docs/index.html`](docs/index.html)) — cara install, cara kerja alur tiket, semua skill & agent.
 
@@ -70,8 +70,7 @@ Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field 
 | [`backend-developer`](agents/backend-developer.md) | Tiket `layer: be` — API, service, migration (NestJS/Laravel/Go) | `ticket-implementation`, `coding-standards` | Ya |
 | [`frontend-developer`](agents/frontend-developer.md) | Tiket `layer: fe` — halaman, komponen, state (Vue/Next.js) | `ticket-implementation`, `coding-standards` | Ya |
 | [`developer`](agents/developer.md) | Fullstack: tiket tanpa `layer` (monolith, mobile, script, tiket lama) | `ticket-implementation`, `coding-standards` | Ya |
-| [`ticket-reviewer`](agents/ticket-reviewer.md) | Review perubahan sesuai AC & standar **dan** jalankan test + Cara Verifikasi (positif/negatif/batas) → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
-| [`qa-tester`](agents/qa-tester.md) | Hanya untuk tiket FE `integrates_with` (FE diuji terhadap BE asli) atau bila diminta → PASS / FAIL / BLOCKED | `ticket-workflow` | Tidak |
+| [`ticket-reviewer`](agents/ticket-reviewer.md) | Review + QA dalam satu agent: cek perubahan sesuai AC, Kontrak API & standar, **dan** jalankan test tanpa DB + Cara Verifikasi (positif/negatif/batas) → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
 
 ## Aturan inti yang selalu aktif
 
@@ -126,7 +125,7 @@ Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket.
 
 **Mode paralel** (opsional): selagi tiket A di-review, developer sudah mengerjakan tiket B di git worktree terpisah. Maksimal 2 tiket aktif, atau 3 kalau tiketnya di repo berbeda.
 
-**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (server) dan database tes dinyalakan sekali per sesi oleh orchestrator lalu dipakai bersama oleh semua developer dan QA; reviewer, QA, task-planner, dan brd-tracer selalu memakai Sonnet.
+**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; test per tiket berjalan **tanpa database dan server** (BE: repository di-mock + endpoint test in-process seperti Jest + supertest; FE: API di-mock dari Kontrak API), sedangkan test integrasi dengan DB asli dan E2E dijalankan sekali di cek akhir; reviewer, task-planner, dan brd-tracer selalu memakai Sonnet.
 
 **Multi-repo:** satu fitur bisa menyentuh beberapa repo (misal api NestJS + web Vue + mobile Flutter). Daftarkan repo di bagian `## Repo` pada `project-profile.md`; PRD, BRD, dan tiket tetap di satu root docs.
 
@@ -138,12 +137,11 @@ Lengkap:  product-manager ─► cto (ADR) ─► brd-tracer ─► task-planner
 
 Per tiket:
 TODO ─► IN_PROGRESS ─► REVIEW ──────────► DONE (commit lokal)
-  (backend-/frontend-/developer)  (reviewer: review + test + Cara Verifikasi)
+  (backend-/frontend-/developer)  (reviewer: review + QA, test tanpa DB)
           ▲           │
           └─ revisi ──┘
-Tiket FE integrates_with: REVIEW ─► QA (qa-tester, FE vs BE asli) ─► DONE / BUG
 Blocker / 3x gagal ─► HOLD ─► ditanyakan ke user
-Semua DONE ─► full check ─► cto SIGN_OFF (mode lengkap atau > 3 tiket) ─► PR
+Semua DONE ─► full check (+ test integrasi DB & E2E sekali) ─► BUG kalau gagal ─► cto SIGN_OFF (mode lengkap atau > 3 tiket) ─► PR
 ```
 
 Agent tidak berbicara langsung satu sama lain. Mereka terhubung lewat file di `docs/noskill/`, dan hanya `feature-flow` yang memindahkan status tiket. Hasil setiap tahap jadi bisa direview, diedit, dan di-cek ulang.
@@ -152,13 +150,13 @@ Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-
 
 ## Eval
 
-`evals/` berisi 19 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, tiket `layer: be` diarahkan ke backend-developer, PM bertanya dulu sebelum menulis PRD, CTO memberi verdict arsitektur, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan QA menolak implementasi yang AC negatifnya gagal.
+`evals/` berisi 18 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, tiket `layer: be` diarahkan ke backend-developer, PM bertanya dulu sebelum menulis PRD, CTO memberi verdict arsitektur, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan reviewer memverifikasi tiket FE dengan mock Kontrak API tanpa menyalakan DB/server.
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
 ```
 
-Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $2–3 (19 case).
+Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $2–3 (18 case).
 
 ## Cara install
 

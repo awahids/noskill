@@ -49,7 +49,7 @@ For weekly updates or project reports (this format also pastes cleanly into Noti
 
 0. **If the project uses the noskill ticket flow** (`<docs>/tickets/` exists), make it the primary source, without asking the user to rewrite anything:
    - Tickets moved to DONE since the last update (`## Riwayat` lines dated yesterday/today) → **Yesterday**
-   - Tickets with status IN_PROGRESS, REVIEW, QA, or BUG → **Today**
+   - Tickets with status IN_PROGRESS, REVIEW, or BUG → **Today**
    - HOLD tickets with their questions → **Blockers**
    - Supplement with `git log --since=<tanggal> --oneline` if needed, but write in outcome language, not a commit list.
 

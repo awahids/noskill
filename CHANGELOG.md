@@ -2,6 +2,16 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.1.0 — 2026-11-03
+
+### Diubah — review dan QA jadi satu agent, verifikasi tanpa database
+- **`qa-tester` dihapus.** `ticket-reviewer` sekarang satu-satunya agent review + QA untuk semua tiket, termasuk tiket FE `integrates_with`. Status `QA` dihapus dari alur (tiket lama berstatus `QA` diperlakukan sebagai `REVIEW`).
+- **Test per tiket tanpa database dan server.** BE: unit test service dengan repository di-mock, plus endpoint test in-process (Jest + supertest dengan `overrideProvider`, Go `httptest`, Laravel feature test) untuk setiap status dan kode error di Kontrak API. FE: test komponen/composable dengan API di-mock (MSW, mock fetch/axios) dari payload Kontrak API. Reviewer mengecek mock FE cocok dengan kontrak per field.
+- **DB asli dan E2E sekali di Stage 6.** Hanya yang benar-benar butuh DB (migration, constraint, query mentah, transaksi/locking) ditulis sebagai spec integrasi dan dicatat developer di "Dicek di Stage 6". Orkestrator menyalakan environment/DB sekali di akhir, menjalankan spec integrasi + E2E, lalu mematikannya. Yang gagal jadi tiket `BUG`.
+- `Test DB` dan URL environment tidak lagi dikirim ke agent; `BLOCKED: test DB belum disediakan` / `environment belum jalan` tidak ada lagi.
+- `project-profile`: baris baru `Test tanpa DB (per tiket)` dan `Test integrasi (butuh DB, Stage 6)`.
+- Eval: `qa-fails-negative` dihapus (sudah tercakup `reviewer-rejects-duplication`), `qa-passes-correct` → `reviewer-approves-correct`, `qa-env-missing` → `reviewer-fe-no-db`.
+
 ## 2.0.0 — 2026-11-02
 
 ### Diubah — alur ramping ala superpowers
