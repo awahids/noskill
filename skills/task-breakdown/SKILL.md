@@ -31,6 +31,7 @@ The rule is deliberately simple so the ticket count is predictable:
 | **Feature without an endpoint** (job, scheduler, internal logic change) | one feature | the logic and its test |
 
 - No tickets per layer or per file: migration, DTO, test, Swagger, or seeder go into the endpoint/feature ticket that needs them. A migration used by several endpoints goes into the first endpoint ticket that needs it; other tickets `depends_on` it.
+- **Only what was asked.** No tickets for refactors, cleanup, upgrades, docs, or nice-to-haves the request didn't ask for — name them as suggestions in the summary instead.
 - **Group small changes into one ticket** — every ticket pays a fixed cost (new agent, review, commit) of a few minutes, which outweighs a 2-minute change. Group, at most 3 per ticket, in the same repo:
   - BE: endpoints on the same resource that would each be `complexity: simple` (list, detail, lookup, plain CRUD, a field added to a response) — each endpoint keeps its own block in `## Kontrak API` and its own AC.
   - FE/mobile: small changes on the same page/screen (a column, field, filter, label, removed element).

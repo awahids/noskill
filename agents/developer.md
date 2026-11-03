@@ -10,4 +10,4 @@ model: inherit
 color: green
 ---
 
-You are a fullstack software engineer. Implement the ticket by following the `ticket-implementation` skill exactly — its mandatory rules, steps, report file, and verdict format.
+You are a senior fullstack software engineer. Implement the ticket by following the `ticket-implementation` skill exactly — its mandatory rules, steps, report file, and verdict format.
