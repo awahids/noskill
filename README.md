@@ -8,7 +8,7 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 1.15.2" src="https://img.shields.io/badge/version-1.15.2-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 2.1.0" src="https://img.shields.io/badge/version-2.1.0-1d6b57?style=flat-square&logo=github" />
 </div>
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, dan reviewer (sekaligus QA).
@@ -17,7 +17,7 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 
 ## Kantor noskill
 
-`/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent yang berjalan mengantar tiket, dan suasana kantor di sekitarnya.
+`/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent semi-realistis yang berjalan mengantar tiket, Ruang uji tempat Arkan (Reviewer + QA) memverifikasi tiket, dan suasana kantor di sekitarnya. Panelnya menampilkan langkah yang sedang berjalan, pemilih lantai, dan toolbar (metrik, ikuti tiket, timeline, mode malam).
 
 ![Kantor noskill: kantor tiga lantai dengan panel baru, ruang uji, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran](docs/img/kantor-overview.jpg)
 
@@ -61,12 +61,14 @@ Skill di luar alur tiket dipisah ke plugin sendiri supaya plugin inti tetap ring
 
 Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field `skills:`.
 
+Semua agent bekerja sebagai **senior dengan prinsip lazy**: memutuskan sendiri dari kode dan dokumen, bertanya hanya kalau jawabannya mengubah hasil, dan memilih perubahan terkecil yang memenuhi kebutuhan (PRD sebatas MVP, tiket hanya untuk yang diminta, kode tanpa abstraksi atau poles yang tidak diminta). Validasi, keamanan, dan test tidak pernah dipangkas.
+
 | Agent | Peran | Skill yang dimuat | Bisa ubah kode? |
 |---|---|---|---|
 | [`product-manager`](agents/product-manager.md) | Product Manager: menyusun pertanyaan klarifikasi, lalu menulis PRD (atau Reverse-PRD dari kode) | `prd-writer`, `erp-requirements` | Tidak (hanya tulis PRD) |
 | [`cto`](agents/cto.md) | CTO: review arsitektur setelah PRD (ADR, GO / GO_WITH_NOTES / NO_GO) dan sign-off akhir seluruh branch (SIGN_OFF / CONCERNS) | `coding-standards` | Tidak (hanya tulis ADR & laporan) |
 | [`brd-tracer`](agents/brd-tracer.md) | PRD → BR/PROC/US/AC/TECH/TC di `docs/noskill/01..05` | `erp-requirements` | Tidak (hanya tulis dokumen) |
-| [`task-planner`](agents/task-planner.md) | BRD → file tiket `docs/noskill/tickets/*.md` status TODO | `task-breakdown`, `ticket-workflow` | Tidak (hanya tulis tiket) |
+| [`task-planner`](agents/task-planner.md) | Permintaan (atau PRD/BRD di mode lengkap) → tiket `docs/noskill/tickets/*.md` status TODO, sesedikit mungkin | `task-breakdown`, `ticket-workflow` | Tidak (hanya tulis tiket) |
 | [`backend-developer`](agents/backend-developer.md) | Tiket `layer: be` — API, service, migration (NestJS/Laravel/Go) | `ticket-implementation`, `coding-standards` | Ya |
 | [`frontend-developer`](agents/frontend-developer.md) | Tiket `layer: fe` — halaman, komponen, state (Vue/Next.js) | `ticket-implementation`, `coding-standards` | Ya |
 | [`developer`](agents/developer.md) | Fullstack: tiket tanpa `layer` (monolith, mobile, script, tiket lama) | `ticket-implementation`, `coding-standards` | Ya |

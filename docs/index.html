@@ -124,7 +124,7 @@
         <div class="eyebrow">Plugin Claude Code</div>
         <h1>noskill</h1>
         <div align="center">
-          <img alt="Version 2.0.0" src="https://img.shields.io/badge/version-2.0.0-1d6b57?style=flat-square&logo=github" />
+          <img alt="Version 2.1.0" src="https://img.shields.io/badge/version-2.1.0-1d6b57?style=flat-square&logo=github" />
         </div>
         <p class="lede">Skill dan agent untuk kerja development seperti tim engineering: tiket dikerjakan developer, lalu reviewer mengecek kode sekaligus menjalankan test dan cara verifikasinya, lalu masuk DONE. Kodenya hanya mengubah yang diminta, bukan refactor tanpa alasan. Cocok untuk bug fix, fitur kecil, fitur besar, dan multi-repo.</p>
         <div class="cmd"><pre>/plugin install noskill --marketplace awahids/noskill</pre><button type="button" data-copy>Salin</button></div>
@@ -169,7 +169,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <p>Saat sesi dimulai, hook <code>SessionStart</code> memanggil wrapper startup yang membacai <code>hooks/core-rules.md</code> dan <code>hooks/startup-extra.md</code>. Ini menaruh konteks default ke sesi: tujuan kerja, batas scope, pola pengambilan keputusan, dan cara kerja ticket.</p>
       <ul>
         <li>Ubah hanya yang diminta. Tidak ada refactor, rename, atau dependency baru yang tidak diminta.</li>
-        <li>Pikir dulu, lalu pilih cara paling sederhana. Pakai helper yang sudah ada di codebase, meskipun penggantinya cuma satu baris.</li>
+        <li>Pikir dulu, lalu pilih cara paling sederhana (prinsip lazy). Pakai helper yang sudah ada di codebase, meskipun penggantinya cuma satu baris.</li>
         <li>Logic bisnis punya test positif, negatif, dan batas, dan test dibuktikan gagal dulu sebelum implementasi.</li>
         <li>Kode efisien: tidak ada query di dalam loop, data diambil seperlunya, dan data besar dipaginasi.</li>
         <li>Hemat token: cari dulu, baca bagian yang perlu saja, dan batasi output command.</li>
@@ -231,6 +231,7 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <p>Satu fitur bisa menyentuh beberapa repo, misalnya api NestJS, web Vue, dan mobile Flutter. Daftarkan repo-repo itu di bagian <code>## Repo</code> pada <code>project-profile.md</code>. PRD, BRD, dan tiket tetap di satu root docs.</p>
 
       <h2 id="agent">Agent</h2>
+      <p>Semua agent bekerja sebagai <strong>senior dengan prinsip lazy</strong>: memutuskan sendiri dari kode dan dokumen, bertanya hanya kalau jawabannya mengubah hasil, dan memilih perubahan terkecil yang memenuhi kebutuhan. PRD sebatas MVP (sisanya masuk <em>Di luar scope</em>), tiket hanya untuk yang diminta, dan kode tanpa abstraksi atau poles yang tidak diminta. Validasi, keamanan, dan test tidak pernah dipangkas.</p>
       <div class="tbl"><table>
         <thead><tr><th>Agent</th><th>Peran</th><th>Ubah kode</th><th>Model</th></tr></thead>
         <tbody>
@@ -241,14 +242,14 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
           <tr><td><code>developer</code></td><td>Developer fullstack untuk tiket tanpa <code>layer</code> (monolith, mobile, script, tiket lama).</td><td>Ya</td><td>Model sesi</td></tr>
           <tr><td><code>ticket-reviewer</code></td><td>Review dan QA dalam satu agent: mengecek kesesuaian dengan AC, Kontrak API, scope, reuse, kesederhanaan, efisiensi, dan test, lalu menjalankan test tiket tanpa DB dan cara verifikasi (positif, negatif, batas). Hasilnya <code>APPROVED</code>, <code>CHANGES_REQUESTED</code>, atau <code>BLOCKED</code>.</td><td>Tidak</td><td>Sonnet</td></tr>
           <tr><td><code>brd-tracer</code></td><td>Menurunkan PRD menjadi BR, PROC, US, AC, TECH, dan TC.</td><td>Tidak</td><td>Sonnet</td></tr>
-          <tr><td><code>task-planner</code></td><td>Mengubah permintaan (atau PRD dan BRD di mode lengkap) menjadi file tiket berstatus TODO.</td><td>Tidak</td><td>Sonnet</td></tr>
+          <tr><td><code>task-planner</code></td><td>Mengubah permintaan (atau PRD dan BRD di mode lengkap) menjadi tiket TODO sesedikit mungkin, tanpa tiket untuk pekerjaan yang tidak diminta.</td><td>Tidak</td><td>Sonnet</td></tr>
         </tbody>
       </table></div>
 
       <h2 id="kantor">Kantor noskill</h2>
-      <p><code>/noskill:kantor</code> membuka kantor 3D tempat agent noskill bekerja. Board tiket dibaca live dari <code>docs/noskill</code>, agent berjalan mengantar tiket ke agent berikutnya, dan agent yang menganggur ngopi, makan di kantin, atau mampir ngobrol. Detailnya ada di <a href="skills.html#kantor">halaman skill</a>.</p>
+      <p><code>/noskill:kantor</code> membuka kantor 3D tempat agent noskill bekerja. Board tiket dibaca live dari <code>docs/noskill</code>, agent semi-realistis berjalan mengantar tiket ke agent berikutnya, Arkan (Reviewer + QA) bekerja di samping Ruang uji, dan agent yang menganggur ngopi, makan di kantin, atau mampir ngobrol. Detailnya ada di <a href="skills.html#kantor">halaman skill</a>.</p>
       <div class="shots">
-        <figure><img src="img/kantor-overview.jpg" alt="Kantor noskill: kantor tiga lantai dengan panel baru, ruang uji, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran" width="1280" height="800" loading="lazy"><figcaption>Kantor tiga lantai dengan board tiket, fasilitas kantor, jalan raya, dan parkiran.</figcaption></figure>
+        <figure><img src="img/kantor-overview.jpg" alt="Kantor noskill: kantor tiga lantai dengan panel baru, ruang uji, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran" width="1280" height="800" loading="lazy"><figcaption>Kantor tiga lantai dengan panel baru, Ruang uji, fasilitas kantor, jalan raya, dan parkiran.</figcaption></figure>
         <div class="row">
           <figure><img src="img/kantor-agent.jpg" alt="Kartu agent Arkan (Reviewer + QA) dengan avatar, deskripsi, skill, tools, dan verdict" width="1280" height="800" loading="lazy"><figcaption>Klik agent untuk melihat tugas, skill, dan tiketnya.</figcaption></figure>
           <figure><img src="img/kantor-jalan.jpg" alt="Lantai 1 berlantai parket: agent bekerja di meja, mobil dan motor melintas di jalan" width="1280" height="800" loading="lazy"><figcaption>Jalan raya, halte, ojek, dan warga sekitar.</figcaption></figure>
