@@ -8,22 +8,22 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 1.15.2" src="https://img.shields.io/badge/version-1.15.2-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 2.1.0" src="https://img.shields.io/badge/version-2.1.0-1d6b57?style=flat-square&logo=github" />
 </div>
 
-Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, reviewer, dan QA.
+Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, dan reviewer (sekaligus QA).
 
 📖 **Dokumentasi lengkap:** [awahids.github.io/noskill](https://awahids.github.io/noskill/) (sumber: [`docs/index.html`](docs/index.html)) — cara install, cara kerja alur tiket, semua skill & agent.
 
 ## Kantor noskill
 
-`/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent yang berjalan mengantar tiket, dan suasana kantor di sekitarnya.
+`/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent semi-realistis yang berjalan mengantar tiket, Ruang uji tempat Arkan (Reviewer + QA) memverifikasi tiket, dan suasana kantor di sekitarnya. Panelnya menampilkan langkah yang sedang berjalan, pemilih lantai, dan toolbar (metrik, ikuti tiket, timeline, mode malam).
 
-![Kantor noskill: kantor tiga lantai dengan board tiket, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran](docs/img/kantor-overview.jpg)
+![Kantor noskill: kantor tiga lantai dengan panel baru, ruang uji, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran](docs/img/kantor-overview.jpg)
 
 | Klik agent untuk melihat tugas dan skill | Jalan raya, halte, dan warga sekitar | Mode malam |
 |---|---|---|
-| ![Kartu agent Naura (QA) dengan deskripsi, skill, tools, dan verdict](docs/img/kantor-agent.jpg) | ![Mobil dan motor melintas, penumpang menunggu di halte, agent bekerja di lantai 1](docs/img/kantor-jalan.jpg) | ![Kantor saat malam dengan lampu meja dan lampu jalan menyala](docs/img/kantor-malam.jpg) |
+| ![Kartu agent Arkan (Reviewer + QA) dengan avatar, deskripsi, skill, tools, dan verdict](docs/img/kantor-agent.jpg) | ![Lantai 1 berlantai parket: agent bekerja di meja, mobil dan motor melintas di jalan](docs/img/kantor-jalan.jpg) | ![Kantor saat malam dengan lampu meja dan lampu jalan menyala](docs/img/kantor-malam.jpg) |
 
 ## Skills
 
@@ -61,17 +61,18 @@ Skill di luar alur tiket dipisah ke plugin sendiri supaya plugin inti tetap ring
 
 Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field `skills:`.
 
+Semua agent bekerja sebagai **senior dengan prinsip lazy**: memutuskan sendiri dari kode dan dokumen, bertanya hanya kalau jawabannya mengubah hasil, dan memilih perubahan terkecil yang memenuhi kebutuhan (PRD sebatas MVP, tiket hanya untuk yang diminta, kode tanpa abstraksi atau poles yang tidak diminta). Validasi, keamanan, dan test tidak pernah dipangkas.
+
 | Agent | Peran | Skill yang dimuat | Bisa ubah kode? |
 |---|---|---|---|
 | [`product-manager`](agents/product-manager.md) | Product Manager: menyusun pertanyaan klarifikasi, lalu menulis PRD (atau Reverse-PRD dari kode) | `prd-writer`, `erp-requirements` | Tidak (hanya tulis PRD) |
 | [`cto`](agents/cto.md) | CTO: review arsitektur setelah PRD (ADR, GO / GO_WITH_NOTES / NO_GO) dan sign-off akhir seluruh branch (SIGN_OFF / CONCERNS) | `coding-standards` | Tidak (hanya tulis ADR & laporan) |
 | [`brd-tracer`](agents/brd-tracer.md) | PRD → BR/PROC/US/AC/TECH/TC di `docs/noskill/01..05` | `erp-requirements` | Tidak (hanya tulis dokumen) |
-| [`task-planner`](agents/task-planner.md) | BRD → file tiket `docs/noskill/tickets/*.md` status TODO | `task-breakdown`, `ticket-workflow` | Tidak (hanya tulis tiket) |
+| [`task-planner`](agents/task-planner.md) | Permintaan (atau PRD/BRD di mode lengkap) → tiket `docs/noskill/tickets/*.md` status TODO, sesedikit mungkin | `task-breakdown`, `ticket-workflow` | Tidak (hanya tulis tiket) |
 | [`backend-developer`](agents/backend-developer.md) | Tiket `layer: be` — API, service, migration (NestJS/Laravel/Go) | `ticket-implementation`, `coding-standards` | Ya |
 | [`frontend-developer`](agents/frontend-developer.md) | Tiket `layer: fe` — halaman, komponen, state (Vue/Next.js) | `ticket-implementation`, `coding-standards` | Ya |
 | [`developer`](agents/developer.md) | Fullstack: tiket tanpa `layer` (monolith, mobile, script, tiket lama) | `ticket-implementation`, `coding-standards` | Ya |
-| [`ticket-reviewer`](agents/ticket-reviewer.md) | Review perubahan sesuai AC & standar **dan** jalankan test + Cara Verifikasi (positif/negatif/batas) → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
-| [`qa-tester`](agents/qa-tester.md) | Hanya untuk tiket FE `integrates_with` (FE diuji terhadap BE asli) atau bila diminta → PASS / FAIL / BLOCKED | `ticket-workflow` | Tidak |
+| [`ticket-reviewer`](agents/ticket-reviewer.md) | Review + QA dalam satu agent: cek perubahan sesuai AC, Kontrak API & standar, **dan** jalankan test tanpa DB + Cara Verifikasi (positif/negatif/batas) → APPROVED / CHANGES_REQUESTED / BLOCKED | `coding-standards`, `ticket-workflow` | Tidak |
 
 ## Aturan inti yang selalu aktif
 
@@ -126,7 +127,7 @@ Kedua mode bekerja di branch baru (`feat/…` atau `fix/…`), commit per tiket.
 
 **Mode paralel** (opsional): selagi tiket A di-review, developer sudah mengerjakan tiket B di git worktree terpisah. Maksimal 2 tiket aktif, atau 3 kalau tiketnya di repo berbeda.
 
-**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; environment (server) dan database tes dinyalakan sekali per sesi oleh orchestrator lalu dipakai bersama oleh semua developer dan QA; reviewer, QA, task-planner, dan brd-tracer selalu memakai Sonnet.
+**Hemat waktu per tiket:** revisi dilanjutkan oleh developer yang sama (tidak membaca ulang dari nol); tiket `complexity: simple` dikerjakan developer dengan Sonnet; test per tiket berjalan **tanpa database dan server** (BE: repository di-mock + endpoint test in-process seperti Jest + supertest; FE: API di-mock dari Kontrak API), sedangkan test integrasi dengan DB asli dan E2E dijalankan sekali di cek akhir; reviewer, task-planner, dan brd-tracer selalu memakai Sonnet.
 
 **Multi-repo:** satu fitur bisa menyentuh beberapa repo (misal api NestJS + web Vue + mobile Flutter). Daftarkan repo di bagian `## Repo` pada `project-profile.md`; PRD, BRD, dan tiket tetap di satu root docs.
 
@@ -138,12 +139,11 @@ Lengkap:  product-manager ─► cto (ADR) ─► brd-tracer ─► task-planner
 
 Per tiket:
 TODO ─► IN_PROGRESS ─► REVIEW ──────────► DONE (commit lokal)
-  (backend-/frontend-/developer)  (reviewer: review + test + Cara Verifikasi)
+  (backend-/frontend-/developer)  (reviewer: review + QA, test tanpa DB)
           ▲           │
           └─ revisi ──┘
-Tiket FE integrates_with: REVIEW ─► QA (qa-tester, FE vs BE asli) ─► DONE / BUG
 Blocker / 3x gagal ─► HOLD ─► ditanyakan ke user
-Semua DONE ─► full check ─► cto SIGN_OFF (mode lengkap atau > 3 tiket) ─► PR
+Semua DONE ─► full check (+ test integrasi DB & E2E sekali) ─► BUG kalau gagal ─► cto SIGN_OFF (mode lengkap atau > 3 tiket) ─► PR
 ```
 
 Agent tidak berbicara langsung satu sama lain. Mereka terhubung lewat file di `docs/noskill/`, dan hanya `feature-flow` yang memindahkan status tiket. Hasil setiap tahap jadi bisa direview, diedit, dan di-cek ulang.
@@ -152,13 +152,13 @@ Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-
 
 ## Eval
 
-`evals/` berisi 19 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, tiket `layer: be` diarahkan ke backend-developer, PM bertanya dulu sebelum menulis PRD, CTO memberi verdict arsitektur, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan QA menolak implementasi yang AC negatifnya gagal.
+`evals/` berisi 18 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, tiket `layer: be` diarahkan ke backend-developer, PM bertanya dulu sebelum menulis PRD, CTO memberi verdict arsitektur, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan reviewer memverifikasi tiket FE dengan mock Kontrak API tanpa menyalakan DB/server.
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
 ```
 
-Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $2–3 (19 case).
+Butuh `bubblewrap` dan `socat` di Linux (sandbox untuk Bash). Biaya satu putaran (1 run per case, dengan dan tanpa plugin) sekitar $2–3 (18 case).
 
 ## Cara install
 

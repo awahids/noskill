@@ -10,7 +10,7 @@ Memecah PRD atau BRD menjadi tiket development: satu tiket per endpoint (BE, den
 - Aturan task integrasi presisi (tidak menduplikasi business logic sistem existing)
 - Struktur output task (deskripsi, acuan PRD, file/lokasi, acceptance criteria, cara verifikasi, dependency, estimasi)
 - Aturan penomoran Task-ID per sistem/modul
-- Urutan fase yang wajar (database → backend core → API → integrasi → frontend → fitur pendukung → QA/dokumentasi)
+- Urutan fase yang wajar (database → backend core → API → integrasi → frontend → fitur pendukung → dokumentasi)
 
 ## Kapan dipakai
 

@@ -1,12 +1,12 @@
 <title>Kantor noskill</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* Layout: full-screen 3D office diorama, one floating panel bottom-left with the live ticket log */
   :root {
     --sky: #bfe3f2;
-    --panel: rgba(255, 255, 255, 0.86);
+    --panel: rgba(255, 255, 255, 0.82);
     --ink: #24352a;
     --muted: #55675a;
     --btn: #2f6b4f;
@@ -14,7 +14,11 @@
     --btn-soft: rgba(47, 107, 79, 0.12);
     --edge: rgba(36, 53, 42, 0.14);
     --log: rgba(47, 107, 79, 0.08);
-    --font-display: "Baloo 2", "Nunito", "Trebuchet MS", system-ui, sans-serif;
+    --font-display: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-title: "Baloo 2", "Nunito", "Trebuchet MS", system-ui, sans-serif;
+    --card: rgba(255, 255, 255, 0.7);
+    --panel-solid: #ffffff;
+    --shadow: 0 12px 32px rgba(20, 40, 30, 0.16), 0 2px 6px rgba(20, 40, 30, 0.08);
     --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
@@ -28,6 +32,9 @@
       --btn-soft: rgba(124, 195, 156, 0.16);
       --edge: rgba(230, 239, 232, 0.14);
       --log: rgba(124, 195, 156, 0.1);
+      --card: rgba(255, 255, 255, 0.05);
+      --panel-solid: #2a352e;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
       color-scheme: dark;
     }
   }
@@ -41,6 +48,9 @@
     --btn-soft: rgba(124, 195, 156, 0.16);
     --edge: rgba(230, 239, 232, 0.14);
     --log: rgba(124, 195, 156, 0.1);
+    --card: rgba(255, 255, 255, 0.05);
+    --panel-solid: #2a352e;
+    --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
     color-scheme: dark;
   }
   *, *::before, *::after { box-sizing: border-box; }
@@ -58,61 +68,95 @@
     position: fixed;
     left: 16px;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    width: min(380px, calc(100% - 32px));
-    padding: 14px 16px 16px;
+    width: min(372px, calc(100% - 32px));
+    padding: 14px;
     background: var(--panel);
     border: 1px solid var(--edge);
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
     display: grid;
-    gap: 10px;
+    gap: 12px;
   }
   .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .panel .min { padding: 0; width: 32px; height: 32px; line-height: 1; font-size: 1.2rem; flex: none; }
-  .panel-body { display: grid; gap: 10px; }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .logo {
+    flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+    background: linear-gradient(140deg, #3f8f68, var(--btn)); color: #fff;
+    font: 700 1.35rem/1 var(--font-title); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+  }
+  .sub { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); min-width: 0; }
+  .sub span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .panel .min { padding: 0; width: 32px; height: 32px; line-height: 1; font-size: 1.1rem; flex: none; }
+  .panel-body { display: grid; gap: 12px; }
   .panel-body[hidden], .mini[hidden] { display: none; }
-  .mini { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); min-width: 0; }
+  .mini { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); min-width: 0; }
   .mini span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .panel.collapsed { width: auto; max-width: min(360px, calc(100% - 32px)); gap: 6px; padding: 10px 12px; }
-  .panel.collapsed h1 { font-size: 1.15rem; }
-  .panel h1 { margin: 0; font-size: 1.6rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
-  .panel p { margin: 0; font-size: 0.92rem; line-height: 1.35; color: var(--muted); }
+  .panel.collapsed .logo { width: 30px; height: 30px; font-size: 1.05rem; border-radius: 9px; }
+  .panel.collapsed .sub { display: none; }
+  .panel.collapsed h1 { font-size: 1.05rem; }
+  .panel h1 { margin: 0; font: 700 1.2rem/1.15 var(--font-title); letter-spacing: -0.01em; }
+  .panel p { margin: 0; font-size: 0.88rem; line-height: 1.4; color: var(--muted); }
   .log {
-    background: var(--log);
-    border-radius: 12px;
-    padding: 8px 10px;
+    background: var(--card);
+    border: 1px solid var(--edge);
+    border-radius: 16px;
+    padding: 10px 12px 12px;
     min-height: 4.4em;
     display: grid;
-    gap: 2px;
+    gap: 3px;
   }
   .log .meta {
     font-family: var(--font-mono);
-    font-size: 0.74rem;
-    letter-spacing: 0.02em;
+    font-size: 0.72rem;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 8px;
   }
-  .log .who { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 500; }
-  .log .what { font-size: 0.95rem; line-height: 1.3; }
+  .log .tag { padding: 2px 8px; border-radius: 999px; background: var(--btn-soft); color: var(--ink); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log .who { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500; margin-top: 4px; }
+  .log .what { font-size: 0.95rem; line-height: 1.35; font-weight: 600; }
+  .progress { height: 4px; border-radius: 4px; background: var(--btn-soft); overflow: hidden; margin-top: 6px; }
+  .progress[hidden] { display: none; }
+  .progress i { display: block; height: 100%; width: 0; background: var(--btn); border-radius: 4px; transition: width 0.4s ease; }
   .controls { display: flex; flex-wrap: wrap; gap: 8px; }
-  .floors button { padding: 4px 12px; font-size: 0.88rem; }
+  .seg { display: grid; grid-template-columns: repeat(4, 1fr); padding: 3px; gap: 3px; border-radius: 12px; background: var(--btn-soft); }
+  .seg button { border: 0; background: transparent; border-radius: 9px; padding: 6px 4px; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: var(--panel-solid); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+  .toolbar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .tool {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px 4px; border-radius: 12px; border: 1px solid var(--edge); background: var(--card);
+    font-size: 0.74rem; font-weight: 600; color: var(--ink);
+  }
+  .tool .ic { width: 18px; height: 18px; }
+  .tool[aria-pressed="true"], .tool[aria-expanded="true"] { background: var(--btn); border-color: var(--btn); color: var(--btn-ink); }
+  .ic { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   button {
     font: inherit;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     padding: 6px 14px;
     border-radius: 999px;
     border: 1.5px solid var(--btn);
-    background: var(--btn-soft);
-    color: var(--ink);
+    background: var(--btn);
+    color: var(--btn-ink);
     cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
   }
-  button[aria-pressed="true"] { background: var(--btn); color: var(--btn-ink); }
+  button:active { transform: scale(0.97); }
+  button.ghost, .panel .min, .info .close, .tl-head .close { background: var(--btn-soft); color: var(--ink); border-color: transparent; }
   button:focus-visible { outline: 3px solid var(--btn); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  @media (hover: hover) {
+    .tool:hover, .seg button:hover, button.ghost:hover { background: var(--btn-soft); }
+    .tool[aria-pressed="true"]:hover, .tool[aria-expanded="true"]:hover { background: var(--btn); }
+  }
 
   .err[hidden] { display: none; }
   .timeline { position: fixed; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(560px, calc(100% - 432px));
@@ -129,9 +173,10 @@
   @media (max-width: 900px) {
     .timeline { left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px)); width: auto; top: calc(10px + env(safe-area-inset-top, 0px)); bottom: auto; }
   }
-  .src { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 0.85rem; color: var(--muted); }
-  .src span:nth-child(2) { flex: 1 1 160px; min-width: 0; }
-  .src button { padding: 2px 10px; font-size: 0.82rem; }
+  .src { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; line-height: 1.35; color: var(--muted); padding-top: 10px; border-top: 1px solid var(--edge); }
+  .src .ic { width: 16px; height: 16px; }
+  .src span { flex: 1 1 auto; min-width: 0; }
+  .src button { padding: 4px 10px; font-size: 0.78rem; flex: none; }
   .src-form { display: grid; gap: 6px; }
   .src-form[hidden] { display: none; }
   .src-form label { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
@@ -139,7 +184,7 @@
   .src-form textarea:focus-visible { outline: 3px solid var(--btn); outline-offset: 1px; }
   .src-form input { font: 0.85rem/1.3 var(--font-mono); padding: 6px 8px; border-radius: 10px; border: 1px solid var(--edge); background: var(--panel); color: var(--ink); width: 100%; min-width: 0; }
   .src-form input:focus-visible { outline: 3px solid var(--btn); outline-offset: 1px; }
-  .panel .hint { font-size: 0.85rem; color: var(--muted); margin: 0; }
+  .panel .hint { font-size: 0.74rem; color: var(--muted); margin: 0; text-align: center; }
 
   /* Agent detail card */
   .info {
@@ -152,20 +197,25 @@
     padding: 16px;
     background: var(--panel);
     border: 1px solid var(--edge);
-    border-radius: 20px;
+    border-radius: 22px;
+    box-shadow: var(--shadow);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     display: grid;
     gap: 12px;
   }
   .info[hidden] { display: none; }
-  .info header { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
-  .info .dot { width: 14px; height: 14px; border-radius: 50%; }
-  .info h2 { margin: 0; font-size: 1.35rem; line-height: 1.1; }
+  .info header { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+  .avatar {
+    width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; color: #fff;
+    font: 700 1.25rem/1 var(--font-title); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+  }
+  .avatar .ic { width: 22px; height: 22px; }
+  .info h2 { margin: 0; font: 700 1.25rem/1.15 var(--font-title); }
   .info .agent { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); }
-  .info .close { padding: 2px 10px; font-size: 1.1rem; line-height: 1.4; }
+  .info .close { padding: 0; width: 32px; height: 32px; font-size: 1.1rem; line-height: 1; }
   .info .desc { margin: 0; font-size: 0.95rem; line-height: 1.4; }
-  .now { background: var(--log); border-radius: 12px; padding: 10px; display: grid; gap: 4px; }
+  .now { background: var(--card); border: 1px solid var(--edge); border-radius: 16px; padding: 12px; display: grid; gap: 6px; }
   .now .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .now .lbl, .info dt { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
   .pill { font-family: var(--font-mono); font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--edge); color: var(--muted); }
@@ -211,62 +261,66 @@
   }
 </style>
 
-<div id="stage" aria-label="Diorama 3D kantor tiga lantai tim agent noskill: Product Manager, CTO, analyst, tech lead, developer backend, frontend dan fullstack, reviewer, dan QA mengerjakan tiket dari PRD sampai PR"></div>
+<div id="stage" aria-label="Diorama 3D kantor tiga lantai tim agent noskill: Product Manager, CTO, analyst, tech lead, developer backend, frontend dan fullstack, serta reviewer (sekaligus QA) mengerjakan tiket dari PRD sampai PR"></div>
 
 <div class="panel" id="panel">
   <div class="panel-head">
-    <h1>Kantor noskill</h1>
+    <div class="brand">
+      <span class="logo" aria-hidden="true">n</span>
+      <div>
+        <h1>Kantor noskill</h1>
+        <div class="sub"><span class="pill" id="srcPill">Demo</span><span>Tim agent dari PRD sampai PR</span></div>
+      </div>
+    </div>
     <button type="button" class="min" id="btnMin" aria-expanded="true" aria-controls="panelBody" aria-label="Kecilkan panel" title="Kecilkan panel">&#8211;</button>
   </div>
   <div class="mini" id="panelMini" hidden></div>
   <div class="panel-body" id="panelBody">
-  <p>Tim agent mengerjakan tiket dari PRD sampai PR. Seret untuk memutar, scroll untuk zoom.</p>
-  <p class="hint">Klik salah satu agent untuk melihat tugas, skill, dan pekerjaannya sekarang.</p>
+  <div class="log" aria-live="polite">
+    <div class="meta"><span class="tag" id="logStatus">PRD</span><span id="logStep">1 / 25</span></div>
+    <div class="who" id="logWho">product-manager</div>
+    <div class="what" id="logWhat">Menyusun 6 pertanyaan klarifikasi untuk user</div>
+    <div class="progress" id="logProgress"><i id="logBar"></i></div>
+  </div>
+  <div class="seg floors" role="group" aria-label="Pilih lantai">
+    <button type="button" data-floor="-1" aria-pressed="true">Semua</button>
+    <button type="button" data-floor="0" aria-pressed="false">Lantai 1</button>
+    <button type="button" data-floor="1" aria-pressed="false">Lantai 2</button>
+    <button type="button" data-floor="2" aria-pressed="false">Lantai 3</button>
+  </div>
+  <div class="row-filter" id="projRow" hidden>
+    <label for="projFilter">Proyek</label>
+    <select id="projFilter"><option value="">Semua proyek</option></select>
+  </div>
+  <div class="toolbar">
+    <button type="button" class="tool" id="btnMetrics" aria-expanded="false" aria-controls="metrics"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span class="lbl">Metrik</span></button>
+    <button type="button" class="tool" id="btnFollow" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="lbl">Ikuti tiket</span></button>
+    <button type="button" class="tool" id="btnTimeline" aria-expanded="false" aria-controls="timeline"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span class="lbl">Timeline</span></button>
+    <button type="button" class="tool" id="btnNight" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span class="lbl">Mode malam</span></button>
+    <button type="button" class="tool" id="btnPause" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg><span class="lbl">Jeda</span></button>
+    <button type="button" class="tool" id="btnSpin" aria-pressed="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Putar kamera</span></button>
+  </div>
+  <div class="viewers" id="viewers" hidden aria-live="polite"></div>
   <div class="src">
-    <span class="pill" id="srcPill">Demo</span>
+    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
     <span id="srcText">Data contoh. Hubungkan folder tiket untuk melihat tiket asli.</span>
-    <button type="button" id="btnSrc" aria-expanded="false" aria-controls="srcForm">Folder tiket</button>
+    <button type="button" class="ghost" id="btnSrc" aria-expanded="false" aria-controls="srcForm">Folder tiket</button>
   </div>
   <form class="src-form" id="srcForm" hidden>
     <label for="srcPath">Folder docs/noskill atau tickets, satu path per baris</label>
     <textarea id="srcPath" name="srcPath" rows="3" autocomplete="off" spellcheck="false" placeholder="/Users/kamu/code/proyek-a/docs/noskill&#10;/Users/kamu/Desktop/work/proyek-b/docs/noskill"></textarea>
     <div class="controls">
       <button type="submit" id="btnLive">Pakai data live</button>
-      <button type="button" id="btnDemo">Kembali ke demo</button>
+      <button type="button" class="ghost" id="btnDemo">Kembali ke demo</button>
     </div>
   </form>
-  <div class="log" aria-live="polite">
-    <div class="meta"><span id="logStatus">PRD</span><span id="logStep">1 / 25</span></div>
-    <div class="who" id="logWho">product-manager</div>
-    <div class="what" id="logWhat">Menyusun 6 pertanyaan klarifikasi untuk user</div>
-  </div>
-  <div class="controls floors" role="group" aria-label="Pilih lantai">
-    <button type="button" data-floor="-1" aria-pressed="true">Semua lantai</button>
-    <button type="button" data-floor="0" aria-pressed="false">L1</button>
-    <button type="button" data-floor="1" aria-pressed="false">L2</button>
-    <button type="button" data-floor="2" aria-pressed="false">L3</button>
-  </div>
-  <div class="row-filter" id="projRow" hidden>
-    <label for="projFilter">Proyek</label>
-    <select id="projFilter"><option value="">Semua proyek</option></select>
-  </div>
-  <div class="controls">
-    <button type="button" id="btnMetrics" aria-expanded="false" aria-controls="metrics">Metrik</button>
-    <button type="button" id="btnFollow" aria-pressed="false">Ikuti tiket</button>
-    <button type="button" id="btnTimeline" aria-expanded="false" aria-controls="timeline">Timeline</button>
-  </div>
-  <div class="viewers" id="viewers" hidden aria-live="polite"></div>
-  <div class="controls">
-    <button id="btnNight" aria-pressed="false">Mode malam</button>
-    <button id="btnPause" aria-pressed="false">Jeda</button>
-    <button id="btnSpin" aria-pressed="true">Kamera berputar</button>
-  </div>
+  <p class="hint">Seret untuk memutar &middot; scroll untuk zoom &middot; klik agent untuk detail</p>
   </div>
 </div>
 
 <aside class="info" id="info" hidden aria-labelledby="infoRole">
   <header>
-    <span class="dot" id="infoDot"></span>
+    <span class="avatar" id="infoDot" aria-hidden="true"></span>
     <div><h2 id="infoRole">Agent</h2><div class="agent" id="infoAgent"></div></div>
     <button class="close" id="infoClose" aria-label="Tutup detail agent">×</button>
   </header>
@@ -287,7 +341,7 @@
 
 <aside class="info" id="tinfo" hidden aria-labelledby="tTitle">
   <header>
-    <span class="dot" id="tDot"></span>
+    <span class="avatar" id="tDot" aria-hidden="true"></span>
     <div><h2 id="tTitle">Tiket</h2><div class="agent" id="tSub"></div></div>
     <button class="close" id="tClose" aria-label="Tutup detail tiket">×</button>
   </header>
@@ -296,7 +350,7 @@
 
 <aside class="info" id="metrics" hidden aria-labelledby="mTitle">
   <header>
-    <span class="dot" style="background: var(--btn)"></span>
+    <span class="avatar" style="background: var(--btn)" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
     <div><h2 id="mTitle">Metrik tim</h2><div class="agent" id="mSub"></div></div>
     <button class="close" id="mClose" aria-label="Tutup metrik">×</button>
   </header>
@@ -345,15 +399,26 @@
   controls.autoRotate = !reduceMotion;
   controls.autoRotateSpeed = 0.35;
 
+  // camera distance for the whole office (n = -1) or one storey; narrow screens step back to fit the width
+  function viewDist(n, aspect) {
+    aspect = aspect || stage.clientWidth / stage.clientHeight;
+    const base = n < 0 ? 66 : 46;
+    return base * Math.max(1, Math.min(2, 1.75 / aspect));
+  }
+  let distGoal = null;
   function placeCamera() {
     const aspect = stage.clientWidth / stage.clientHeight;
-    const dist = aspect < 1 ? 100 + (1 - aspect) * 60 : 76;
+    const dist = viewDist(-1, aspect);
     camera.position.copy(new THREE.Vector3(1, 0.8, 1).normalize().multiplyScalar(dist)).add(controls.target);
   }
   function resize() {
     const w = stage.clientWidth, h = stage.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
+    // on wide screens the open panel covers the left; shift the picture right so the office sits beside it
+    const pn = document.getElementById('panel');
+    const shift = pn && w > 1000 && !pn.classList.contains('collapsed') ? Math.round((pn.offsetWidth + 16) / 2) : 0;
+    if (shift) camera.setViewOffset(w, h, -shift, 0, w, h); else camera.clearViewOffset();
     camera.updateProjectionMatrix();
   }
   resize(); placeCamera();
@@ -440,16 +505,48 @@
   let focus = -1, targetY = 6, targetX = 0, targetZ = 0;
   function shown(y) { return focus < 0 || y < FY[focus] + FLOOR_H - 0.6; }
 
+  // Floor finishes drawn once on a canvas: oak planks on the ground floor, large tiles upstairs.
+  // Each slab piece gets its own repeat so a plank or tile has the same size everywhere.
+  const floorTex = [0, 1, 2].map(function (k) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+    const x = cv.getContext('2d');
+    if (k === 0) {
+      const tones = ['#d9bf8f', '#d3b784', '#dcc496', '#cfb07c'];
+      for (let r = 0; r < 8; r++) {
+        const off = (r % 2) * 128;
+        for (let c = -1; c < 2; c++) {
+          x.fillStyle = tones[(r * 3 + c + 4) % 4]; x.fillRect(off + c * 256, r * 32, 256, 32);
+          x.fillStyle = 'rgba(90, 60, 30, 0.35)'; x.fillRect(off + c * 256, r * 32, 2, 32);
+        }
+        x.fillStyle = 'rgba(90, 60, 30, 0.3)'; x.fillRect(0, r * 32, 256, 1.5);
+        x.strokeStyle = 'rgba(120, 85, 45, 0.12)'; x.lineWidth = 1;
+        for (let l = 0; l < 3; l++) { x.beginPath(); x.moveTo(0, r * 32 + 8 + l * 8); x.bezierCurveTo(80, r * 32 + 4 + l * 9, 170, r * 32 + 14 + l * 7, 256, r * 32 + 9 + l * 8); x.stroke(); }
+      }
+    } else {
+      x.fillStyle = k === 1 ? '#cbc4b4' : '#c2c7cf'; x.fillRect(0, 0, 256, 256);
+      for (let i = 0; i < 40; i++) { x.fillStyle = 'rgba(0, 0, 0, 0.025)'; x.fillRect(rand() * 256, rand() * 256, 2 + rand() * 6, 1 + rand() * 2); }
+      x.fillStyle = 'rgba(60, 60, 60, 0.35)'; x.fillRect(0, 0, 256, 3); x.fillRect(0, 0, 3, 256);
+    }
+    const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+    return t;
+  });
+  function floorPiece(k, w, d, x, y, z, o) {
+    const t = floorTex[k].clone(); t.needsUpdate = true;
+    const tile = k === 0 ? 4 : 1.6;
+    t.repeat.set(w / tile, d / tile);
+    const m = box(w, 0.3, d, 0, x, y, z, Object.assign({ material: new THREE.MeshStandardMaterial({ map: t, roughness: k === 0 ? 0.7 : 0.45 }) }, o));
+    return m;
+  }
   function slab(k) {
-    const g = floors[k], y = FY[k] - 0.15, h = HOLE[k], col = [0xd6bd8c, 0xd2c7ae, 0xc9cfd6][k];
+    const g = floors[k], y = FY[k] - 0.15, h = HOLE[k];
     const o = { parent: g, cast: false };
-    if (!h) box(BX1 - BX0, 0.3, BZ1 - BZ0, col, (BX0 + BX1) / 2, y, 0, o);
+    if (!h) floorPiece(k, BX1 - BX0, BZ1 - BZ0, (BX0 + BX1) / 2, y, 0, o);
     else {
       const z0 = -3.4, z1 = 7.6;
-      box(h.x0 - BX0, 0.3, BZ1 - BZ0, col, (BX0 + h.x0) / 2, y, 0, o);
-      box(BX1 - h.x1, 0.3, BZ1 - BZ0, col, (h.x1 + BX1) / 2, y, 0, o);
-      box(h.x1 - h.x0, 0.3, z0 - BZ0, col, (h.x0 + h.x1) / 2, y, (BZ0 + z0) / 2, o);
-      box(h.x1 - h.x0, 0.3, BZ1 - z1, col, (h.x0 + h.x1) / 2, y, (z1 + BZ1) / 2, o);
+      floorPiece(k, h.x0 - BX0, BZ1 - BZ0, (BX0 + h.x0) / 2, y, 0, o);
+      floorPiece(k, BX1 - h.x1, BZ1 - BZ0, (h.x1 + BX1) / 2, y, 0, o);
+      floorPiece(k, h.x1 - h.x0, z0 - BZ0, (h.x0 + h.x1) / 2, y, (BZ0 + z0) / 2, o);
+      floorPiece(k, h.x1 - h.x0, BZ1 - z1, (h.x0 + h.x1) / 2, y, (z1 + BZ1) / 2, o);
     }
     box(BX1 - BX0 + 0.1, 0.3, 0.14, C.trim, (BX0 + BX1) / 2, y, BZ1 + 0.02, o);
     box(0.14, 0.3, BZ1 - BZ0, C.trim, BX1 + 0.02, y, 0, o);
@@ -490,82 +587,111 @@
   const HAIR = [0x2b1d14, 0x3a2a1e, 0x1a1410, 0x5a3a22];
   const PANTS = [0x2b2d42, 0x3d5a80, 0x5c4033, 0x8d99ae];
 
-  // People: shoes, belt, tapered torso, neck, face (eyes, brows, nose, mouth, ears), hair styles,
-  // optional beard, glasses, tie, ID card, and a hijab that frames the face. Pivots stay where the
-  // poses expect them: legs at the hip, arms at the shoulder, the hand 0.75 below the shoulder.
+  // Smooth (not flat-shaded) materials and shared geometries for people, so a crowd stays cheap
+  const smatCache = {}, geoCache = {};
+  function smat(color, rough, side) {
+    const k = color + ':' + (rough || 0.7) + ':' + (side || 0);
+    if (!smatCache[k]) smatCache[k] = new THREE.MeshStandardMaterial({ color: color, roughness: rough || 0.7, metalness: 0, side: side || THREE.FrontSide });
+    return smatCache[k];
+  }
+  function geo(key, make) { return geoCache[key] || (geoCache[key] = make()); }
+  function part(g, geom, material, x, y, z, o) {
+    const m = new THREE.Mesh(geom, material);
+    m.position.set(x, y, z);
+    if (o && o.s) m.scale.set(o.s[0], o.s[1], o.s[2]);
+    if (o && o.r) m.rotation.set(o.r[0], o.r[1], o.r[2]);
+    m.castShadow = !!(o && o.cast);
+    g.add(m);
+    return m;
+  }
+  const SPHERE = function (r) { return geo('s' + r, function () { return new THREE.SphereGeometry(r, 20, 14); }); };
+  // a slice of a sphere: phi runs around the vertical axis (PI/2 is the face, +z), theta down from the crown
+  const SHELL = function (r, p0, pl, t0, tl) { return geo(['h', r, p0, pl, t0, tl].join(), function () { return new THREE.SphereGeometry(r, 24, 16, p0, pl, t0, tl); }); };
+  const TUBE = function (rt, rb, h) { return geo(['c', rt, rb, h].join(), function () { return new THREE.CylinderGeometry(rt, rb, h, 16); }); };
+
+  // People with human proportions: rounded torso and limbs, shoes, belt, a face with eyes, irises, brows,
+  // nose, lips and ears, per-person hair styles, beard, glasses, tie, ID card, and a hijab that frames the
+  // face. Pivots stay where the poses expect them: legs at the hip, arms at the shoulder, hand 0.72 below it.
   function makePerson(o) {
     const g = new THREE.Group();
-    const hip = 0.95, hair = o.hair, skin = o.skin, dark = 0x1a1410;
-    const o2 = function (extra) { const r = { parent: g, cast: false }; for (const k in extra) r[k] = extra[k]; return r; };
+    const hip = 0.95, hy = hip + 1.1;
+    const skin = smat(o.skin, 0.55), shirt = smat(o.shirt, 0.75), pants = smat(o.pants, 0.8);
+    const hairM = smat(o.hair || 0x2b1d14, 0.85), dark = smat(0x1a1410, 0.4), white = smat(0xfbfaf6, 0.35);
     function limb(px, py) { const p = new THREE.Group(); p.position.set(px, py, 0); g.add(p); return p; }
-    // legs: trousers + shoes
-    const legL = limb(0.14, hip), legR = limb(-0.14, hip);
+
+    // legs: tapered trousers and rounded shoes
+    const legL = limb(0.12, hip), legR = limb(-0.12, hip);
     [legL, legR].forEach(function (leg) {
-      box(0.22, 0.8, 0.24, o.pants, 0, -0.4, 0, { parent: leg });
-      box(0.23, 0.11, 0.34, o.shoes || 0x2a2320, 0, -0.85, 0.05, { parent: leg });
+      part(leg, TUBE(0.11, 0.08, 0.84), pants, 0, -0.42, 0, { cast: true });
+      part(leg, SPHERE(0.1), smat(o.shoes || 0x2a2320, 0.45), 0, -0.86, 0.06, { s: [0.95, 0.55, 1.7] });
     });
-    // hips, belt, torso, collar
-    box(0.52, 0.16, 0.28, o.pants, 0, hip + 0.02, 0, { parent: g });
-    box(0.54, 0.05, 0.3, 0x3b2a1e, 0, hip + 0.1, 0, o2());
-    box(0.5, 0.34, 0.28, o.shirt, 0, hip + 0.28, 0, { parent: g });
-    box(0.62, 0.36, 0.32, o.shirt, 0, hip + 0.6, 0, { parent: g });
-    if (!o.hijab) box(0.26, 0.07, 0.06, o.collar || 0xf7f5ef, 0, hip + 0.8, 0.15, o2());
-    if (o.tie) box(0.08, 0.42, 0.02, o.tie, 0, hip + 0.56, 0.165, o2());
-    else if (!o.hijab) box(0.05, 0.3, 0.02, 0xf7f5ef, 0, hip + 0.62, 0.162, o2({ material: undefined }));
-    if (o.card) { box(0.13, 0.17, 0.02, 0xf7f5ef, 0.15, hip + 0.48, 0.17, o2()); box(0.13, 0.04, 0.021, o.card, 0.15, hip + 0.55, 0.172, o2()); }
-    // arms: sleeves + hands (long sleeves, office style)
-    const armL = limb(0.38, hip + 0.74), armR = limb(-0.38, hip + 0.74);
+    // pelvis, belt, torso with rounded chest and shoulders
+    part(g, TUBE(0.2, 0.21, 0.22), pants, 0, hip + 0.02, 0, { s: [1, 1, 0.7], cast: true });
+    part(g, TUBE(0.205, 0.205, 0.05), smat(0x3b2a1e, 0.5), 0, hip + 0.12, 0, { s: [1, 1, 0.72] });
+    part(g, TUBE(0.25, 0.2, 0.6), shirt, 0, hip + 0.43, 0, { s: [1, 1, 0.64], cast: true });
+    part(g, SPHERE(0.25), shirt, 0, hip + 0.72, 0, { s: [1.12, 0.36, 0.66] });
+    if (!o.hijab) {
+      [1, -1].forEach(function (sd) { part(g, geo('collar', function () { return new THREE.BoxGeometry(0.11, 0.05, 0.02); }), smat(o.collar || 0xf7f5ef, 0.6), sd * 0.055, hip + 0.79, 0.135, { r: [0.25, 0, sd * 0.55] }); });
+      if (o.tie) {
+        part(g, geo('tie', function () { return new THREE.BoxGeometry(0.07, 0.4, 0.015); }), smat(o.tie, 0.5), 0, hip + 0.56, 0.152, { r: [-0.08, 0, 0] });
+        part(g, SPHERE(0.035), smat(o.tie, 0.5), 0, hip + 0.76, 0.15, { s: [1, 0.8, 0.6] });
+      } else part(g, geo('placket', function () { return new THREE.BoxGeometry(0.03, 0.42, 0.01); }), smat(0xf7f5ef, 0.6), 0, hip + 0.55, 0.151);
+    }
+    if (o.card) {
+      part(g, geo('card', function () { return new THREE.BoxGeometry(0.12, 0.16, 0.012); }), smat(0xf7f5ef, 0.4), 0.13, hip + 0.47, 0.158);
+      part(g, geo('cardband', function () { return new THREE.BoxGeometry(0.12, 0.035, 0.013); }), smat(o.card, 0.5), 0.13, hip + 0.53, 0.159);
+    }
+    // arms: sleeve, cuff, hand
+    const armL = limb(0.3, hip + 0.7), armR = limb(-0.3, hip + 0.7);
     [armL, armR].forEach(function (arm) {
-      box(0.16, 0.66, 0.18, o.shirt, 0, -0.33, 0, { parent: arm });
-      box(0.17, 0.05, 0.19, o.cuff || o.shirt, 0, -0.64, 0, { parent: arm, cast: false });
-      box(0.13, 0.14, 0.15, skin, 0, -0.74, 0.01, { parent: arm });
+      part(arm, SPHERE(0.074), shirt, -Math.sign(arm.position.x) * 0.01, -0.015, 0, { s: [1.05, 0.9, 1] });   // shoulder, moves with the arm
+      arm.rotation.z = Math.sign(arm.position.x) * 0.05;                                 // arms hang slightly away from the body
+      part(arm, TUBE(0.074, 0.06, 0.34), shirt, 0, -0.17, 0, { cast: true });          // upper arm
+      part(arm, TUBE(0.06, 0.05, 0.3), shirt, 0, -0.47, 0.01, { cast: true });          // forearm
+      part(arm, TUBE(0.054, 0.054, 0.04), smat(o.cuff || o.shirt, 0.7), 0, -0.62, 0.01);
+      part(arm, SPHERE(0.052), skin, 0, -0.69, 0.015, { s: [0.75, 1.3, 0.55] });
     });
-    // neck + head
-    cyl(0.085, 0.095, 0.14, 8, skin, 0, hip + 0.86, 0, { parent: g });
-    const hy = hip + 1.13;
-    box(0.4, 0.44, 0.4, skin, 0, hy, 0, { parent: g });
-    box(0.05, 0.1, 0.08, skin, 0.215, hy, 0, o2());
-    box(0.05, 0.1, 0.08, skin, -0.215, hy, 0, o2());
-    // face
-    [0.095, -0.095].forEach(function (ex) {
-      box(0.09, 0.055, 0.015, 0xffffff, ex, hy + 0.03, 0.2, o2());
-      box(0.045, 0.05, 0.016, dark, ex, hy + 0.03, 0.208, o2());
-      box(0.11, 0.025, 0.02, o.hijab ? 0x2b1d14 : hair, ex, hy + 0.1, 0.205, o2());
+    // neck and head
+    part(g, TUBE(0.07, 0.08, 0.18), skin, 0, hip + 0.84, 0);
+    part(g, SPHERE(0.19), skin, 0, hy + 0.01, -0.005, { s: [0.9, 1.08, 0.98], cast: true });
+    part(g, SPHERE(0.13), skin, 0, hy - 0.09, 0.045, { s: [0.95, 0.85, 0.95] });        // jaw and chin
+    [0.172, -0.172].forEach(function (ex) { part(g, SPHERE(0.042), skin, ex, hy - 0.01, -0.01, { s: [0.45, 1, 0.8] }); });
+    // face: eyes with irises, brows, nose, lips
+    [0.068, -0.068].forEach(function (ex) {
+      part(g, SPHERE(0.026), white, ex * 0.92, hy + 0.025, 0.158, { s: [1.2, 0.68, 0.45] });
+      part(g, SPHERE(0.014), dark, ex * 0.92, hy + 0.025, 0.169, { s: [1, 1, 0.5] });
+      part(g, geo('brow', function () { return new THREE.BoxGeometry(0.062, 0.013, 0.018); }), o.hijab ? smat(0x2b1d14, 0.85) : hairM, ex * 0.92, hy + 0.068, 0.162, { r: [0, 0, ex > 0 ? -0.1 : 0.1] });
     });
-    box(0.05, 0.08, 0.05, skin, 0, hy - 0.03, 0.22, o2());
-    box(0.12, 0.025, 0.015, 0x9a4f45, 0, hy - 0.12, 0.202, o2());
+    part(g, SPHERE(0.026), skin, 0, hy - 0.022, 0.18, { s: [0.7, 1.35, 1.15] });
+    part(g, geo('lips', function () { return new THREE.TorusGeometry(0.028, 0.0075, 6, 12, Math.PI * 0.7); }), smat(0xa8645a, 0.5), 0, hy - 0.083, 0.165, { r: [0.1, 0, Math.PI * 1.15] });
     if (o.glasses) {
-      [0.095, -0.095].forEach(function (ex) {
-        box(0.13, 0.015, 0.012, 0x22262c, ex, hy + 0.065, 0.214, o2());
-        box(0.13, 0.015, 0.012, 0x22262c, ex, hy - 0.005, 0.214, o2());
-        box(0.012, 0.08, 0.012, 0x22262c, ex - 0.065, hy + 0.03, 0.214, o2());
-        box(0.012, 0.08, 0.012, 0x22262c, ex + 0.065, hy + 0.03, 0.214, o2());
+      const fr = smat(0x22262c, 0.3);
+      [0.068, -0.068].forEach(function (ex) {
+        part(g, geo('lens', function () { return new THREE.TorusGeometry(0.036, 0.0055, 6, 18); }), fr, ex * 0.92, hy + 0.025, 0.178);
+        part(g, geo('temple', function () { return new THREE.BoxGeometry(0.006, 0.006, 0.18); }), fr, ex > 0 ? 0.162 : -0.162, hy + 0.035, 0.09);
       });
-      box(0.06, 0.015, 0.012, 0x22262c, 0, hy + 0.04, 0.214, o2());
+      part(g, geo('bridge', function () { return new THREE.BoxGeometry(0.04, 0.006, 0.006); }), fr, 0, hy + 0.035, 0.18);
     }
     if (o.hijab) {
-      // a wrap that frames the face, falls over the shoulders, and covers the hair
-      box(0.48, 0.5, 0.34, o.hijab, 0, hy + 0.04, -0.06, { parent: g });
-      box(0.48, 0.09, 0.44, o.hijab, 0, hy + 0.26, 0, { parent: g });
-      box(0.05, 0.48, 0.38, o.hijab, 0.235, hy - 0.01, 0.02, { parent: g });
-      box(0.05, 0.48, 0.38, o.hijab, -0.235, hy - 0.01, 0.02, { parent: g });
-      box(0.46, 0.14, 0.42, o.hijab, 0, hy - 0.27, 0.01, { parent: g });
-      box(0.7, 0.2, 0.4, o.hijab, 0, hip + 0.76, 0, { parent: g });
-      box(0.4, 0.28, 0.06, o.hijab, 0, hip + 0.58, 0.16, { parent: g });
+      // a wrap with an opening for the face, a band over the forehead, and a drape over neck and shoulders
+      const hj = smat(o.hijab, 0.85, THREE.DoubleSide), W = 1.9;
+      part(g, SHELL(0.215, Math.PI / 2 + W / 2, Math.PI * 2 - W, 0, Math.PI * 0.8), hj, 0, hy + 0.01, -0.01, { s: [0.97, 1.12, 1.02], cast: true });
+      part(g, SHELL(0.215, Math.PI / 2 - W / 2, W, 0, Math.PI * 0.27), hj, 0, hy + 0.01, -0.01, { s: [0.97, 1.12, 1.02] });
+      part(g, TUBE(0.15, 0.27, 0.3), hj, 0, hip + 0.83, 0.01, { s: [1, 1, 0.72], cast: true });
     } else {
       const style = o.style || 'short';
-      box(0.42, 0.1, 0.42, hair, 0, hy + 0.26, 0, { parent: g });
-      box(0.42, 0.3, 0.07, hair, 0, hy + 0.1, -0.2, o2());
-      box(0.05, 0.16, 0.36, hair, 0.205, hy + 0.15, -0.02, o2());
-      box(0.05, 0.16, 0.36, hair, -0.205, hy + 0.15, -0.02, o2());
-      if (style === 'side') box(0.24, 0.07, 0.12, hair, 0.08, hy + 0.3, 0.12, o2());
-      if (style === 'curly') for (let i = 0; i < 5; i++) box(0.12, 0.08, 0.12, hair, -0.16 + i * 0.08, hy + 0.32, (i % 2) * 0.1 - 0.05, o2());
-      if (style === 'quiff') box(0.3, 0.12, 0.14, hair, 0, hy + 0.33, 0.12, o2());
+      part(g, SHELL(0.2, 0, Math.PI * 2, 0, Math.PI * 0.4), hairM, 0, hy + 0.01, -0.005, { s: [1.0, 1.15, 1.04], cast: true });
+      part(g, SHELL(0.2, Math.PI, Math.PI, Math.PI * 0.3, Math.PI * 0.32), hairM, 0, hy, -0.008, { s: [1.0, 1.12, 1.04] });
+      if (style === 'side') part(g, SPHERE(0.09), hairM, 0.06, hy + 0.17, 0.11, { s: [1.5, 0.45, 0.9], r: [0, 0, -0.25] });
+      if (style === 'quiff') part(g, SPHERE(0.09), hairM, 0, hy + 0.16, 0.11, { s: [1.55, 0.6, 0.95] });
+      if (style === 'curly') for (let i = 0; i < 8; i++) {
+        const a = i / 8 * Math.PI * 2;
+        part(g, SPHERE(0.06), hairM, Math.cos(a) * 0.13, hy + 0.19, Math.sin(a) * 0.12 - 0.01);
+      }
       if (o.beard) {
-        box(0.4, 0.1, 0.06, hair, 0, hy - 0.17, 0.18, o2());
-        box(0.05, 0.22, 0.2, hair, 0.19, hy - 0.08, 0.1, o2());
-        box(0.05, 0.22, 0.2, hair, -0.19, hy - 0.08, 0.1, o2());
-        box(0.16, 0.03, 0.02, hair, 0, hy - 0.08, 0.205, o2());
+        part(g, SHELL(0.14, 0.05, Math.PI - 0.1, Math.PI * 0.42, Math.PI * 0.58), hairM, 0, hy - 0.09, 0.045, { s: [1.0, 0.9, 1.0] });
+        part(g, SHELL(0.196, 0.05, Math.PI - 0.1, Math.PI * 0.55, Math.PI * 0.2), hairM, 0, hy + 0.01, -0.005, { s: [0.92, 1.1, 1.0] });
+        part(g, geo('stache', function () { return new THREE.BoxGeometry(0.075, 0.016, 0.02); }), hairM, 0, hy - 0.058, 0.17);
       }
     }
     g.scale.setScalar(o.scale || 0.75);
@@ -576,6 +702,8 @@
 
 
   // ---------- Name labels (always face the camera) ----------
+  // every label sprite, so update() can keep them readable at any zoom (see scaleLabels)
+  const LABELS = [];
   function makeLabel(title, sub, color) {
     const cv = document.createElement('canvas');
     cv.width = 512; cv.height = 168;
@@ -601,8 +729,26 @@
     draw();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
-    sp.scale.set(3.6, 1.18, 1);
+    sp.scale.set(4.4, 1.44, 1);
+    LABELS.push(sp);
     return sp;
+  }
+  // Labels are placed by their centre; the first time one is seen it is re-anchored on its bottom tip, so growing
+  // it for a far camera pushes it up instead of over the agent's head. Then it scales with camera distance:
+  // small when zoomed in on a storey, larger from the overview, within limits.
+  function scaleLabels() {
+    const f = Math.max(0.85, Math.min(1.6, camera.position.distanceTo(controls.target) / 55));
+    for (let i = LABELS.length - 1; i >= 0; i--) {
+      const sp = LABELS[i];
+      if (!sp.parent) { LABELS.splice(i, 1); continue; }
+      if (!sp.userData.base) {
+        sp.userData.base = sp.scale.clone();
+        sp.center.set(0.5, 0);
+        sp.position.y -= sp.scale.y / 2;
+        Object.keys(ST).forEach(function (k) { if (ST[k].label === sp) ST[k].labelY -= sp.scale.y / 2; });
+      }
+      sp.scale.set(sp.userData.base.x * f, sp.userData.base.y * f, 1);
+    }
   }
 
   // ---------- Stations: one desk per agent, spread over three storeys ----------
@@ -615,8 +761,7 @@
     { key: 'be', name: 'Zayn',       role: 'Backend Dev',     agent: 'backend-developer',  color: 0x2f8a4e, extra: 'server', f: 1, x: -8,   z: -5, rot: 0 },
     { key: 'fe', name: 'Alya',       role: 'Frontend Dev',    agent: 'frontend-developer', color: 0x5aa83a, extra: 'plant',  f: 1, x: -1.5, z: -5, rot: 0 },
     { key: 'dev', name: 'Fathan',      role: 'Fullstack Dev',   agent: 'developer',          color: 0x2b7569, extra: 'plant',  f: 1, x: 5,    z: -5, rot: 0 },
-    { key: 'reviewer', name: 'Arkan', role: 'Reviewer',        agent: 'ticket-reviewer',    color: 0xc79a14, extra: 'dual',   f: 2, x: -6,   z: -5, rot: 0 },
-    { key: 'qa', name: 'Naura',       role: 'QA',              agent: 'qa-tester',          color: 0xd9682a, extra: 'rack',   f: 2, x: 2,    z: -5, rot: 0 }
+    { key: 'reviewer', name: 'Arkan', role: 'Reviewer + QA',   agent: 'ticket-reviewer',    color: 0xc79a14, extra: 'dual',   f: 2, x: -2.5, z: -5, rot: 0, rack: true }
   ];
   const ST = {};
   // How each agent looks: skin, hair style, beard, glasses, hijab colour
@@ -629,7 +774,6 @@
     fe:       { skin: 0xe8b894, hijab: 0xe9b9c3, pants: 0x8d99ae },
     dev:      { skin: 0x8d5a3b, hair: 0x1a1410, style: 'short', beard: true, pants: 0x5c4033 },
     reviewer: { skin: 0xc68e66, hair: 0x2b1d14, style: 'side', beard: true, glasses: true, pants: 0x2b2d42 },
-    qa:       { skin: 0xd9a47c, hijab: 0x2e3a59, pants: 0x3d5a80 },
     em:       { skin: 0xb67a52, hair: 0x2b1d14, style: 'short', beard: true, pants: 0x2b2d42 }
   };
   ['Produk & Arsitektur', 'Engineering', 'Quality'].forEach(function (name, k) {
@@ -693,12 +837,13 @@
     } else if (a.extra === 'server') {
       box(0.8, 1.8, 0.7, 0x2a2f36, 1.9, 0.9, -0.6, { parent: g });
       for (let s = 0; s < 5; s++) box(0.04, 0.06, 0.04, 0, 1.6, 0.4 + s * 0.3, -0.24, { parent: g, cast: false, material: lampMat });
-    } else if (a.extra === 'rack') {
+    }
+    if (a.rack) {
+      // test rack: its light shows the last verification result (green pass, red fail)
       box(1, 1.3, 0.6, 0x55606e, 1.9, 0.65, -0.5, { parent: g });
       a.qaLight = new THREE.MeshStandardMaterial({ color: 0x3a3f46, emissive: 0x3a3f46, emissiveIntensity: 0.6, flatShading: true });
       box(0.3, 0.3, 0.3, 0, 1.9, 1.45, -0.5, { parent: g, material: a.qaLight });
-    }
-    if (a.extra === 'plant' || a.extra === 'dual') plant(g, 1.8, -0.6);
+    } else if (a.extra === 'plant' || a.extra === 'dual') plant(g, 1.8, -0.6);
 
     // the agent at the desk, seated
     const look = LOOKS[a.key] || {};
@@ -755,7 +900,7 @@
     box(0.8, 0.6, 0.22, 0x6b8f71, x - 3.4, y + 0.45, z - 1.25, { parent: g });
     box(0.8, 0.6, 0.22, 0x6b8f71, x - 3.4, y + 0.45, z + 1.25, { parent: g });
     const sign = makeLabel('Ruang ngopi', 'untuk semua lantai', 0x6b4430);
-    sign.position.set(x, y + 3.1, z + 2.0); sign.scale.set(3.0, 0.98, 1);
+    sign.position.set(x, y + 3.1, z + 2.0); sign.scale.set(3.8, 1.24, 1);
     g.add(sign);
   });
 
@@ -783,7 +928,45 @@
     box(0.05, 1.2, 1.6, C.white, x + 2.45, y + 1.4, z, { parent: g });                // small whiteboard
     box(0.06, 0.06, 1.6, 0x3b4048, x + 2.45, y + 2.02, z, { parent: g, cast: false });
     const sign = makeLabel('Ruang rapat', 'tiket HOLD', 0x3d5a80);
-    sign.position.set(x, y + 3.1, z + 1.7); sign.scale.set(3.0, 0.98, 1); g.add(sign);
+    sign.position.set(x, y + 3.1, z + 1.7); sign.scale.set(3.8, 1.24, 1); g.add(sign);
+  })();
+
+  // Ruang uji (floor 3, beside the reviewer): where tickets are verified with DB-free tests. The CI board and the
+  // reviewer's rack light share one material, so both turn green on APPROVED and red on CHANGES_REQUESTED.
+  (function buildTestLab() {
+    const g = floors[2], y = FY[2], x = 4.2, z = -7.2;
+    const ciLight = AGENTS.find(function (a) { return a.key === 'reviewer'; }).qaLight;
+    const rug = new THREE.Mesh(new THREE.BoxGeometry(7.4, 0.03, 4.6), new THREE.MeshStandardMaterial({ color: 0xc79a14, roughness: 0.95, transparent: true, opacity: 0.25 }));
+    rug.position.set(x, y + 0.02, z + 0.4); rug.receiveShadow = true; g.add(rug);
+    // CI board on the back wall: a frame, three rows of test bars, and the shared result light
+    box(4.6, 2.0, 0.08, 0x2a2f36, x, y + 2.35, BZ0 + 0.2, { parent: g });
+    box(4.4, 1.8, 0.02, 0x1d2530, x, y + 2.35, BZ0 + 0.25, { parent: g, cast: false });
+    [[0x5bd17a, 0x5bd17a, 0x5bd17a, 0x5bd17a], [0x5bd17a, 0x5bd17a, 0xe0b12f, 0x5bd17a], [0x5bd17a, 0x8fd3f4, 0x5bd17a, 0x5bd17a]].forEach(function (row, r) {
+      row.forEach(function (c, i) { box(0.7, 0.22, 0.02, c, x - 1.6 + i * 0.85, y + 2.85 - r * 0.42, BZ0 + 0.27, { parent: g, cast: false }); });
+    });
+    if (ciLight) box(3.6, 0.18, 0.03, 0, x - 0.2, y + 1.65, BZ0 + 0.27, { parent: g, cast: false, material: ciLight });
+    // test bench with two laptops and a stool
+    box(4.2, 0.08, 0.9, 0xb88a5a, x, y + 0.85, z - 1.2, { parent: g });
+    for (const sx of [-2, 2]) box(0.08, 0.85, 0.8, 0x5c4a3a, x + sx, y + 0.42, z - 1.2, { parent: g });
+    [-1.1, 1.1].forEach(function (lx) {
+      box(0.6, 0.03, 0.42, 0x2a2f36, x + lx, y + 0.9, z - 1.1, { parent: g, cast: false });
+      box(0.6, 0.4, 0.03, 0x2a2f36, x + lx, y + 1.1, z - 1.33, { parent: g, cast: false }).rotation.x = 0.2;
+    });
+    cyl(0.28, 0.28, 0.08, 12, 0x3b4048, x - 1.1, y + 0.6, z - 0.3, { parent: g });
+    cyl(0.05, 0.05, 0.56, 6, 0x3b4048, x - 1.1, y + 0.3, z - 0.3, { parent: g });
+    // two server racks with status lamps
+    [x + 3.0, x + 3.9].forEach(function (rx) {
+      box(0.8, 2.0, 0.7, 0x2a2f36, rx, y + 1.0, BZ0 + 0.7, { parent: g });
+      for (let s = 0; s < 6; s++) box(0.05, 0.05, 0.04, 0, rx - 0.25, y + 0.4 + s * 0.28, BZ0 + 1.06, { parent: g, cast: false, material: lampMat });
+    });
+    // reference shelves in the back-left corner of the Quality floor
+    [-11.2, -9.0].forEach(function (sx) {
+      box(1.8, 2.2, 0.5, 0x8d6e63, sx, y + 1.1, BZ0 + 0.5, { parent: g });
+      for (let s = 0; s < 3; s++) for (let b = 0; b < 4; b++) box(0.3, 0.45, 0.32, pick([0xc79a14, 0x3b7fc4, 0x2f8a4e, 0xc8453a]), sx - 0.6 + b * 0.4, y + 0.42 + s * 0.68, BZ0 + 0.58, { parent: g, cast: false });
+    });
+    plant(g, -7.4, BZ0 + 0.9, y);
+    const sign = makeLabel('Ruang uji', 'test tanpa DB', 0xc79a14);
+    sign.position.set(x, y + 3.9, z + 0.6); sign.scale.set(3.8, 1.24, 1); g.add(sign);
   })();
 
   // ---------- Pantry (floor 1), toilets and musholla (floor 2), canteen (outside, east) ----------
@@ -888,14 +1071,14 @@
   const em = makePerson({ skin: LOOKS.em.skin, hair: LOOKS.em.hair, style: LOOKS.em.style, beard: true, shirt: 0x55606e, pants: LOOKS.em.pants, card: 0x55606e, parent: centre });
   em.userData.key = 'em';
   const emLabel = makeLabel('Hafiz', 'Eng. Manager', 0x55606e);
-  emLabel.position.set(0, 4.55, -1.2);
+  emLabel.position.set(0, 3.3, 0.3);
   centre.add(emLabel);
   const emGlow = new THREE.MeshBasicMaterial({ color: 0x55606e, transparent: true, opacity: 0 });
   const emRing = new THREE.Mesh(new THREE.RingGeometry(1.4, 1.62, 40), emGlow);
   emRing.rotation.x = -Math.PI / 2; emRing.position.set(0, 0.06, 0.2); centre.add(emRing);
   centre.updateMatrixWorld(true);
   ST.em = { a: { key: 'em', agent: 'feature-flow', color: 0x55606e }, g: centre, f: 0, person: em, glow: emGlow, screen: null,
-    work: centre.localToWorld(new THREE.Vector3(0, 2.2, 0.9)), label: emLabel, labelY: 4.55, standing: true };
+    work: centre.localToWorld(new THREE.Vector3(0, 2.2, 0.9)), label: emLabel, labelY: 3.3, standing: true };
 
   // ---------- Walking: corridors, stairs, and agents carrying tickets ----------
   const CORR_Z = 0.5, STAIR_X = 9.5, WALK_SPEED = 4.2;
@@ -941,6 +1124,22 @@
         [0.65, -1.2, Math.PI / 2], [0.65, 0.4, Math.PI / 2], [0.65, 2.0, Math.PI / 2], [2.15, -1.2, -Math.PI / 2], [2.15, 0.4, -Math.PI / 2]] }
   };
   PLACES.lounge.stay = [30, 60];
+  // Entry routes for rooms whose furniture blocks a straight walk from the corridor: each returns the points from
+  // the corridor (or the place's `via`) up to, but not including, the spot.
+  PLACES.meeting.approach = function (s, y) {          // back-row chairs: round the left side, then along the back
+    if (s.z <= MEETING.z + 0.1) return [V(s.x, y, CORR_Z)];
+    const ex = MEETING.x - 2.3, bz = MEETING.z + 1.7;
+    return [V(ex, y, CORR_Z), V(ex, y, bz), V(s.x, y, bz)];
+  };
+  PLACES.kantin.approach = function (s, y) {           // in front of the tables, then up the nearest aisle
+    const az = KANTIN.z - 3.2;
+    const ax = [16.1, 18.7, 21.09].reduce(function (b, a) { return Math.abs(a - s.x) < Math.abs(b - s.x) ? a : b; });
+    return [V(14.8, y, az), V(ax, y, az), V(ax, y, s.z)];
+  };
+  PLACES.musholla.approach = function (s, y) {         // in past the partition, behind the wudhu tap and shoe rack
+    const bz = MUSHOLLA.z + 1.7;
+    return [V(9.3, y, CORR_Z), V(9.3, y, bz), V(s.x, y, bz)];
+  };
   function takeSpot(pl, only) {
     for (let i = 0; i < pl.spots.length; i++) if (!pl.taken[i] && (only == null || only === i)) { pl.taken[i] = true; return i; }
     return -1;
@@ -953,6 +1152,7 @@
     (pl.via || []).forEach(function (v) { pts.push(V(v[0], v[1], v[2])); });
     const yL = pl.y != null ? pl.y : FY[L];
     if (pl.hide) { pts.push(V(spot.x, yL, CORR_Z), V(spot.x, yL, spot.z)); return pts; }   // straight through the door
+    if (pl.approach) { pts.push.apply(pts, pl.approach(spot, yL)); pts.push(spot); return pts; }
     const ax = spot.z > pl.z ? spot.x + (spot.x < pl.x ? -1.05 : 1.05) : spot.x;
     pts.push(V(ax, yL, CORR_Z));
     if (ax !== spot.x) pts.push(V(ax, yL, spot.z));
@@ -1172,7 +1372,7 @@
   ];
   // Demo tickets carry the same fields as live ones so detail, metrics and replay work on them too
   TICKETS.forEach(function (tk) { tk.project = 'demo'; tk.title = ''; tk.rounds = '0'; tk.last = ''; tk.ac = []; tk.riw = []; tk.hist = []; });
-  const COLS = ['TODO', 'IN_PROGRESS', 'REVIEW', 'QA', 'BUG', 'HOLD', 'DONE'];
+  const COLS = ['TODO', 'IN_PROGRESS', 'REVIEW', 'BUG', 'HOLD', 'DONE'];
   // s: station, t: ticket index (null = document), st: status shown/applied at start, after: status after the step
   const SCRIPT = [
     { s: 'pm', t: null, st: 'PRD', w: 'Menyusun 6 pertanyaan klarifikasi untuk user' },
@@ -1184,20 +1384,17 @@
     { s: 'be', t: 0, st: 'IN_PROGRESS', w: 'Test RED dulu, lalu implementasi endpoint GR' },
     { s: 'reviewer', t: 0, st: 'REVIEW', w: 'CHANGES_REQUESTED: helper getOutstandingQty belum dipakai', after: 'IN_PROGRESS' },
     { s: 'be', t: 0, st: 'IN_PROGRESS', w: 'Revisi: pakai helper yang sudah ada' },
-    { s: 'reviewer', t: 0, st: 'REVIEW', w: 'APPROVED' },
-    { s: 'qa', t: 0, st: 'QA', w: 'PASS: 4/4 AC, test positif, negatif, dan batas', qa: 'pass' },
+    { s: 'reviewer', t: 0, st: 'REVIEW', w: 'APPROVED: 4/4 AC, test positif, negatif, dan batas (repository di-mock)', qa: 'pass' },
     { s: 'em', t: 0, st: 'DONE', w: 'Commit "WMS-BE-004: Validasi outstanding qty"' },
-    { s: 'fe', t: 1, st: 'IN_PROGRESS', w: 'Form Goods Receipt sesuai Kontrak API WMS-BE-004' },
-    { s: 'reviewer', t: 1, st: 'REVIEW', w: 'APPROVED' },
-    { s: 'qa', t: 1, st: 'QA', w: 'FAIL: pesan error 422 tidak tampil di form', after: 'BUG', qa: 'fail' },
-    { s: 'fe', t: 1, st: 'BUG', w: 'debug-assistant: tampilkan QTY_EXCEEDS_OUTSTANDING', after: 'IN_PROGRESS' },
-    { s: 'reviewer', t: 1, st: 'REVIEW', w: 'APPROVED' },
-    { s: 'qa', t: 1, st: 'QA', w: 'PASS: diuji bersama BE yang sudah DONE', qa: 'pass' },
+    { s: 'fe', t: 1, st: 'IN_PROGRESS', w: 'Form Goods Receipt, API di-mock dari Kontrak API WMS-BE-004' },
+    { s: 'reviewer', t: 1, st: 'REVIEW', w: 'CHANGES_REQUESTED: pesan error 422 tidak tampil di form', after: 'IN_PROGRESS', qa: 'fail' },
+    { s: 'fe', t: 1, st: 'IN_PROGRESS', w: 'Revisi: tampilkan QTY_EXCEEDS_OUTSTANDING' },
+    { s: 'reviewer', t: 1, st: 'REVIEW', w: 'APPROVED: mock cocok dengan kontrak, error state lulus', qa: 'pass' },
     { s: 'em', t: 1, st: 'DONE', w: 'Commit "WMS-FE-002: Form Goods Receipt"' },
     { s: 'dev', t: 2, st: 'IN_PROGRESS', w: 'Perbaiki format tanggal di laporan stok' },
-    { s: 'reviewer', t: 2, st: 'REVIEW', w: 'APPROVED' },
-    { s: 'qa', t: 2, st: 'QA', w: 'PASS: 2/2 AC', qa: 'pass' },
+    { s: 'reviewer', t: 2, st: 'REVIEW', w: 'APPROVED: 2/2 AC', qa: 'pass' },
     { s: 'em', t: 2, st: 'DONE', w: 'Commit "FIX-007: Format tanggal laporan"' },
+    { s: 'em', t: null, st: 'CEK_AKHIR', w: 'Cek akhir: typecheck, lint, test penuh, lalu test integrasi DB + E2E sekali' },
     { s: 'cto', t: null, st: 'SIGN_OFF', w: 'Sign-off akhir seluruh branch: siap PR' },
     { s: 'em', t: null, st: 'PR', w: 'Push feat/wms-gr dan buka PR' }
   ];
@@ -1263,6 +1460,7 @@
   const logStep = document.getElementById('logStep');
   const logWho = document.getElementById('logWho');
   const logWhat = document.getElementById('logWhat');
+  const logProgress = document.getElementById('logProgress'), logBar = document.getElementById('logBar');
 
   const WORK = 2.7;
   let stepIdx = -1, stepT = 0, to = ST.pm.work.clone(), active = null, phase = 'PRD', waiting = false, curKey = null;
@@ -1288,16 +1486,17 @@
       color = tk.color;
       phase = 'Ticket loop';
     } else {
-      phase = step.st === 'SIGN_OFF' || step.st === 'PR' ? 'Stage 6' : step.st === 'TIKET' ? 'Stage 4' : step.st === 'BRD' ? 'Stage 3' : step.st === 'GO_WITH_NOTES' ? 'Stage 2b' : 'Stage 1-2';
+      phase = step.st === 'SIGN_OFF' || step.st === 'PR' || step.st === 'CEK_AKHIR' ? 'Stage 6' : step.st === 'TIKET' ? 'Stage 4' : step.st === 'BRD' ? 'Stage 3' : step.st === 'GO_WITH_NOTES' ? 'Stage 2b' : 'Stage 1-2';
     }
     stripeMat.color.setHex(color); stripeMat.emissive.setHex(color);
-    if (ST.qa.a.qaLight) {
+    if (ST.reviewer.a.qaLight) {
       const c = step.qa === 'pass' ? 0x5bd17a : step.qa === 'fail' ? 0xe5484d : 0x3a3f46;
-      ST.qa.a.qaLight.color.setHex(c); ST.qa.a.qaLight.emissive.setHex(c);
+      ST.reviewer.a.qaLight.color.setHex(c); ST.reviewer.a.qaLight.emissive.setHex(c);
     }
     drawBoard(phase);
     logStatus.textContent = (step.t !== null ? TICKETS[step.t].id + ' · ' : '') + step.st;
     logStep.textContent = (i + 1) + ' / ' + SCRIPT.length;
+    logProgress.hidden = false; logBar.style.width = ((i + 1) / SCRIPT.length * 100) + '%';
     to = station.work.clone();
     function begin() {
       waiting = false; stepT = 0; active = station;
@@ -1347,10 +1546,8 @@
       skills: ['ticket-implementation', 'coding-standards', 'debug-assistant'], tools: 'Read, Write, Edit, Bash, Glob, Grep', model: 'Model sesi (Sonnet untuk tiket simple)', code: 'Ya, hanya file di File/Lokasi', verdict: 'READY_FOR_REVIEW atau BLOCKED' },
     dev: { desc: 'Developer fullstack untuk tiket tanpa layer: monolith, mobile, script, konfigurasi, atau tiket lama.',
       skills: ['ticket-implementation', 'coding-standards', 'debug-assistant'], tools: 'Read, Write, Edit, Bash, Glob, Grep', model: 'Model sesi (Sonnet untuk tiket simple)', code: 'Ya, hanya file di File/Lokasi', verdict: 'READY_FOR_REVIEW atau BLOCKED' },
-    reviewer: { desc: 'Senior reviewer. Mencocokkan perubahan dengan AC, Kontrak API, scope, reuse helper, kesederhanaan, efisiensi query, test, dan ADR.',
+    reviewer: { desc: 'Senior reviewer sekaligus QA. Mencocokkan perubahan dengan AC, Kontrak API, scope, reuse helper, kesederhanaan, efisiensi query, test, dan ADR, lalu membuktikannya dengan menjalankan test positif, negatif, dan batas tanpa database atau server (repository dan API di-mock). DB asli dan E2E dicek sekali di akhir.',
       skills: ['coding-standards'], tools: 'Read, Bash, Glob, Grep', model: 'Sonnet', code: 'Tidak, hanya laporan review', verdict: 'APPROVED, CHANGES_REQUESTED, atau BLOCKED' },
-    qa: { desc: 'QA engineer. Membuktikan tiket memenuhi AC dan Test Case dengan menjalankan test sungguhan: positif, negatif, dan batas.',
-      skills: ['ticket-workflow'], tools: 'Read, Bash, Glob, Grep', model: 'Sonnet', code: 'Tidak, bug dikembalikan ke developer', verdict: 'PASS, FAIL (bug report), atau BLOCKED' },
     em: { desc: 'Orkestrator. Bicara dengan user, memanggil agent sesuai urutan, dan satu-satunya yang memindahkan status tiket, menulis Riwayat, commit, dan membuka PR.',
       skills: ['feature-flow', 'ticket-workflow', 'project-profile'], tools: 'Semua tools sesi utama', model: 'Model sesi', code: 'Tidak menulis kode, hanya commit hasil tiket', verdict: 'Memindahkan status berdasarkan verdict agent' }
   };
@@ -1376,8 +1573,9 @@
   function renderInfoBody() {
     const s = ST[selected], d = INFO[selected], cur = SCRIPT[stepIdx];
     el('infoDot').style.background = hex(s.a.color);
-    el('infoRole').textContent = NAME[selected] + ' \u00b7 ' + ROLE[selected];
-    el('infoAgent').textContent = s.a.agent;
+    el('infoDot').textContent = NAME[selected].charAt(0);
+    el('infoRole').textContent = NAME[selected];
+    el('infoAgent').textContent = ROLE[selected] + ' · ' + s.a.agent;
     el('infoDesc').textContent = d.desc;
     const chips = el('infoSkills');
     chips.textContent = '';
@@ -1523,6 +1721,7 @@
     let status = f.status.toUpperCase();
     const lastTo = h.length ? h[h.length - 1][1] : '';
     if (lastTo && lastTo !== status && STATUSES.indexOf(lastTo) >= 0 && /\u2192|->/.test(hist[hist.length - 1])) status = lastTo;
+    if (status === 'QA') status = 'REVIEW'; // QA was folded into the reviewer in noskill 2.1
     return {
       id: f.id, title: f.title || '', status: status,
       layer: layer === 'be' || layer === 'fe' ? layer : '—', rounds: f.rounds || '0',
@@ -1537,8 +1736,7 @@
   // Which desk a ticket sits on, from its status (same mapping feature-flow uses)
   function stationFor(tk) {
     if (tk.status === 'IN_PROGRESS' || tk.status === 'BUG') return tk.layer === 'be' ? 'be' : tk.layer === 'fe' ? 'fe' : 'dev';
-    if (tk.status === 'REVIEW') return 'reviewer';
-    if (tk.status === 'QA') return 'qa';
+    if (tk.status === 'REVIEW' || tk.status === 'QA') return 'reviewer';
     if (tk.status === 'HOLD') return 'em';
     return null;
   }
@@ -1612,7 +1810,7 @@
   }
   // activity.json is written by feature-flow (noskill 1.11+) at every stage: who is working on what right now
   const AGENT_DESK = { 'product-manager': 'pm', 'cto': 'cto', 'brd-tracer': 'analyst', 'task-planner': 'lead', 'backend-developer': 'be',
-    'frontend-developer': 'fe', 'developer': 'dev', 'ticket-reviewer': 'reviewer', 'qa-tester': 'qa', 'feature-flow': 'em' };
+    'frontend-developer': 'fe', 'developer': 'dev', 'ticket-reviewer': 'reviewer', 'qa-tester': 'reviewer', 'feature-flow': 'em' };
   function parseActivity(text, project) {
     let a;
     try { a = JSON.parse(text); } catch (e) { return null; }
@@ -1695,7 +1893,7 @@
       if (!o || o.status === tk.status || (projFilter && tk.project !== projFilter)) return;
       const from = stationFor(o) || (o.status === 'TODO' ? 'lead' : null);
       const dest = stationFor(tk) || (tk.status === 'DONE' ? 'em' : null);
-      const say = tk.status === 'REVIEW' ? 'READY_FOR_REVIEW' : tk.status === 'QA' ? 'APPROVED' : tk.status === 'DONE' ? 'PASS' : tk.status === 'BUG' ? 'FAIL'
+      const say = tk.status === 'REVIEW' ? 'READY_FOR_REVIEW' : tk.status === 'QA' ? 'APPROVED' : tk.status === 'DONE' ? 'APPROVED' : tk.status === 'BUG' ? 'FAIL'
         : tk.status === 'HOLD' ? 'HOLD' : tk.status === 'IN_PROGRESS' ? (o.status === 'REVIEW' ? 'CHANGES_REQUESTED' : 'Kerjakan') : tk.status;
       if (from && dest && from !== dest) sendCourier(from, dest, tk.color, null, say + ' \u00b7 ' + tk.id);
     });
@@ -1749,6 +1947,7 @@
     const latest = shownTk.filter(function (tk) { return tk.last; }).sort(function (a, b) { return b.last.localeCompare(a.last); })[0];
     const latestAct = Object.keys(actBy).map(function (k) { return actBy[k]; }).sort(function (a, b) { return b.at.localeCompare(a.at); })[0];
     if (replaying) { renderInfo(); refreshSide(); return; }   // keep the replay narration in the log
+    logProgress.hidden = true;
     logStatus.textContent = (liveSource === 'db' ? 'SNAPSHOT · ' : 'LIVE · ') + shownTk.length + ' tiket · ' + active + ' aktif';
     logStep.textContent = liveSource === 'db' ? liveAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + hhmm(liveAt) : hhmm(liveAt);
     if (latestAct) {
@@ -1764,7 +1963,7 @@
       logWho.style.color = '';
       logWhat.textContent = live.length ? 'Belum ada baris Riwayat di tiket.' : 'Folder tiket kosong.';
     }
-    if (ST.qa.a.qaLight) { ST.qa.a.qaLight.color.setHex(0x3a3f46); ST.qa.a.qaLight.emissive.setHex(0x3a3f46); }
+    if (ST.reviewer.a.qaLight) { ST.reviewer.a.qaLight.color.setHex(0x3a3f46); ST.reviewer.a.qaLight.emissive.setHex(0x3a3f46); }
     renderInfo();
     renderMini();
     refreshSide();
@@ -1783,7 +1982,7 @@
     } else if (selected === 'lead') {
       const todo = live.filter(function (tk) { return tk.status === 'TODO'; }).length;
       el('infoTicket').textContent = todo + ' tiket TODO menunggu developer';
-      el('infoTask').textContent = 'Tiket dibuat oleh agent ini; statusnya kini dipegang developer, reviewer, dan QA.';
+      el('infoTask').textContent = 'Tiket dibuat oleh agent ini; statusnya kini dipegang developer dan reviewer.';
     } else if (before) {
       el('infoTicket').textContent = '';
       el('infoTask').textContent = 'Belum ada aktivitas di tahap ' + before + '. Aktivitas tahap ini terbaca dari activity.json yang ditulis feature-flow (noskill 1.11 ke atas).';
@@ -1967,6 +2166,7 @@
     btnMin.setAttribute('aria-label', c ? 'Buka panel' : 'Kecilkan panel');
     btnMin.title = c ? 'Buka panel' : 'Kecilkan panel';
     btnMin.innerHTML = c ? '&#43;' : '&#8211;';
+    resize();
     store('noskill-panel-collapsed', c ? '1' : null);
     renderMini();
   }
@@ -2029,6 +2229,7 @@
   function renderTicket() {
     const tk = sideTicket;
     el('tDot').style.background = hex(tk.color);
+    el('tDot').textContent = tk.layer === '—' ? '#' : tk.layer.toUpperCase();
     el('tTitle').textContent = tk.id;
     el('tSub').textContent = (tk.project && tk.project !== 'demo' ? tk.project + ' · ' : '') + 'layer ' + tk.layer;
     tBody.textContent = '';
@@ -2096,6 +2297,7 @@
   function renderColumn() {
     const list = view().filter(function (t) { return t.status === sideColumn; });
     el('tDot').style.background = 'var(--btn)';
+    el('tDot').textContent = '#';
     el('tTitle').textContent = sideColumn;
     el('tSub').textContent = list.length + ' tiket';
     tBody.textContent = '';
@@ -2114,7 +2316,7 @@
     const ta = Date.parse(a.replace(' ', 'T')), tb = Date.parse(b.replace(' ', 'T'));
     return isNaN(ta) || isNaN(tb) || tb < ta ? null : (tb - ta) / 60000;
   }
-  const STAGE_OF = { IN_PROGRESS: 'Develop', BUG: 'Develop', REVIEW: 'Review', QA: 'QA', HOLD: 'HOLD' };
+  const STAGE_OF = { IN_PROGRESS: 'Develop', BUG: 'Develop', REVIEW: 'Review', QA: 'Review', HOLD: 'HOLD' };
   function computeMetrics(list) {
     const stages = {}, agents = {};
     list.forEach(function (tk) {
@@ -2177,7 +2379,7 @@
     });
     mBody.appendChild(stat);
     const m = computeMetrics(list);
-    const order = ['Develop', 'Review', 'QA', 'HOLD'];
+    const order = ['Develop', 'Review', 'HOLD'];
     bars('Rata-rata durasi per tahap', m.stageRows.sort(function (a, b) { return order.indexOf(a.name) - order.indexOf(b.name); }), mBody);
     bars('Rata-rata durasi per agent', m.agentRows, mBody);
     if (m.agentRows.length) mBody.appendChild(node('p', 'desc', 'Paling lama: ' + m.agentRows[0].name + ' (' + fmtMin(m.agentRows[0].avg) + ' per tiket).'));
@@ -2579,17 +2781,21 @@
 
   // ---------- Sky ----------
   const clouds = [];
-  for (let i = 0; i < 5; i++) {
+  // far out and high (beyond the camera's orbit, unfogged) so they stay small background shapes at any zoom
+  const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, fog: false });
+  for (let i = 0; i < 6; i++) {
     const g = new THREE.Group();
     const n = 3 + Math.floor(rand() * 2);
     for (let j = 0; j < n; j++) {
-      const c = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4 + rand() * 1.2, 0), mat(0xffffff));
+      const c = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4 + rand() * 1.2, 0), cloudMat);
       c.position.set(j * 1.8 - n * 0.9, rand() * 0.6, (rand() - 0.5) * 1.5);
       g.add(c);
     }
-    g.position.set(-40 + i * 18, 20 + rand() * 5, (rand() * 2 - 1) * 20);
+    const ang = i * Math.PI * 2 / 6 + rand() * 0.6, r = 175 + rand() * 30;
+    g.position.set(Math.cos(ang) * r, 28 + rand() * 12, Math.sin(ang) * r);
+    g.scale.setScalar(3.2);
     scene.add(g);
-    clouds.push({ g: g, speed: 0.6 + rand() * 0.5 });
+    clouds.push({ g: g, speed: 0.6 + rand() * 0.5, a: ang, r: r });
   }
   const starPos = [];
   for (let i = 0; i < 400; i++) {
@@ -2631,19 +2837,20 @@
   btnNight.addEventListener('click', function () {
     nightTarget = nightTarget ? 0 : 1;
     btnNight.setAttribute('aria-pressed', String(!!nightTarget));
-    btnNight.textContent = nightTarget ? 'Mode siang' : 'Mode malam';
+    btnNight.querySelector('.lbl').textContent = nightTarget ? 'Mode siang' : 'Mode malam';
     if (reduceMotion) { night = nightTarget; applyNight(night); }
   });
   btnPause.addEventListener('click', function () {
     paused = !paused;
     btnPause.setAttribute('aria-pressed', String(paused));
-    btnPause.textContent = paused ? 'Lanjutkan' : 'Jeda';
+    btnPause.querySelector('.lbl').textContent = paused ? 'Lanjutkan' : 'Jeda';
   });
   function setFocus(n) {
     focus = n;
     document.querySelectorAll('[data-floor]').forEach(function (o) { o.setAttribute('aria-pressed', String(Number(o.dataset.floor) === n)); });
     floors.forEach(function (g, k) { g.visible = focus < 0 || k <= focus; });
     targetY = focus < 0 ? 6 : FY[focus] + 1.5;
+    distGoal = viewDist(focus);
     if (reduceMotion) { camera.position.y += targetY - controls.target.y; controls.target.y = targetY; }
   }
   document.querySelectorAll('[data-floor]').forEach(function (b) {
@@ -2792,10 +2999,20 @@
     const dx = (targetX - controls.target.x) * kk, dy = (targetY - controls.target.y) * kk, dz = (targetZ - controls.target.z) * kk;
     controls.target.x += dx; controls.target.y += dy; controls.target.z += dz;
     camera.position.x += dx; camera.position.y += dy; camera.position.z += dz;
+    scaleLabels();
+    // zoom toward the floor-focus distance, then hand zoom back to the user
+    if (distGoal !== null) {
+      const off = camera.position.clone().sub(controls.target), len = off.length();
+      const next = len + (distGoal - len) * kk;
+      camera.position.copy(controls.target).add(off.multiplyScalar(next / len));
+      if (Math.abs(distGoal - next) < 0.2) distGoal = null;
+    }
 
+    // clouds drift on a wide ring high above the island, so they never cross the building
     clouds.forEach(function (c) {
-      c.g.position.x += c.speed * dt;
-      if (c.g.position.x > 50) c.g.position.x = -50;
+      c.a += c.speed * dt * 0.012;
+      c.g.position.x = Math.cos(c.a) * c.r; c.g.position.z = Math.sin(c.a) * c.r;
+      c.g.rotation.y = -c.a;
     });
   }
 

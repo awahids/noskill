@@ -40,8 +40,10 @@ _Dibuat: <tanggal> · sumber: <commit hash pendek>_
 | Test semua | `npm test` | lulus, 77 test, ±5 dtk |
 | Test satu file | `npx tsx --test lib/goals.test.ts` | — |
 | Test terkait file yang diubah | `npx jest --findRelatedTests <file>` | — |
+| Test tanpa DB (per tiket) | `npx jest --testPathIgnorePatterns integration` | lulus, tanpa DB/server |
+| Test integrasi (butuh DB, Stage 6) | `npx jest integration` | belum dicek |
 | Lint file tertentu | `npx eslint --cache --cache-location .noskill-cache/eslint <file>` | — |
-| Jalankan environment (DB + server, untuk QA) | `docker compose up -d db && npm run start:dev` | — |
+| Jalankan environment (DB + server, Stage 6) | `docker compose up -d db && npm run start:dev` | — |
 | Health check | `curl -sf localhost:3000/health` | — |
 | Typecheck | `npx tsc --noEmit` | lulus |
 | Typecheck cepat (per tiket) | `npx tsc --noEmit --incremental --tsBuildInfoFile .noskill-cache/tsc.tsbuildinfo` | lulus, ±3 dtk setelah run pertama |
@@ -74,6 +76,7 @@ _Dibuat: <tanggal> · sumber: <commit hash pendek>_
 
 - Only facts verified from files or command output. Anything uncertain is written `belum dicek`, never guessed.
 - **Refresh** if a manifest/lockfile changed since the commit in the header, if a command in the profile fails, or if the user asks. Replace only the changed parts, and add rows from the current format that the profile lacks (e.g. `Jalankan environment`, `Health check`, fast per-ticket commands) — an old profile may predate them. Keep everything else, including lines the user wrote by hand.
+- **DB-free vs integration tests:** find how the project separates tests that need a database (folder, file suffix, tag, or Jest/Vitest project) and record one command for each. If it doesn't separate them, write `belum dipisah` — per-ticket runs then use `Test terkait file yang diubah` and treat specs that fail for lack of a database as Stage 6 specs.
 - **Environment row:** find the command in `docker-compose*`, package scripts, `Makefile`, or README. Verify it once if it can run here (start, `Health check` succeeds, stop); otherwise write the command with `belum dicek`.
 - The `tracker` field is filled from the user's answer (default `none`). Don't ask again once it's filled.
 - **Other repos (multi-repo):** scan that repo the same way (path from the Repo section), but save the result in the docs repo as `<docs>/project-profile-<nama>.md` without the Repo and Integrasi sections. Other repos get no noskill folder.

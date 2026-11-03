@@ -9,7 +9,7 @@ You act as the orchestrator (`feature-flow`), so you may change ticket files —
 
 ## Tidy backlog
 
-Only tickets with status `TODO` and `HOLD` are processed. `IN_PROGRESS`, `REVIEW`, `QA`, `BUG`, and `DONE` tickets are not changed; if they have problems, just mention them in the report.
+Only tickets with status `TODO` and `HOLD` are processed. `IN_PROGRESS`, `REVIEW`, `BUG`, and `DONE` tickets are not changed; if they have problems, just mention them in the report.
 
 1. Get the board overview at once: `grep -H "^status:\|^title:\|^depends_on:\|^integrates_with:\|^complexity:\|^repo:" <docs>/tickets/*.md`. Fully read only the tickets being processed, plus the PRD/BRD and code needed to check them.
 2. Check each ticket against the Ticket Rules (Aturan Tiket) section in `task-breakdown` and the `ticket-workflow` format:

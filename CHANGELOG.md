@@ -2,6 +2,23 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.1.0 — 2026-11-03
+
+### Diubah — review dan QA jadi satu agent, verifikasi tanpa database
+- **`qa-tester` dihapus.** `ticket-reviewer` sekarang satu-satunya agent review + QA untuk semua tiket, termasuk tiket FE `integrates_with`. Status `QA` dihapus dari alur (tiket lama berstatus `QA` diperlakukan sebagai `REVIEW`).
+- **Test per tiket tanpa database dan server.** BE: unit test service dengan repository di-mock, plus endpoint test in-process (Jest + supertest dengan `overrideProvider`, Go `httptest`, Laravel feature test) untuk setiap status dan kode error di Kontrak API. FE: test komponen/composable dengan API di-mock (MSW, mock fetch/axios) dari payload Kontrak API. Reviewer mengecek mock FE cocok dengan kontrak per field.
+- **DB asli dan E2E sekali di Stage 6.** Hanya yang benar-benar butuh DB (migration, constraint, query mentah, transaksi/locking) ditulis sebagai spec integrasi dan dicatat developer di "Dicek di Stage 6". Orkestrator menyalakan environment/DB sekali di akhir, menjalankan spec integrasi + E2E, lalu mematikannya. Yang gagal jadi tiket `BUG`.
+- `Test DB` dan URL environment tidak lagi dikirim ke agent; `BLOCKED: test DB belum disediakan` / `environment belum jalan` tidak ada lagi.
+- `project-profile`: baris baru `Test tanpa DB (per tiket)` dan `Test integrasi (butuh DB, Stage 6)`.
+- Kantor 3D: awan dipindah ke lingkaran tinggi di luar gedung (tidak lagi menembus dinding), tombol L1–L3 sekarang memperbesar kamera ke lantai itu, label agent dan ruangan diperbesar, dan lantai 3 mendapat Ruang uji (papan CI + rak server) yang lampunya menyala hijau/merah mengikuti verdict reviewer.
+- **Semua agent senior + lazy.** Developer, reviewer, CTO, PM, analyst, dan tech lead kini bekerja sebagai senior (memutuskan sendiri dari kode/dokumen, bertanya hanya jika jawabannya mengubah hasil) dan memakai prinsip lazy: perubahan terkecil yang memenuhi kebutuhan, tanpa memangkas validasi, keamanan, atau test. `prd-writer` menambah bagian **Di luar scope** dan prinsip MVP; `task-breakdown` melarang tiket untuk pekerjaan yang tidak diminta; brd-tracer memakai level ringkas bila level tidak disebut.
+- Teks sisa QA lama di task-planner, cto, dan ticket-implementation diperbaiki.
+- Kantor 3D: karakter dibuat ulang semi-realistis (proporsi manusia, bentuk halus, wajah dengan mata, alis, hidung, bibir, telinga; rambut, hijab, jenggot, dan kacamata tetap khas per agent). Lantai 1 berparket kayu, lantai 2–3 berubin.
+- Kantor UI: panel baru (logo, kartu "sedang terjadi" dengan progres demo, pemilih lantai segmented, toolbar ber-ikon), kartu agent/tiket dengan avatar inisial, font UI Plus Jakarta Sans, bayangan lembut, mode gelap ikut.
+- Kantor 3D: rute jalan ke kantin, ruang rapat, dan musholla tidak lagi menembus meja, kursi, dan rak sepatu (jalur masuk lewat lorong kosong).
+- Kantor 3D: Naura (QA) dihapus; Arkan jadi "Reviewer + QA" dan lampu rak test (hijau/merah) pindah ke mejanya. Kolom QA hilang dari board; tiket lama berstatus `QA` tampil di REVIEW. Demo memakai alur baru, termasuk langkah cek akhir (integrasi DB + E2E) di Stage 6.
+- Eval: `qa-fails-negative` dihapus (sudah tercakup `reviewer-rejects-duplication`), `qa-passes-correct` → `reviewer-approves-correct`, `qa-env-missing` → `reviewer-fe-no-db`.
+
 ## 2.0.0 — 2026-11-02
 
 ### Diubah — alur ramping ala superpowers

@@ -77,6 +77,7 @@ Reverse-PRD is useful for: onboarding new developers to an old project, a baseli
 - Define the system in 1 paragraph: what it is, who owns/manages it, how it relates to other systems (standalone/integrated)
 - **Masalah yang diselesaikan** — separate paragraph, specific and concrete (not a generic "meningkatkan efisiensi"). Cite numbers/impact if supporting data exists
 - **Tujuan sistem** — separate paragraph, derived directly from the problem above, not a feature list
+- **Di luar scope** — short bullets of what this release deliberately does not do (nice-to-haves, later phases, integrations not needed yet), so they are not specified or built
 
 ### 3. Requirements
 Group by category, nested bullet format:
@@ -189,6 +190,7 @@ This is the most technical section — it must explain:
 3. **Explain the rationale, not just the decision.** "Pakai Golang" is less useful than "Pakai Golang karena selaras dengan backend HRIS yang sudah ada, tim yang sama, hindari maintain dua stack."
 4. **Refer to existing standards, don't duplicate.** If `coding-standards` or other relevant project conventions exist, cite the section (`bagian 6.2 coding-standards`) instead of rewriting all its rules in the PRD.
 5. **Diagrams are not decoration but part of the spec.** The flowchart (User Flow), sequence diagram (Architecture), and ERD (Database Schema) must accurately reflect the prose above them — not generic illustrations.
+6. **MVP first (lazy).** Specify only what the first release needs to solve the stated problem. Nice-to-haves, extra roles, integrations, reports, and tables "untuk nanti" go to **Di luar scope** as one-liners — not into Requirements, Features, Database, or API. A smaller PRD that is fully specified beats a big one with gaps.
 
 ## Output Format
 

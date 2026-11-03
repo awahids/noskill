@@ -31,7 +31,8 @@ The rule is deliberately simple so the ticket count is predictable:
 | **Feature without an endpoint** (job, scheduler, internal logic change) | one feature | the logic and its test |
 
 - No tickets per layer or per file: migration, DTO, test, Swagger, or seeder go into the endpoint/feature ticket that needs them. A migration used by several endpoints goes into the first endpoint ticket that needs it; other tickets `depends_on` it.
-- **Group small changes into one ticket** — every ticket pays a fixed cost (new agent, review, QA, commit) of a few minutes, which outweighs a 2-minute change. Group, at most 3 per ticket, in the same repo:
+- **Only what was asked.** No tickets for refactors, cleanup, upgrades, docs, or nice-to-haves the request didn't ask for — name them as suggestions in the summary instead.
+- **Group small changes into one ticket** — every ticket pays a fixed cost (new agent, review, commit) of a few minutes, which outweighs a 2-minute change. Group, at most 3 per ticket, in the same repo:
   - BE: endpoints on the same resource that would each be `complexity: simple` (list, detail, lookup, plain CRUD, a field added to a response) — each endpoint keeps its own block in `## Kontrak API` and its own AC.
   - FE/mobile: small changes on the same page/screen (a column, field, filter, label, removed element).
   - Never group an endpoint/change with a new business rule, a transaction, a permission change, or a new table — that stays its own ticket. The grouped ticket is still `simple`; if it no longer fits `simple`, split it back.
@@ -39,7 +40,7 @@ The rule is deliberately simple so the ticket count is predictable:
 
 ### AC checklist — catch boundary bugs when the ticket is written
 
-Bugs found late (a BUG ticket after QA or the final check) cost the most. When writing AC, go through this list for every input and rule the ticket touches, and add a negative/boundary AC for each item that applies — skip items that don't apply, don't pad:
+Bugs found late (a BUG ticket from the final check) cost the most. When writing AC, go through this list for every input and rule the ticket touches, and add a negative/boundary AC for each item that applies — skip items that don't apply, don't pad:
 - **Numbers:** the rule's min/max and the **database column limit** (e.g. `int4` max 2,147,483,647, decimal precision/scale). Above the limit → validation error (4xx), never a 500.
 - **Text matching** (codes, channel, status, email, names used as keys): case-insensitive and trimmed unless the PRD says otherwise; duplicate checks compare the same way.
 - **Empty input:** missing/null/empty fields, empty list, empty file.
@@ -48,12 +49,12 @@ Bugs found late (a BUG ticket after QA or the final check) cost the most. When w
 - **Dates/periods:** first/last day of the period, overlapping periods, timezone.
 - **Access:** a role that must be rejected.
 
-### BE and FE: contract first, work together, QA together
+### BE and FE: contract first, work together, check together at the end
 
 1. **The API Contract (Kontrak API) is written when the ticket is created**, in the BE ticket's `## Kontrak API` section: method + path, request (body/query + validation rules), success response (status + JSON shape), and error responses (status + error code). This contract is the single reference for both sides.
 2. An FE ticket that uses that endpoint fills `integrates_with: [<ID tiket BE>]` (not `depends_on`) and refers to the contract. This lets the FE developer start alongside BE, using the contract as reference (types/mocks from the contract), without waiting for BE to finish.
 3. The BE ticket is still picked up first. The FE ticket may run concurrently (parallel mode) or afterwards (sequential mode).
-4. **QA of the FE ticket waits until all tickets in `integrates_with` are DONE**, then tests FE and BE together: FE calls the real BE on the working branch, including the contract's negative scenarios (validation failure, not found, unauthorized).
+4. **Both sides are tested against the contract, without a real database or server:** BE endpoint tests assert the contract's responses; FE tests mock the API with payloads from the contract, including its negative scenarios (validation failure, not found, unauthorized). The real FE↔BE flow runs once in the final check (E2E).
 5. The contract is never changed silently. If during work the contract must change, the developer reports `BLOCKED` and the orchestrator updates the contract in the BE ticket and records it in both tickets' Riwayat.
 
 ## Step 2: Extract Tasks from Each PRD Section
@@ -126,7 +127,7 @@ Default order (adjust if the PRD has different needs):
 4. **Integration with existing systems** (proxy, sync endpoint) — after the main API is stable, so you don't integrate against a still-changing API
 5. **Frontend** — can run parallel with integration if different people, but order it after the basic API exists
 6. **Supporting features** (notifications, analytics, report export) — usually can come later, not blocking core features
-7. **QA/testing & documentation** — including `user-guide` (plugin `noskill-extras`) if needed (Swagger docs go in the endpoint's ticket, not a separate task)
+7. **Final check & documentation** (integration/E2E with a real database runs once at the end, not as a ticket) — including `user-guide` (plugin `noskill-extras`) if needed (Swagger docs go in the endpoint's ticket, not a separate task)
 
 Mark which tasks **can run in parallel** vs which are **strictly sequential** via the Dependency column, so when a team/several people work on it it's clear what can start at the same time.
 
