@@ -10,6 +10,7 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - **DB asli dan E2E sekali di Stage 6.** Hanya yang benar-benar butuh DB (migration, constraint, query mentah, transaksi/locking) ditulis sebagai spec integrasi dan dicatat developer di "Dicek di Stage 6". Orkestrator menyalakan environment/DB sekali di akhir, menjalankan spec integrasi + E2E, lalu mematikannya. Yang gagal jadi tiket `BUG`.
 - `Test DB` dan URL environment tidak lagi dikirim ke agent; `BLOCKED: test DB belum disediakan` / `environment belum jalan` tidak ada lagi.
 - `project-profile`: baris baru `Test tanpa DB (per tiket)` dan `Test integrasi (butuh DB, Stage 6)`.
+- Kantor 3D: awan dipindah ke lingkaran tinggi di luar gedung (tidak lagi menembus dinding), tombol L1–L3 sekarang memperbesar kamera ke lantai itu, label agent dan ruangan diperbesar, dan lantai 3 mendapat Ruang uji (papan CI + rak server) yang lampunya menyala hijau/merah mengikuti verdict reviewer.
 - Kantor 3D: Naura (QA) dihapus; Arkan jadi "Reviewer + QA" dan lampu rak test (hijau/merah) pindah ke mejanya. Kolom QA hilang dari board; tiket lama berstatus `QA` tampil di REVIEW. Demo memakai alur baru, termasuk langkah cek akhir (integrasi DB + E2E) di Stage 6.
 - Eval: `qa-fails-negative` dihapus (sudah tercakup `reviewer-rejects-duplication`), `qa-passes-correct` → `reviewer-approves-correct`, `qa-env-missing` → `reviewer-fe-no-db`.
 
