@@ -2,6 +2,15 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.2.0 — 2026-11-03
+
+### Diubah — Kantor bergaya pixel-art
+- **Render pixel-art isometrik.** Dunia 3D dirender di resolusi rendah (1/3) lalu diperbesar tanpa penghalusan, dengan kamera FOV sempit dari jauh sehingga terlihat hampir isometrik. Tetap bisa diputar dan di-zoom.
+- **Label tetap tajam.** Papan nama dan gelembung bicara dirender terpisah di resolusi penuh di atas dunia pixel; label agent yang tertutup lantai di atasnya dibuat samar.
+- **Karakter chibi.** Kepala 1,7× lebih besar, kaki lebih pendek, mata besar dengan kilau, pipi merona; hijab, jenggot, kacamata, dan rambut tetap khas per agent.
+- **Papan nama gaya pixel office:** pill gelap, titik warna agent, font Pixelify Sans. Judul panel ikut memakai font pixel.
+- Branding tetap noskill; tidak memakai simbol atau karakter dari IP pihak lain.
+
 ## 2.1.0 — 2026-11-03
 
 ### Diubah — review dan QA jadi satu agent, verifikasi tanpa database

@@ -1,7 +1,7 @@
 <title>Kantor noskill</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Pixelify+Sans:wght@500;600&display=swap" rel="stylesheet">
 <style>
   /* Layout: full-screen 3D office diorama, one floating panel bottom-left with the live ticket log */
   :root {
@@ -15,7 +15,7 @@
     --edge: rgba(36, 53, 42, 0.14);
     --log: rgba(47, 107, 79, 0.08);
     --font-display: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --font-title: "Baloo 2", "Nunito", "Trebuchet MS", system-ui, sans-serif;
+    --font-title: "Pixelify Sans", "Baloo 2", "Nunito", system-ui, sans-serif;
     --card: rgba(255, 255, 255, 0.7);
     --panel-solid: #ffffff;
     --shadow: 0 12px 32px rgba(20, 40, 30, 0.16), 0 2px 6px rgba(20, 40, 30, 0.08);
@@ -374,26 +374,37 @@
   // ---------- Renderer, scene, camera ----------
   const stage = document.getElementById('stage');
   let renderer;
-  try { renderer = new THREE.WebGLRenderer({ antialias: true }); }
+  try { renderer = new THREE.WebGLRenderer({ antialias: false }); }
   catch (e) { document.getElementById('err').hidden = false; return; }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  renderer.shadowMap.autoUpdate = false;     // updated once per frame in frame(), not again for the label pass
   stage.appendChild(renderer.domElement);
+
+  // Pixel-art look: the world (layer 0) renders into a small target that is shown enlarged with nearest-neighbour
+  // sampling, so every texel becomes a PIX x PIX block. Labels and bubbles (layer 1) render afterwards at full
+  // resolution on top, so their text stays crisp.
+  const PIX = 3;
+  const pixTarget = new THREE.WebGLRenderTarget(1, 1, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
+  const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: pixTarget.texture, depthTest: false, depthWrite: false })));
+  const LABEL_LAYER = 1;
 
   const scene = new THREE.Scene();
   const DAY_BG = new THREE.Color(0xbfe3f2);
   const NIGHT_BG = new THREE.Color(0x141d30);
   scene.background = DAY_BG.clone();
-  scene.fog = new THREE.Fog(DAY_BG.clone(), 110, 220);
+  scene.fog = new THREE.Fog(DAY_BG.clone(), 420, 800);
 
-  const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 600);
+  // a narrow field of view from further away reads as (almost) isometric, like a pixel-art diorama
+  const camera = new THREE.PerspectiveCamera(24, 1, 0.5, 800);
   const controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 6, 0);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
-  controls.minDistance = 16;
-  controls.maxDistance = 160;
+  controls.minDistance = 24;
+  controls.maxDistance = 240;
   controls.maxPolarAngle = Math.PI * 0.47;
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   controls.autoRotate = !reduceMotion;
@@ -402,7 +413,7 @@
   // camera distance for the whole office (n = -1) or one storey; narrow screens step back to fit the width
   function viewDist(n, aspect) {
     aspect = aspect || stage.clientWidth / stage.clientHeight;
-    const base = n < 0 ? 66 : 46;
+    const base = n < 0 ? 98 : 68;
     return base * Math.max(1, Math.min(2, 1.75 / aspect));
   }
   let distGoal = null;
@@ -414,6 +425,7 @@
   function resize() {
     const w = stage.clientWidth, h = stage.clientHeight;
     renderer.setSize(w, h, false);
+    pixTarget.setSize(Math.max(1, Math.round(w / PIX)), Math.max(1, Math.round(h / PIX)));
     camera.aspect = w / h;
     // on wide screens the open panel covers the left; shift the picture right so the office sits beside it
     const pn = document.getElementById('panel');
@@ -530,11 +542,13 @@
     const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
     return t;
   });
+  const SLABS = [];   // floor slabs, used to dim labels hidden behind an upper storey (see scaleLabels)
   function floorPiece(k, w, d, x, y, z, o) {
     const t = floorTex[k].clone(); t.needsUpdate = true;
     const tile = k === 0 ? 4 : 1.6;
     t.repeat.set(w / tile, d / tile);
     const m = box(w, 0.3, d, 0, x, y, z, Object.assign({ material: new THREE.MeshStandardMaterial({ map: t, roughness: k === 0 ? 0.7 : 0.45 }) }, o));
+    SLABS.push(m);
     return m;
   }
   function slab(k) {
@@ -612,6 +626,7 @@
   // People with human proportions: rounded torso and limbs, shoes, belt, a face with eyes, irises, brows,
   // nose, lips and ears, per-person hair styles, beard, glasses, tie, ID card, and a hijab that frames the
   // face. Pivots stay where the poses expect them: legs at the hip, arms at the shoulder, hand 0.72 below it.
+  const CHIBI = 1.7, CHIBI_LEG = 0.75;
   function makePerson(o) {
     const g = new THREE.Group();
     const hip = 0.95, hy = hip + 1.1;
@@ -658,8 +673,10 @@
     [0.172, -0.172].forEach(function (ex) { part(g, SPHERE(0.042), skin, ex, hy - 0.01, -0.01, { s: [0.45, 1, 0.8] }); });
     // face: eyes with irises, brows, nose, lips
     [0.068, -0.068].forEach(function (ex) {
-      part(g, SPHERE(0.026), white, ex * 0.92, hy + 0.025, 0.158, { s: [1.2, 0.68, 0.45] });
-      part(g, SPHERE(0.014), dark, ex * 0.92, hy + 0.025, 0.169, { s: [1, 1, 0.5] });
+      part(g, SPHERE(0.032), white, ex * 0.95, hy + 0.02, 0.156, { s: [1.0, 1.1, 0.45] });        // big chibi eyes
+      part(g, SPHERE(0.028), smat(0x2b1d14, 0.3), ex * 0.95, hy + 0.012, 0.165, { s: [0.95, 1.15, 0.5] });
+      part(g, SPHERE(0.008), white, ex * 0.95 + 0.009, hy + 0.028, 0.18);                         // eye highlight
+      part(g, SPHERE(0.03), smat(0xf2a3a0, 0.6), ex * 1.45, hy - 0.045, 0.14, { s: [1.1, 0.6, 0.35] });   // blush
       part(g, geo('brow', function () { return new THREE.BoxGeometry(0.062, 0.013, 0.018); }), o.hijab ? smat(0x2b1d14, 0.85) : hairM, ex * 0.92, hy + 0.068, 0.162, { r: [0, 0, ex > 0 ? -0.1 : 0.1] });
     });
     part(g, SPHERE(0.026), skin, 0, hy - 0.022, 0.18, { s: [0.7, 1.35, 1.15] });
@@ -677,7 +694,7 @@
       const hj = smat(o.hijab, 0.85, THREE.DoubleSide), W = 1.9;
       part(g, SHELL(0.215, Math.PI / 2 + W / 2, Math.PI * 2 - W, 0, Math.PI * 0.8), hj, 0, hy + 0.01, -0.01, { s: [0.97, 1.12, 1.02], cast: true });
       part(g, SHELL(0.215, Math.PI / 2 - W / 2, W, 0, Math.PI * 0.27), hj, 0, hy + 0.01, -0.01, { s: [0.97, 1.12, 1.02] });
-      part(g, TUBE(0.15, 0.27, 0.3), hj, 0, hip + 0.83, 0.01, { s: [1, 1, 0.72], cast: true });
+      part(g, TUBE(0.15, 0.27, 0.3), hj, 0, hip + 0.83, 0.01, { s: [1, 1, 0.72], cast: true }).userData.head = true;
     } else {
       const style = o.style || 'short';
       part(g, SHELL(0.2, 0, Math.PI * 2, 0, Math.PI * 0.4), hairM, 0, hy + 0.01, -0.005, { s: [1.0, 1.15, 1.04], cast: true });
@@ -694,7 +711,16 @@
         part(g, geo('stache', function () { return new THREE.BoxGeometry(0.075, 0.016, 0.02); }), hairM, 0, hy - 0.058, 0.17);
       }
     }
-    g.scale.setScalar(o.scale || 0.75);
+    // chibi: everything above the neck (and the hijab drape) moves into one group that grows from the neck,
+    // so the head and face read at pixel-art size, like the agents in a pixel office
+    const head = new THREE.Group(); head.position.set(0, hip + 0.9, 0); g.add(head);
+    g.children.slice().forEach(function (c) { if (c.isMesh && (c.position.y > hip + 0.95 || c.userData.head)) head.attach(c); });
+    head.scale.setScalar(CHIBI);
+    // chibi legs: shorter, with the whole body lowered so the shoes still touch the floor
+    const drop = 0.915 * (1 - CHIBI_LEG);
+    legL.scale.y = legR.scale.y = CHIBI_LEG;
+    g.children.forEach(function (c) { c.position.y -= drop; });
+    g.scale.setScalar(o.scale || 0.72);
     g.userData = { legL: legL, legR: legR, armL: armL, armR: armR, female: !!o.hijab };
     (o.parent || scene).add(g);
     return g;
@@ -710,34 +736,38 @@
     const tex = new THREE.CanvasTexture(cv);
     function draw() {
       const x = cv.getContext('2d');
+      // pixel-office name tag: dark pill, a dot in the agent's colour, white name, muted role underneath
       x.clearRect(0, 0, 512, 168);
-      x.fillStyle = hex(color);
+      x.font = '600 50px "Pixelify Sans", "Baloo 2", sans-serif';
+      const w = Math.min(496, Math.max(x.measureText(title).width + 110, 260)), x0 = (512 - w) / 2;
+      x.fillStyle = 'rgba(20, 27, 40, 0.92)';
       x.beginPath();
-      if (x.roundRect) x.roundRect(8, 8, 496, 132, 30); else x.rect(8, 8, 496, 132);
+      if (x.roundRect) x.roundRect(x0, 10, w, 128, 22); else x.rect(x0, 10, w, 128);
       x.fill();
-      x.beginPath(); x.moveTo(236, 138); x.lineTo(256, 162); x.lineTo(276, 138); x.fill();
-      x.fillStyle = '#ffffff';
-      x.textAlign = 'center'; x.textBaseline = 'middle';
-      x.font = '700 54px "Baloo 2", "Trebuchet MS", sans-serif';
-      x.fillText(title, 256, 58);
-      x.font = '500 30px "JetBrains Mono", Menlo, monospace';
-      x.globalAlpha = 0.92;
-      x.fillText(sub, 256, 108);
-      x.globalAlpha = 1;
+      x.strokeStyle = 'rgba(255, 255, 255, 0.18)'; x.lineWidth = 3; x.stroke();
+      x.beginPath(); x.moveTo(240, 137); x.lineTo(256, 158); x.lineTo(272, 137); x.fill();
+      x.fillStyle = hex(color); x.beginPath(); x.arc(x0 + 40, 56, 13, 0, Math.PI * 2); x.fill();
+      x.fillStyle = '#ffffff'; x.textAlign = 'left'; x.textBaseline = 'middle';
+      x.fillText(title, x0 + 66, 56, w - 84);
+      x.font = '500 28px "Pixelify Sans", "JetBrains Mono", monospace';
+      x.fillStyle = 'rgba(255, 255, 255, 0.62)';
+      x.fillText(sub, x0 + 66, 106, w - 84);
       tex.needsUpdate = true;
     }
     draw();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
     sp.scale.set(4.4, 1.44, 1);
+    sp.layers.set(LABEL_LAYER);
     LABELS.push(sp);
     return sp;
   }
   // Labels are placed by their centre; the first time one is seen it is re-anchored on its bottom tip, so growing
   // it for a far camera pushes it up instead of over the agent's head. Then it scales with camera distance:
   // small when zoomed in on a storey, larger from the overview, within limits.
+  const labelRay = new THREE.Raycaster(), labelPos = new THREE.Vector3(), labelPos2 = new THREE.Vector3();
   function scaleLabels() {
-    const f = Math.max(0.85, Math.min(1.6, camera.position.distanceTo(controls.target) / 55));
+    const f = Math.max(0.3, Math.min(1.6, camera.position.distanceTo(controls.target) / 66));
     for (let i = LABELS.length - 1; i >= 0; i--) {
       const sp = LABELS[i];
       if (!sp.parent) { LABELS.splice(i, 1); continue; }
@@ -748,6 +778,12 @@
         Object.keys(ST).forEach(function (k) { if (ST[k].label === sp) ST[k].labelY -= sp.scale.y / 2; });
       }
       sp.scale.set(sp.userData.base.x * f, sp.userData.base.y * f, 1);
+      // labels render on top of the pixel world, so dim the ones an upper floor slab stands in front of
+      sp.getWorldPosition(labelPos);
+      labelRay.set(camera.position, labelPos.sub(camera.position).normalize());
+      labelRay.far = camera.position.distanceTo(sp.getWorldPosition(labelPos2));
+      const hidden = labelRay.intersectObjects(SLABS.filter(function (m) { return m.parent.visible; }), false).length > 0;
+      sp.material.opacity += ((hidden ? 0.18 : 1) - sp.material.opacity) * 0.2;
     }
   }
 
@@ -853,7 +889,7 @@
       tie: look.tie || null, card: a.color, parent: g
     });
     person.userData.key = a.key;
-    person.position.set(0, -0.18, 0);
+    person.position.set(0, 0, 0);
     person.userData.legL.rotation.x = -Math.PI / 2;
     person.userData.legR.rotation.x = -Math.PI / 2;
 
@@ -1115,11 +1151,11 @@
   // Places agents can walk to: the shared coffee corner and the meeting room
   const PLACES = {
     lounge: { floor: LOUNGE_FLOOR, x: LOUNGE.x, z: LOUNGE.z, spots: LOUNGE_SPOTS, taken: loungeTaken },
-    meeting: { floor: MEETING_FLOOR, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {}, seat: 0.18 },
+    meeting: { floor: MEETING_FLOOR, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {}, seat: 0.01 },
     pantry: { floor: 0, x: PANTRY.x, z: PANTRY.z, spots: [[0, -0.85], [0.85, 0], [-0.85, 0], [0, 0.85]], taken: {}, stay: [18, 35] },
     toilet: { floor: 1, x: TOILET.x, z: TOILET.z, spots: [[-1.1, 0.4], [1.1, 0.4]], taken: {}, stay: [7, 11], hide: true },
     musholla: { floor: 1, x: MUSHOLLA.x, z: MUSHOLLA.z, spots: [[-1.3, 0, -Math.PI / 2], [0.2, -1.1, -Math.PI / 2], [0.2, 0, -Math.PI / 2], [0.2, 1.1, -Math.PI / 2], [1.4, -1.1, -Math.PI / 2], [1.4, 0, -Math.PI / 2], [1.4, 1.1, -Math.PI / 2]], taken: {}, stay: [22, 35] },
-    kantin: { floor: 0, x: KANTIN.x, z: KANTIN.z, y: 0.12, via: [[12.9, FY[0], 0.5], [14.8, 0.12, 0.5]], seat: 0.34, taken: {}, stay: [40, 80],
+    kantin: { floor: 0, x: KANTIN.x, z: KANTIN.z, y: 0.12, via: [[12.9, FY[0], 0.5], [14.8, 0.12, 0.5]], seat: 0.15, taken: {}, stay: [40, 80],
       spots: [[-1.95, -1.2, Math.PI / 2], [-1.95, 0.4, Math.PI / 2], [-1.95, 2.0, Math.PI / 2], [-0.45, -1.2, -Math.PI / 2], [-0.45, 0.4, -Math.PI / 2], [-0.45, 2.0, -Math.PI / 2],
         [0.65, -1.2, Math.PI / 2], [0.65, 0.4, Math.PI / 2], [0.65, 2.0, Math.PI / 2], [2.15, -1.2, -Math.PI / 2], [2.15, 0.4, -Math.PI / 2]] }
   };
@@ -1228,6 +1264,7 @@
     const tex = new THREE.CanvasTexture(cv);
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
     sp.scale.set(4.5, 1.05, 1);
+    sp.layers.set(LABEL_LAYER);
     scene.add(sp);
     return sp;
   }
@@ -3027,7 +3064,17 @@
       applyNight(night);
     }
     controls.update();
-    renderer.render(scene, camera);
+    renderer.shadowMap.needsUpdate = true;
+    renderer.setRenderTarget(pixTarget);
+    renderer.render(scene, camera);                       // world, small
+    renderer.setRenderTarget(null);
+    renderer.render(postScene, postCam);                  // enlarged, blocky
+    const bg = scene.background;                          // a colour background would clear the frame again
+    scene.background = null; renderer.autoClear = false;
+    camera.layers.set(LABEL_LAYER);
+    renderer.render(scene, camera);                       // labels and bubbles, full resolution, on top
+    camera.layers.set(0);
+    scene.background = bg; renderer.autoClear = true;
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
