@@ -349,7 +349,7 @@
   function viewDist(n, aspect) {
     aspect = aspect || stage.clientWidth / stage.clientHeight;
     const base = n < 0 ? 66 : 46;
-    return aspect < 1 ? base * 1.4 / aspect : base;
+    return base * Math.max(1, Math.min(2, 1.75 / aspect));
   }
   let distGoal = null;
   function placeCamera() {
@@ -361,6 +361,10 @@
     const w = stage.clientWidth, h = stage.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
+    // on wide screens the open panel covers the left; shift the picture right so the office sits beside it
+    const pn = document.getElementById('panel');
+    const shift = pn && w > 1000 && !pn.classList.contains('collapsed') ? Math.round((pn.offsetWidth + 16) / 2) : 0;
+    if (shift) camera.setViewOffset(w, h, -shift, 0, w, h); else camera.clearViewOffset();
     camera.updateProjectionMatrix();
   }
   resize(); placeCamera();
@@ -583,6 +587,8 @@
 
 
   // ---------- Name labels (always face the camera) ----------
+  // every label sprite, so update() can keep them readable at any zoom (see scaleLabels)
+  const LABELS = [];
   function makeLabel(title, sub, color) {
     const cv = document.createElement('canvas');
     cv.width = 512; cv.height = 168;
@@ -609,7 +615,25 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
     sp.scale.set(4.4, 1.44, 1);
+    LABELS.push(sp);
     return sp;
+  }
+  // Labels are placed by their centre; the first time one is seen it is re-anchored on its bottom tip, so growing
+  // it for a far camera pushes it up instead of over the agent's head. Then it scales with camera distance:
+  // small when zoomed in on a storey, larger from the overview, within limits.
+  function scaleLabels() {
+    const f = Math.max(0.85, Math.min(1.8, camera.position.distanceTo(controls.target) / 55));
+    for (let i = LABELS.length - 1; i >= 0; i--) {
+      const sp = LABELS[i];
+      if (!sp.parent) { LABELS.splice(i, 1); continue; }
+      if (!sp.userData.base) {
+        sp.userData.base = sp.scale.clone();
+        sp.center.set(0.5, 0);
+        sp.position.y -= sp.scale.y / 2;
+        Object.keys(ST).forEach(function (k) { if (ST[k].label === sp) ST[k].labelY -= sp.scale.y / 2; });
+      }
+      sp.scale.set(sp.userData.base.x * f, sp.userData.base.y * f, 1);
+    }
   }
 
   // ---------- Stations: one desk per agent, spread over three storeys ----------
@@ -622,7 +646,7 @@
     { key: 'be', name: 'Zayn',       role: 'Backend Dev',     agent: 'backend-developer',  color: 0x2f8a4e, extra: 'server', f: 1, x: -8,   z: -5, rot: 0 },
     { key: 'fe', name: 'Alya',       role: 'Frontend Dev',    agent: 'frontend-developer', color: 0x5aa83a, extra: 'plant',  f: 1, x: -1.5, z: -5, rot: 0 },
     { key: 'dev', name: 'Fathan',      role: 'Fullstack Dev',   agent: 'developer',          color: 0x2b7569, extra: 'plant',  f: 1, x: 5,    z: -5, rot: 0 },
-    { key: 'reviewer', name: 'Arkan', role: 'Reviewer + QA',   agent: 'ticket-reviewer',    color: 0xc79a14, extra: 'dual',   f: 2, x: -6,   z: -5, rot: 0, rack: true }
+    { key: 'reviewer', name: 'Arkan', role: 'Reviewer + QA',   agent: 'ticket-reviewer',    color: 0xc79a14, extra: 'dual',   f: 2, x: -2.5, z: -5, rot: 0, rack: true }
   ];
   const ST = {};
   // How each agent looks: skin, hair style, beard, glasses, hijab colour
@@ -820,7 +844,12 @@
       box(0.8, 2.0, 0.7, 0x2a2f36, rx, y + 1.0, BZ0 + 0.7, { parent: g });
       for (let s = 0; s < 6; s++) box(0.05, 0.05, 0.04, 0, rx - 0.25, y + 0.4 + s * 0.28, BZ0 + 1.06, { parent: g, cast: false, material: lampMat });
     });
-    plant(g, x - 3.2, BZ0 + 0.9, y);
+    // reference shelves in the back-left corner of the Quality floor
+    [-11.2, -9.0].forEach(function (sx) {
+      box(1.8, 2.2, 0.5, 0x8d6e63, sx, y + 1.1, BZ0 + 0.5, { parent: g });
+      for (let s = 0; s < 3; s++) for (let b = 0; b < 4; b++) box(0.3, 0.45, 0.32, pick([0xc79a14, 0x3b7fc4, 0x2f8a4e, 0xc8453a]), sx - 0.6 + b * 0.4, y + 0.42 + s * 0.68, BZ0 + 0.58, { parent: g, cast: false });
+    });
+    plant(g, -7.4, BZ0 + 0.9, y);
     const sign = makeLabel('Ruang uji', 'test tanpa DB', 0xc79a14);
     sign.position.set(x, y + 3.9, z + 0.6); sign.scale.set(3.8, 1.24, 1); g.add(sign);
   })();
@@ -927,14 +956,14 @@
   const em = makePerson({ skin: LOOKS.em.skin, hair: LOOKS.em.hair, style: LOOKS.em.style, beard: true, shirt: 0x55606e, pants: LOOKS.em.pants, card: 0x55606e, parent: centre });
   em.userData.key = 'em';
   const emLabel = makeLabel('Hafiz', 'Eng. Manager', 0x55606e);
-  emLabel.position.set(0, 4.55, -1.2);
+  emLabel.position.set(0, 3.6, -1.2);
   centre.add(emLabel);
   const emGlow = new THREE.MeshBasicMaterial({ color: 0x55606e, transparent: true, opacity: 0 });
   const emRing = new THREE.Mesh(new THREE.RingGeometry(1.4, 1.62, 40), emGlow);
   emRing.rotation.x = -Math.PI / 2; emRing.position.set(0, 0.06, 0.2); centre.add(emRing);
   centre.updateMatrixWorld(true);
   ST.em = { a: { key: 'em', agent: 'feature-flow', color: 0x55606e }, g: centre, f: 0, person: em, glow: emGlow, screen: null,
-    work: centre.localToWorld(new THREE.Vector3(0, 2.2, 0.9)), label: emLabel, labelY: 4.55, standing: true };
+    work: centre.localToWorld(new THREE.Vector3(0, 2.2, 0.9)), label: emLabel, labelY: 3.6, standing: true };
 
   // ---------- Walking: corridors, stairs, and agents carrying tickets ----------
   const CORR_Z = 0.5, STAIR_X = 9.5, WALK_SPEED = 4.2;
@@ -2001,6 +2030,7 @@
     btnMin.setAttribute('aria-label', c ? 'Buka panel' : 'Kecilkan panel');
     btnMin.title = c ? 'Buka panel' : 'Kecilkan panel';
     btnMin.innerHTML = c ? '&#43;' : '&#8211;';
+    resize();
     store('noskill-panel-collapsed', c ? '1' : null);
     renderMini();
   }
@@ -2613,16 +2643,19 @@
 
   // ---------- Sky ----------
   const clouds = [];
+  // far out and high (beyond the camera's orbit, unfogged) so they stay small background shapes at any zoom
+  const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, fog: false });
   for (let i = 0; i < 6; i++) {
     const g = new THREE.Group();
     const n = 3 + Math.floor(rand() * 2);
     for (let j = 0; j < n; j++) {
-      const c = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4 + rand() * 1.2, 0), mat(0xffffff));
+      const c = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4 + rand() * 1.2, 0), cloudMat);
       c.position.set(j * 1.8 - n * 0.9, rand() * 0.6, (rand() - 0.5) * 1.5);
       g.add(c);
     }
-    const ang = i * Math.PI * 2 / 6 + rand() * 0.6, r = 44 + rand() * 12;
-    g.position.set(Math.cos(ang) * r, 30 + rand() * 6, Math.sin(ang) * r);
+    const ang = i * Math.PI * 2 / 6 + rand() * 0.6, r = 175 + rand() * 30;
+    g.position.set(Math.cos(ang) * r, 28 + rand() * 12, Math.sin(ang) * r);
+    g.scale.setScalar(3.2);
     scene.add(g);
     clouds.push({ g: g, speed: 0.6 + rand() * 0.5, a: ang, r: r });
   }
@@ -2828,6 +2861,7 @@
     const dx = (targetX - controls.target.x) * kk, dy = (targetY - controls.target.y) * kk, dz = (targetZ - controls.target.z) * kk;
     controls.target.x += dx; controls.target.y += dy; controls.target.z += dz;
     camera.position.x += dx; camera.position.y += dy; camera.position.z += dz;
+    scaleLabels();
     // zoom toward the floor-focus distance, then hand zoom back to the user
     if (distGoal !== null) {
       const off = camera.position.clone().sub(controls.target), len = off.length();
