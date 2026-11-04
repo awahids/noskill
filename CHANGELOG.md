@@ -2,6 +2,21 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.3.0 — 2026-11-04
+
+### Diubah — Kantor 3D lebih realistis dengan karakter chibi 3D
+- **Tampilan lebih realistis.** Warna diproses di ruang linear dengan output sRGB dan tone mapping filmic (ACES), bayangan matahari lebih lembut, permukaan melengkung dibuat halus (bukan faset low-poly), kayu hinoki dan kayu gelap memakai tekstur serat kayu, dan pohon, sakura, serta bonsai lebih bulat. Papan nama dan gelembung bicara tidak ikut tone mapping supaya teksnya tetap jelas.
+- **Render pixel-art dihapus.** Dunia dirender langsung di resolusi penuh dengan antialiasing, tidak lagi diperkecil lalu diperbesar menjadi blok pixel. Font pixel (Pixelify Sans) di judul panel, papan nama, dan plakat gerbang diganti Baloo 2.
+- **Sprite pixel diganti model chibi 3D.** Setiap orang di kantor (agent, pengunjung, NPC di luar) kini model 3D bershading lembut yang ikut menjatuhkan bayangan: kepala besar, mata besar berkilau yang berkedip, pipi merona, hijab dengan drape dan rok panjang, gaya rambut (short, side, curly, quiff), jenggot, kacamata, dasi, dan ID card dengan lanyard.
+- **Lengan dan kaki bergerak sungguhan.** Animasi jalan, duduk, mengetik, makan, dan melambai menggerakkan sendi model langsung, tidak lagi memilih frame sprite. Saat agent aktif, tangannya terangkat dengan percikan kuning.
+- Mode malam meredupkan karakter lewat cahaya scene; pewarnaan khusus sprite dihapus.
+- **Interior bergaya Jepang.** Lantai 1 berlantai kayu hinoki, lantai 2–3 bertatami dengan jalur kayu gelap di koridor. Jendela kini shoji (kertas dengan kisi kayu) di antara tiang hashira dan balok kayu; pagar, tiang sudut, dan tangga berkayu gelap. Meja hinoki dengan kaki kayu, kursi kayu dengan bantal zabuton warna agent, lampu meja andon, dan tanaman diganti bonsai di atas meja kayu. Bilik CTO dan ruang rapat bersekat shoji, rak buku jadi lemari tansu, ruang ngopi punya bangku kayu bersantai dan teko tetsubin, pantri dan toilet bertirai noren, dan lampion kertas tergantung di koridor lantai 1–2. Lampion dan andon menyala di mode malam.
+- **Kantor di pulau terpencil.** Tanah kotak diganti pulau berpantai pasir dengan garis pantai yang tidak rata, pohon kelapa, laguna toska, ombak di bibir pantai, dan laut sampai cakrawala (ikut gelap di malam hari).
+- **Jalan lingkar dan desa.** Jalan lurus diganti jalan lingkar mengitari kantor; mobil dan motor (5 kendaraan, lebih pelan) berputar di dua jalur berlawanan dan tetap berhenti di zebra cross yang segaris gerbang torii. Pejalan kaki memutari trotoar. Di luar jalan ada rumah kayu beratap genteng dengan jendela shoji, konbini yang menyala di malam hari, kuil kecil dengan torii, menara air, mercusuar dengan sorot cahaya berputar di malam hari, dan dermaga dengan perahu; satu perahu lagi berlayar mengelilingi pulau. Halte, pangkalan ojek, dan gerobak bakso pindah ke trotoar luar.
+- **Kantin dan parkiran dihapus.** Halaman timur dan sisi barat kini berisi pohon. Agent yang menganggur saat jam makan siang ke pantri; pos satpam, palang, dan mobil/motor parkir ikut hilang.
+- **Tiket dipegang di depan dada.** Kertas tiket yang dibawa kurir diperkecil dan dipegang dengan kedua tangan setinggi dada, tidak lagi menutupi wajah.
+- **Papan nama ikut berjalan.** Label nama agent kini mengikuti agentnya saat mengantar tiket, istirahat, atau ke ruang rapat, dan melayang tepat di atas kepala.
+
 ## 2.2.0 — 2026-11-03
 
 ### Diubah — Kantor bergaya pixel-art
