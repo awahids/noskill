@@ -8,7 +8,7 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 2.2.0" src="https://img.shields.io/badge/version-2.2.0-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 2.3.0" src="https://img.shields.io/badge/version-2.3.0-1d6b57?style=flat-square&logo=github" />
 </div>
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, dan reviewer (sekaligus QA).
@@ -17,9 +17,9 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 
 ## Kantor noskill
 
-`/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent sprite pixel chibi yang berjalan mengantar tiket, taman bergaya Jepang (atap genteng, sakura, gerbang noskill, kolam koi), Ruang uji tempat Arkan (Reviewer + QA) memverifikasi tiket, dan suasana kantor di sekitarnya. Panelnya menampilkan langkah yang sedang berjalan, pemilih lantai, dan toolbar (metrik, ikuti tiket, timeline, mode malam).
+`/noskill:kantor` membuka kantor 3D tempat agent noskill bekerja: tiga lantai, board tiket live dari `docs/noskill`, agent chibi 3D yang berjalan mengantar tiket, taman bergaya Jepang (atap genteng, sakura, gerbang noskill, kolam koi), Ruang uji tempat Arkan (Reviewer + QA) memverifikasi tiket, dan desa pulau di sekelilingnya: jalan lingkar dengan kendaraan yang berputar, rumah kayu, konbini, kuil kecil, mercusuar, dan dermaga. Panelnya menampilkan langkah yang sedang berjalan, pemilih lantai, dan toolbar (metrik, ikuti tiket, timeline, mode malam).
 
-![Kantor noskill: kantor tiga lantai dengan panel baru, ruang uji, ruang ngopi, ruang rapat, kantin, jalan raya, dan parkiran](docs/img/kantor-overview.jpg)
+![Kantor noskill: kantor tiga lantai dengan panel baru, ruang uji, ruang ngopi, ruang rapat, dan jalan raya](docs/img/kantor-overview.jpg)
 
 | Klik agent untuk melihat tugas dan skill | Jalan raya, halte, dan warga sekitar | Mode malam |
 |---|---|---|
