@@ -1,6 +1,6 @@
 {
   "name": "noskill",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Tim engineering lengkap di Claude: PM menulis PRD, CTO me-review arsitektur, tiket dikerjakan developer BE/FE, dicek dan diuji reviewer tanpa database, lalu DONE dan sign-off CTO — dengan aturan scope, reuse, solusi sederhana, dan test positif/negatif/batas.",
   "author": {
     "name": "Wahid",

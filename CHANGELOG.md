@@ -2,6 +2,14 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.5.0 — 2026-11-08
+
+### Ditambah — karakter sprite dan mini-game di Mode dungeon
+- **Penghuni dungeon.** Tiga karakter dari sprite sheet yang disediakan (ksatria berjubah hijau, penyihir ungu, dan penyihir waktu berkerudung) berdiri di kantor sebagai sprite 2D animasi: ksatria di samping singgasana (menebas saat reviewer terakhir memberi `CHANGES_REQUESTED`), penyihir di Ruang rapat, dan penyihir waktu di dekat Ruang uji.
+- **Dungeon Arena, mini-game 2D sisi-samping.** Tombol baru muncul di toolbar saat Mode dungeon aktif. Kamu menjadi ksatria (←/→/↑/↓ atau WASD jalan, Spasi lompat, J/X/klik serang, Esc keluar), penyihir ungu ikut menembak dari belakang, dan **tiap tiket BUG menjadi satu slime berlabel ID tiketnya** (minimal 3, maksimal 6; contoh bila tidak ada tiket BUG). Setelah semua slime kalah, muncul bos **Tenggat** (penyihir waktu) yang melempar gelombang dan menyerbu. Menang atau kalah tidak mengubah tiket: kantor tetap hanya membaca tiket. Skor tidak disimpan.
+- Sprite dipotong dari sheet (latar kotak-kotak dihapus, frame dikecilkan dan warnanya disederhanakan) dan ditanam sebagai tiga atlas PNG base64 (±300 KB) di dalam halaman, supaya tetap satu file. Latar arena digambar lewat kode karena gambar latar yang ada sudah memuat karakter di dalamnya; ilustrasi bos kristal dan pemanah tidak dipakai karena tidak punya animasi.
+- Saat arena terbuka, dunia 3D berhenti dirender supaya ringan.
+
 ## 2.4.0 — 2026-11-08
 
 ### Ditambah — Mode dungeon, tema tambahan Kantor

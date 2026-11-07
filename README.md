@@ -8,7 +8,7 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 2.4.0" src="https://img.shields.io/badge/version-2.4.0-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 2.5.0" src="https://img.shields.io/badge/version-2.5.0-1d6b57?style=flat-square&logo=github" />
 </div>
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, dan reviewer (sekaligus QA).
@@ -28,6 +28,10 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 **Mode dungeon:** tombol di toolbar mengubah kantor jadi reruntuhan kastil malam hari (obor berkedip, lantai batu, pilar beriven, pintu jeruji bermata merah di Ruang uji). Tampilan kantor biasa tetap default.
 
 ![Mode dungeon: kantor sebagai reruntuhan kastil dengan obor, lantai batu, dan dinding bata](docs/img/kantor-dungeon.jpg)
+
+**Dungeon Arena:** di Mode dungeon ada tombol game 2D sisi-samping. Kamu jadi ksatria dengan penyihir sebagai teman, tiap tiket BUG menjadi slime berlabel ID tiketnya, dan bos Tenggat menunggu di akhir. Hanya membaca tiket; status tiket tidak berubah. Kontrol: ←/→/↑/↓ atau WASD jalan, Spasi lompat, J/X/klik serang, Esc keluar. Karakter berasal dari sprite sheet yang disediakan pemilik repo.
+
+![Dungeon Arena: ksatria dan penyihir melawan bos Tenggat di aula bata dengan obor](docs/img/kantor-arena.jpg)
 
 ## Skills
 
