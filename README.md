@@ -8,7 +8,7 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 2.3.0" src="https://img.shields.io/badge/version-2.3.0-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 2.4.0" src="https://img.shields.io/badge/version-2.4.0-1d6b57?style=flat-square&logo=github" />
 </div>
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, dan reviewer (sekaligus QA).
@@ -24,6 +24,10 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 | Klik agent untuk melihat tugas dan skill | Jalan raya, halte, dan warga sekitar | Mode malam |
 |---|---|---|
 | ![Kartu agent Arkan (Reviewer + QA) dengan avatar, deskripsi, skill, tools, dan verdict](docs/img/kantor-agent.jpg) | ![Lantai 1 berlantai parket: agent bekerja di meja, mobil dan motor melintas di jalan](docs/img/kantor-jalan.jpg) | ![Kantor saat malam dengan lampu meja dan lampu jalan menyala](docs/img/kantor-malam.jpg) |
+
+**Mode dungeon:** tombol di toolbar mengubah kantor jadi reruntuhan kastil malam hari (obor berkedip, lantai batu, pilar beriven, pintu jeruji bermata merah di Ruang uji). Tampilan kantor biasa tetap default.
+
+![Mode dungeon: kantor sebagai reruntuhan kastil dengan obor, lantai batu, dan dinding bata](docs/img/kantor-dungeon.jpg)
 
 ## Skills
 

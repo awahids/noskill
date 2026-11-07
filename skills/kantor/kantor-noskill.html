@@ -129,6 +129,17 @@
   .seg button { border: 0; background: transparent; border-radius: 9px; padding: 6px 4px; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
   .seg button[aria-pressed="true"] { background: var(--panel-solid); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
   .toolbar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .tool.wide { grid-column: 1 / -1; flex-direction: row; justify-content: center; gap: 8px; padding: 9px 4px; font-size: 0.8rem; }
+  .tool:disabled { opacity: 0.45; cursor: default; }
+  #vignette { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s ease;
+    background: radial-gradient(ellipse at 50% 45%, transparent 38%, rgba(4, 6, 14, 0.74) 100%); }
+  body.dungeon #vignette { opacity: 1; }
+  body.dungeon {
+    --sky: #070a14; --panel: rgba(24, 19, 16, 0.88); --ink: #f1e6d4; --muted: #bfae95; --btn: #e0a14b; --btn-ink: #1c1410;
+    --btn-soft: rgba(224, 161, 75, 0.16); --edge: rgba(240, 210, 160, 0.18); --log: rgba(224, 161, 75, 0.1);
+    --card: rgba(255, 230, 200, 0.06); --panel-solid: #3a2f28; --shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
+  }
   .tool {
     display: flex; flex-direction: column; align-items: center; gap: 4px;
     padding: 8px 4px; border-radius: 12px; border: 1px solid var(--edge); background: var(--card);
@@ -261,6 +272,7 @@
   }
 </style>
 
+<div id="vignette" aria-hidden="true"></div>
 <div id="stage" aria-label="Diorama 3D kantor tiga lantai tim agent noskill: Product Manager, CTO, analyst, tech lead, developer backend, frontend dan fullstack, serta reviewer (sekaligus QA) mengerjakan tiket dari PRD sampai PR"></div>
 
 <div class="panel" id="panel">
@@ -299,6 +311,7 @@
     <button type="button" class="tool" id="btnNight" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg><span class="lbl">Mode malam</span></button>
     <button type="button" class="tool" id="btnPause" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg><span class="lbl">Jeda</span></button>
     <button type="button" class="tool" id="btnSpin" aria-pressed="true"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg><span class="lbl">Putar kamera</span></button>
+    <button type="button" class="tool wide" id="btnDungeon" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 3 4 4.5 4 8.5a4 4 0 0 1-8 0c0-1.5.6-2.6 1.5-3.5.3 1.2 1 1.8 1.7 2C11.5 7.5 11 5.5 12 3z"/></svg><span class="lbl">Mode dungeon</span></button>
   </div>
   <div class="viewers" id="viewers" hidden aria-live="polite"></div>
   <div class="src">
@@ -578,10 +591,24 @@
 
   // Floor finishes drawn once on a canvas: hinoki planks on the ground floor, tatami mats upstairs.
   // Each slab piece gets its own repeat so a plank or tile has the same size everywhere.
-  const floorTex = [0, 1, 2].map(function (k) {
-    const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+  const FLOOR_CLONES = [];
+  // a small seeded generator of its own, so redrawing never disturbs the scene's random sequence
+  function dlcg(seed) { let a = seed >>> 0; return function () { a = (a + 0x6D2B79F5) >>> 0; let q = Math.imul(a ^ a >>> 15, 1 | a); q = q + Math.imul(q ^ q >>> 7, 61 | q) ^ q; return ((q ^ q >>> 14) >>> 0) / 4294967296; }; }
+  // hinoki / tatami normally; dungeon mode redraws the same canvases as flagstones
+  function drawFloor(k, cv, stone) {
     const x = cv.getContext('2d');
-    if (k === 0) {
+    if (stone) {
+      const q = dlcg(11 + k), n = k === 0 ? 4 : 2, sz = 256 / n, tones = ['#5a585c', '#504e52', '#646166', '#565459', '#4a484c'];
+      x.fillStyle = '#26242a'; x.fillRect(0, 0, 256, 256);
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+        x.fillStyle = tones[Math.floor(q() * tones.length)];
+        x.fillRect(c * sz + 2, r * sz + 2, sz - 3, sz - 3);
+        x.fillStyle = 'rgba(255, 255, 255, 0.05)'; x.fillRect(c * sz + 2, r * sz + 2, sz - 3, 3);
+      }
+      x.strokeStyle = '#25232a'; x.lineWidth = 2;
+      for (let i = 0; i < 5; i++) { x.beginPath(); let px = q() * 256, py = q() * 256; x.moveTo(px, py); for (let m = 0; m < 4; m++) { px += (q() - 0.5) * 40; py += (q() - 0.5) * 40; x.lineTo(px, py); } x.stroke(); }
+      for (let i = 0; i < 14; i++) { x.fillStyle = q() < 0.5 ? '#4a6b3a' : '#3a5a30'; x.fillRect(q() * 250, q() * 250, 3 + q() * 8, 2 + q() * 4); }
+    } else if (k === 0) {
       const tones = ['#e6d0a6', '#e0c99c', '#ead6ae', '#dcc394'];
       for (let r = 0; r < 8; r++) {
         const off = (r % 2) * 128;
@@ -600,12 +627,19 @@
       x.fillStyle = '#2f3a2e'; [0, 122, 128, 250].forEach(function (bx) { x.fillRect(bx, 0, 6, 256); });
       x.fillStyle = 'rgba(60, 50, 25, 0.55)'; x.fillRect(0, 0, 128, 3); x.fillRect(128, 127, 128, 3);   // mat ends, staggered
     }
+  }
+  const floorTex = [0, 1, 2].map(function (k) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+    drawFloor(k, cv, false);
     const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; t.encoding = THREE.sRGBEncoding;
     return t;
   });
+  // the two far walls get their own materials so dungeon mode can swap in a brick texture
+  const wallMatBack = new THREE.MeshStandardMaterial({ color: 0xf3ead6, roughness: 0.85 });
+  const wallMatWest = new THREE.MeshStandardMaterial({ color: 0xf3ead6, roughness: 0.85 });
   const SLABS = [];   // floor slabs, used to dim labels hidden behind an upper storey (see scaleLabels)
   function floorPiece(k, w, d, x, y, z, o) {
-    const t = floorTex[k].clone(); t.needsUpdate = true;
+    const t = floorTex[k].clone(); t.needsUpdate = true; FLOOR_CLONES.push(t);
     const tile = k === 0 ? 4 : 2.6;
     t.repeat.set(w / tile, d / tile);
     const m = box(w, 0.3, d, 0, x, y, z, Object.assign({ material: new THREE.MeshStandardMaterial({ map: t, roughness: k === 0 ? 0.7 : 0.95 }) }, o));
@@ -630,9 +664,9 @@
   }
   function storeyWalls(k) {
     const g = floors[k], y = FY[k], H = FLOOR_H - 0.3, len = BX1 - BX0, d = BZ1 - BZ0;
-    box(len, H, 0.3, C.wall, (BX0 + BX1) / 2, y + H / 2, BZ0, { parent: g });
+    box(len, H, 0.3, C.wall, (BX0 + BX1) / 2, y + H / 2, BZ0, { parent: g, material: wallMatBack });
     for (let x = BX0 + 2.4; x < BX1 - 1.5; x += 3.4) box(2.2, 1.5, 0.06, 0, x, y + 2.2, BZ0 + 0.17, { parent: g, cast: false, material: windowMat });
-    box(0.3, H, d, C.wall, BX0, y + H / 2, 0, { parent: g });
+    box(0.3, H, d, C.wall, BX0, y + H / 2, 0, { parent: g, material: wallMatWest });
     for (let z = BZ0 + 2.4; z < BZ1 - 1.5; z += 3.4) box(0.06, 1.5, 2.2, 0, BX0 + 0.17, y + 2.2, z, { parent: g, cast: false, material: windowMat });
     // hashira pillars between the windows and a nageshi beam above them
     for (let x = BX0 + 0.7; x < BX1 - 0.2; x += 3.4) box(0.22, H, 0.12, WOOD, x, y + H / 2, BZ0 + 0.2, { parent: g, cast: false });
@@ -3150,6 +3184,101 @@
   const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2, sizeAttenuation: false, transparent: true, opacity: 0, fog: false });
   scene.add(new THREE.Points(starGeo, starMat));
 
+  // ---------- Mode dungeon: a dark ruined-castle theme blended over the normal scene ----------
+  // Stone floors and brick walls, torches that flicker, pillars with ivy, moss, a throne for the Eng. Manager
+  // and an iron gate with glowing eyes in the test lab. It is all switched on and off at runtime. The torches
+  // reuse the desk lights (more point lights than that overflow the shader's uniform limit).
+  const DUNGEON_BG = new THREE.Color(0x070a14), HEMI_DUNGEON = new THREE.Color(0x8493c8), SUN_DUNGEON = new THREE.Color(0x93a6d8);
+  let dungeon = 0, dungeonTarget = 0, stoneOn = false, savedNight = 0;
+  const dungeonDecor = [], flames = [], gateEyes = [];
+  const torchMat = new THREE.MeshBasicMaterial({ color: 0xffa83a }), flameCore = new THREE.MeshBasicMaterial({ color: 0xfff1b8 });
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x7a1414 });
+  const brickCv = document.createElement('canvas'); brickCv.width = brickCv.height = 128;
+  (function drawBricks() {
+    const x = brickCv.getContext('2d'), q = dlcg(5), tones = ['#8a8174', '#7d7468', '#938a7c', '#867d70'];
+    x.fillStyle = '#3a352f'; x.fillRect(0, 0, 128, 128);
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) {
+      x.fillStyle = tones[Math.floor(q() * 4)];
+      x.fillRect(c * 64 - (r % 2) * 32 + 2, r * 32 + 2, 60, 28);
+    }
+    for (let i = 0; i < 10; i++) { x.fillStyle = 'rgba(70, 105, 55, 0.7)'; x.fillRect(q() * 120, q() * 120, 4 + q() * 9, 2 + q() * 5); }
+  })();
+  function setStone(on) {
+    stoneOn = on;
+    floorTex.forEach(function (tx, k) { drawFloor(k, tx.image, on); tx.needsUpdate = true; });
+    FLOOR_CLONES.forEach(function (c) { c.needsUpdate = true; });
+    [[wallMatBack, BX1 - BX0], [wallMatWest, BZ1 - BZ0]].forEach(function (w) {
+      if (on) { const bt = new THREE.CanvasTexture(brickCv); bt.wrapS = bt.wrapT = THREE.RepeatWrapping; bt.encoding = THREE.sRGBEncoding; bt.repeat.set(w[1] / 2.2, (FLOOR_H - 0.3) / 2.2); w[0].map = bt; w[0].color.setHex(0xffffff); }
+      else { w[0].map = null; w[0].color.setHex(C.wall); }
+      w[0].needsUpdate = true;
+    });
+  }
+  function decorGroup(parent) { const g = new THREE.Group(); g.visible = false; parent.add(g); dungeonDecor.push(g); return g; }
+  function torch(g, x, y, z) {
+    const tg = new THREE.Group(); tg.position.set(x, y, z); g.add(tg);
+    box(0.14, 0.6, 0.14, 0x2a2420, 0, 0, 0, { parent: tg, cast: false });
+    box(0.32, 0.12, 0.32, 0x3b3128, 0, 0.32, 0, { parent: tg, cast: false });
+    const f = new THREE.Mesh(new THREE.ConeGeometry(0.19, 0.55, 6), torchMat); f.position.y = 0.62; tg.add(f);
+    const c = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.3, 6), flameCore); c.position.y = 0.54; tg.add(c);
+    flames.push({ f: f, c: c, ph: x * 1.7 + z });
+  }
+  function pillar(g, x, z, y, H) {
+    cyl(0.46, 0.5, H, 12, 0x7b7468, x, y + H / 2, z, { parent: g });
+    box(1.2, 0.24, 1.2, 0x6b655d, x, y + 0.12, z, { parent: g });
+    box(1.2, 0.28, 1.2, 0x6b655d, x, y + H - 0.14, z, { parent: g });
+    for (let i = 0; i < 4; i++) {
+      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.2 + (i % 2) * 0.08, 1), mat([0x3f7a3a, 0x4f8a3e, 0x2f6a35][i % 3]));
+      b.position.set(x + Math.cos(i * 1.9) * 0.42, y + 0.7 + i * 0.85, z + Math.sin(i * 1.9) * 0.42); g.add(b);
+    }
+  }
+  [0, 1, 2].forEach(function (k) {
+    const g = decorGroup(floors[k]), y = FY[k], H = FLOOR_H - 0.3, q = dlcg(40 + k);
+    [-10.5, -6, -0.5, 12.0].forEach(function (x) { torch(g, x, y + 3.3, BZ0 + 0.3); });
+    [-5.5, 2.5].forEach(function (z) { torch(g, BX0 + 0.3, y + 3.3, z); });
+    [[BX1, BZ1], [BX1, BZ0], [BX0, BZ1], [-8.5, BZ1 + 0.1], [6.5, BZ1 + 0.1], [BX1 + 0.1, -5.5], [BX1 + 0.1, 5.5]].forEach(function (c) { pillar(g, c[0], c[1], y - 0.15, H + 0.15); });
+    // ivy on the back wall and moss on the floor
+    for (let i = 0; i < 9; i++) {
+      const vx = BX0 + 1 + q() * (BX1 - BX0 - 2), len = 0.8 + q() * 1.6;
+      box(0.16, len, 0.05, [0x3f7a3a, 0x4f8a3e, 0x2f6a35][i % 3], vx, y + H - len / 2 - 0.1, BZ0 + 0.18, { parent: g, cast: false });
+      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.26 + q() * 0.2, 1), mat(0x3f7a3a)); b.position.set(vx, y + 0.3 + q() * 0.9, BZ0 + 0.3); g.add(b);
+    }
+    for (let i = 0; i < 12; i++) {
+      const mx = -11.5 + q() * 23.5, mz = -9 + q() * 18;
+      if (k > 0 && mx > 9.6 && mz > -4 && mz < 8) continue;
+      box(0.6 + q() * 0.9, 0.02, 0.5 + q() * 0.7, [0x4a6b3a, 0x3a5a30, 0x56803f][i % 3], mx, y + 0.03, mz, { parent: g, cast: false });
+    }
+    for (let i = 0; i < 3; i++) {   // swords left on the floor
+      const sw = new THREE.Group(); sw.position.set(-10 + q() * 19, y + 0.05, -7 + q() * 14); sw.rotation.y = q() * Math.PI; g.add(sw);
+      if (k > 0 && sw.position.x > 9.2 && sw.position.z > -4 && sw.position.z < 8) sw.position.x = -9;
+      box(1.1, 0.03, 0.09, 0xa9b0b8, 0, 0, 0, { parent: sw, cast: false });
+      box(0.05, 0.05, 0.3, 0x6b4a2a, -0.5, 0.01, 0, { parent: sw, cast: false });
+      box(0.3, 0.05, 0.06, 0x4a3320, -0.68, 0.01, 0, { parent: sw, cast: false });
+    }
+  });
+  (function buildDungeonSpecials() {
+    // iron gate with glowing red eyes in the back wall of the test lab (floor 3), between two hashira
+    const g = floors[2].children.find(function (c) { return dungeonDecor.indexOf(c) >= 0; }), y = FY[2], gx = 9.8, gz = BZ0 + 0.3;
+    box(2.4, 3.0, 0.1, 0x14121a, gx, y + 1.5, gz, { parent: g, cast: false });
+    [-1.35, 1.35].forEach(function (s) { box(0.34, 3.3, 0.34, 0x6b655d, gx + s, y + 1.65, gz + 0.05, { parent: g }); });
+    box(3.1, 0.34, 0.34, 0x6b655d, gx, y + 3.2, gz + 0.05, { parent: g });
+    for (let i = 0; i < 9; i++) cyl(0.035, 0.035, 2.9, 6, 0x3a3a42, gx - 0.9 + i * 0.225, y + 1.5, gz + 0.08, { parent: g, cast: false });
+    [-0.34, 0.34].forEach(function (s) { gateEyes.push(box(0.17, 0.1, 0.04, 0, gx + s, y + 1.7, gz + 0.02, { parent: g, cast: false, material: eyeMat })); });
+    // stone throne and braziers beside the Eng. Manager's board (parented to his group, so they follow its rotation)
+    const tg = decorGroup(centre);
+    box(1.8, 0.16, 1.6, 0x6b655d, -4.1, 0.08, 0.1, { parent: tg });
+    box(0.95, 0.5, 0.8, 0x7a7468, -4.1, 0.41, 0.1, { parent: tg });
+    box(1.05, 1.9, 0.22, 0x7a7468, -4.1, 1.1, -0.3, { parent: tg });
+    [-0.55, 0.55].forEach(function (s) { box(0.16, 0.62, 0.8, 0x6b655d, -4.1 + s, 0.55, 0.1, { parent: tg }); });
+    box(0.55, 0.4, 0.24, 0x8a8478, -4.1, 2.2, -0.3, { parent: tg });
+    [3.9, -5.7].forEach(function (bx) {
+      cyl(0.16, 0.2, 1.0, 8, 0x6b655d, bx, 0.5, -0.8, { parent: tg });
+      cyl(0.36, 0.22, 0.28, 10, 0x3b3128, bx, 1.12, -0.8, { parent: tg });
+      const f = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.7, 6), torchMat); f.position.set(bx, 1.55, -0.8); tg.add(f);
+      const c = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.4, 6), flameCore); c.position.set(bx, 1.45, -0.8); tg.add(c);
+      flames.push({ f: f, c: c, ph: bx * 2.3 });
+    });
+  })();
+
   // ---------- Day / night ----------
   let nightTarget = 0, night = 0;
   const SUN_DAY = new THREE.Color(0xfff1d6), SUN_NIGHT = new THREE.Color(0x9fb6ff);
@@ -3174,6 +3303,19 @@
     lagoonMats.forEach(function (m) { m.color.copy(LAGOON[0]).lerp(LAGOON[1], n); });
     starMat.opacity = n;
     clouds.forEach(function (c) { c.g.visible = n < 0.95; });
+    const dg = dungeon;
+    if (dg > 0) {   // dungeon blend: a darker world; the desk lights turn into torchlight
+      scene.background.lerp(DUNGEON_BG, dg); scene.fog.color.copy(scene.background);
+      hemi.intensity *= 1 - 0.15 * dg; hemi.color.lerp(HEMI_DUNGEON, dg);
+      sun.intensity *= 1 - 0.2 * dg; sun.color.lerp(SUN_DUNGEON, dg);
+      windowMat.emissiveIntensity *= 1 - 0.88 * dg; boardMat.emissiveIntensity *= 1 - 0.6 * dg;
+      lampLights.forEach(function (l) { l.intensity *= 1 - dg; });
+      deskLights.forEach(function (l) { l.intensity = l.intensity * (1 - dg) + dg * 3.4; });
+      deskLampMat.emissiveIntensity *= 1 - 0.7 * dg; beamMat.opacity *= 1 - 0.6 * dg;
+    }
+    deskLights.forEach(function (l) { l.color.setHex(dg > 0.02 ? 0xff9a3c : 0xffc56b); l.distance = 5.5 + 8 * dg; });
+    dungeonDecor.forEach(function (d) { d.visible = dg > 0.02; });
+    if ((dg > 0.5) !== stoneOn) setStone(dg > 0.5);
   }
 
   // ---------- UI ----------
@@ -3188,6 +3330,23 @@
     btnNight.querySelector('.lbl').textContent = nightTarget ? 'Mode siang' : 'Mode malam';
     if (reduceMotion) { night = nightTarget; applyNight(night); }
   });
+  const btnDungeon = document.getElementById('btnDungeon');
+  function syncNightBtn() {
+    btnNight.setAttribute('aria-pressed', String(!!nightTarget));
+    btnNight.querySelector('.lbl').textContent = nightTarget ? 'Mode siang' : 'Mode malam';
+  }
+  function setDungeon(on, instant) {
+    if (!!dungeonTarget === on) return;
+    dungeonTarget = on ? 1 : 0;
+    if (on) { savedNight = nightTarget; nightTarget = 1; } else nightTarget = savedNight;
+    document.body.classList.toggle('dungeon', on);
+    btnDungeon.setAttribute('aria-pressed', String(on));
+    btnDungeon.querySelector('.lbl').textContent = on ? 'Mode kantor' : 'Mode dungeon';
+    btnNight.disabled = on; syncNightBtn();
+    store('noskill-dungeon', on ? '1' : null);
+    if (reduceMotion || instant) { night = nightTarget; dungeon = dungeonTarget; applyNight(night); }
+  }
+  btnDungeon.addEventListener('click', function () { setDungeon(!dungeonTarget); });
   btnPause.addEventListener('click', function () {
     paused = !paused;
     btnPause.setAttribute('aria-pressed', String(paused));
@@ -3357,6 +3516,13 @@
       if (Math.abs(distGoal - next) < 0.2) distGoal = null;
     }
 
+    if (dungeon > 0.002) {   // torch flicker, and the gate's eyes glare red when the reviewer last said CHANGES_REQUESTED
+      if (dungeon > 0.98) deskLights.forEach(function (l, i) { l.intensity = 3.4 + Math.sin(t * 9 + i * 2.1) * 0.5 + Math.sin(t * 23 + i) * 0.2; });
+      flames.forEach(function (f) { const sc = 1 + 0.22 * Math.sin(t * 13 + f.ph) + 0.1 * Math.sin(t * 29 + f.ph * 2); f.f.scale.set(1, sc, 1); f.c.scale.set(1, sc, 1); });
+      const ql = ST.reviewer.a.qaLight, bad = !!ql && ql.color.getHex() === 0xe5484d;
+      eyeMat.color.setHex(bad ? 0xff2a2a : 0x7a1414);
+      gateEyes.forEach(function (e) { e.scale.setScalar((bad ? 1.6 : 1) * (0.92 + 0.08 * Math.sin(t * 3))); });
+    }
     koi.forEach(function (f) {
       const a = t * f.sp * 0.7 + f.ph;
       f.m.position.x = -4.6 + Math.cos(a) * f.r * 1.4; f.m.position.z = 12.0 + Math.sin(a) * f.r * 0.6;
@@ -3372,12 +3538,14 @@
 
   applyNight(0);
   update(0);
+  if (load('noskill-dungeon') === '1') setDungeon(true, true);
 
   function frame() {
     const dt = Math.min(clock.getDelta(), 0.05);
     if (!paused) update(dt);
-    if (Math.abs(night - nightTarget) > 0.001) {
+    if (Math.abs(night - nightTarget) > 0.001 || Math.abs(dungeon - dungeonTarget) > 0.001) {
       night += (nightTarget - night) * Math.min(1, dt * 2.5);
+      dungeon += (dungeonTarget - dungeon) * Math.min(1, dt * 2.5);
       applyNight(night);
     }
     controls.update();

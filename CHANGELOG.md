@@ -2,6 +2,14 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.4.0 — 2026-11-08
+
+### Ditambah — Mode dungeon, tema tambahan Kantor
+- **Tombol Mode dungeon** di toolbar panel mengubah kantor jadi reruntuhan kastil malam hari: lantai batu berlumut, dinding bata, obor dinding berkedip, pilar batu beriven, pedang tergeletak, singgasana dan dua perapian di samping papan Hafiz, serta pintu jeruji dengan mata merah di Ruang uji yang melotot saat reviewer terakhir memberi `CHANGES_REQUESTED`.
+- Dunia jadi gelap dengan vignette di tepi layar, panel ikut bertema gelap-amber, dan mode malam biasa dinonaktifkan selama dungeon aktif (kembali ke pilihan sebelumnya saat keluar). Pilihan tema diingat di browser; tampilan kantor biasa tetap default dan tidak berubah.
+- Cahaya obor memakai ulang lampu meja (tidak menambah lampu), karena lampu tambahan melewati batas shader dan membuat seluruh dunia 3D berhenti tampil.
+- Dibangun di atas tampilan 2.3.0 (render realistis, pulau, interior Jepang): lantai hinoki dan tatami digambar ulang sebagai batu, dan dinding belakang serta barat diberi tekstur bata.
+
 ## 2.3.0 — 2026-11-04
 
 ### Diubah — Kantor 3D lebih realistis dengan karakter chibi 3D
