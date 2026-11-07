@@ -2,6 +2,18 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.6.0 — 2026-11-09
+
+### Diubah — papan tiket pindah ke lantai 3
+- **Papan tiket kini berdiri di dinding barat lantai 3.** Di lantai 1 papan itu sering tertutup lantai atas dan pagar kalau dilihat dari depan; di lantai teratas tidak ada lantai di atasnya, jadi papan terlihat jelas dari tampilan depan dan tampilan semua lantai. Klik tiket di papan tetap bekerja. Papan ikut tersembunyi saat kamu memilih Lantai 1 atau 2 (lantai di atasnya disembunyikan).
+
+### Ditambah — monster di jalan pada Mode dungeon
+- Saat Mode dungeon aktif, **monster muncul di jalan lingkar** lewat portal ungu: slime berwarna dan imp bayangan bermata merah, tiap monster berlabel ID tiket BUG (contoh bila tidak ada tiket BUG). Maksimal tiga sekaligus.
+- Monster memburu pejalan kaki di trotoar, menerkam, lalu pejalan kaki **terjatuh, berteriak ("Monster!", "Tolong!", "Lari!"), dan lari ke arah sebaliknya**. Setelah tiga serangan atau sekitar 17 detik monster menghilang; saat Mode dungeon dimatikan semuanya ikut hilang.
+- **Mobil dan motor berhenti** di depan monster yang ada di jalan, seperti berhenti di zebra cross.
+- Tanpa lampu tambahan (cahaya monster berupa emissive) supaya tidak melewati batas shader.
+- Percobaan membuat tiga karakter dungeon (ksatria, penyihir, penyihir waktu) menjadi model 3D dibatalkan karena tidak mirip sprite 2D aslinya; sprite 2D dan mini-game Dungeon Arena tetap seperti di 2.5.0.
+
 ## 2.5.0 — 2026-11-08
 
 ### Ditambah — karakter sprite dan mini-game di Mode dungeon
