@@ -8,7 +8,7 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 2.3.0" src="https://img.shields.io/badge/version-2.3.0-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 2.7.0" src="https://img.shields.io/badge/version-2.7.0-1d6b57?style=flat-square&logo=github" />
 </div>
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, dan reviewer (sekaligus QA).
@@ -24,6 +24,14 @@ Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan
 | Klik agent untuk melihat tugas dan skill | Jalan raya, halte, dan warga sekitar | Mode malam |
 |---|---|---|
 | ![Kartu agent Arkan (Reviewer + QA) dengan avatar, deskripsi, skill, tools, dan verdict](docs/img/kantor-agent.jpg) | ![Lantai 1 berlantai parket: agent bekerja di meja, mobil dan motor melintas di jalan](docs/img/kantor-jalan.jpg) | ![Kantor saat malam dengan lampu meja dan lampu jalan menyala](docs/img/kantor-malam.jpg) |
+
+**Mode dungeon:** tombol di toolbar mengubah kantor jadi reruntuhan kastil malam hari (obor berkedip, lantai batu, pilar beriven, pintu jeruji bermata merah di Ruang uji). Tampilan kantor biasa tetap default. Di mode ini monster (goblin, slime, dan kelelawar berlabel ID tiket BUG) juga muncul di jalan lingkar lewat portal, menerkam pejalan kaki, dan membuat mobil berhenti.
+
+![Mode dungeon: kantor sebagai reruntuhan kastil dengan obor, lantai batu, dan dinding bata](docs/img/kantor-dungeon.jpg)
+
+**Dungeon Arena:** di Mode dungeon ada tombol game 2D sisi-samping. Kamu jadi ksatria dengan penyihir dan pemanah sebagai teman, tiap tiket BUG menjadi goblin, slime, atau kelelawar berlabel ID tiketnya, dan bos Tenggat menunggu di akhir. Hanya membaca tiket; status tiket tidak berubah. Kontrol: ←/→/↑/↓ atau WASD jalan, Spasi lompat, J/X/klik serang, Esc keluar. Karakter berasal dari sprite sheet yang disediakan pemilik repo.
+
+![Dungeon Arena: ksatria, penyihir, dan pemanah melawan goblin, slime, kelelawar, dan bos Tenggat di halaman reruntuhan](docs/img/kantor-arena.jpg)
 
 ## Skills
 

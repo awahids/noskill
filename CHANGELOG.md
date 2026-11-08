@@ -2,6 +2,43 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.7.0 — 2026-11-09
+
+### Diubah — Dungeon Arena dengan latar baru, pemanah, dan tiga jenis monster
+- **Latar arena kini halaman reruntuhan malam hari** (singgasana, dua obor berkedip, lengkungan, pintu jeruji bermata merah, pagar, lantai batu retak). Gambar latarnya sudah dibersihkan dari karakter bawaannya dan ditanam sebagai JPEG di dalam halaman.
+- **Karakter baru: pemanah.** Ia ikut membantu di arena dan menembakkan panah lurus ke monster terdekat; penyihir tetap menembakkan bola sihir. Di kantor, pemanah berdiri di lantai 3 sisi barat dan sesekali menarik busur.
+- **Tiga jenis monster, semuanya sprite:** goblin berpentungan (jalan mendekat dan mengayunkan pentungan, 3 nyawa), slime biru-hijau (merayap dan meludahkan gumpalan dari jauh, 2 nyawa), dan kelelawar (melayang lalu menyambar, 2 nyawa; serangan jarak dekat hanya kena bila kamu juga dekat tingginya, panah dan bola sihir tetap bisa mengenainya). Tiket BUG dibagi bergantian ke ketiganya, tiap monster berlabel ID tiketnya. Bos Tenggat tetap sama.
+- **Monster di jalan kantor kini memakai ketiga jenis itu juga** (menggantikan model 3D slime dan imp), dan menghadap ke arah pejalan kaki yang diburu.
+- Atlas sprite bertambah empat (pemanah, goblin, slime, kelelawar; warna disederhanakan, ±250 KB base64). Hanya membaca tiket; status tiket tidak berubah.
+
+## 2.6.0 — 2026-11-09
+
+### Diubah — papan tiket pindah ke lantai 3
+- **Papan tiket kini berdiri di dinding barat lantai 3.** Di lantai 1 papan itu sering tertutup lantai atas dan pagar kalau dilihat dari depan; di lantai teratas tidak ada lantai di atasnya, jadi papan terlihat jelas dari tampilan depan dan tampilan semua lantai. Klik tiket di papan tetap bekerja. Papan ikut tersembunyi saat kamu memilih Lantai 1 atau 2 (lantai di atasnya disembunyikan).
+
+### Ditambah — monster di jalan pada Mode dungeon
+- Saat Mode dungeon aktif, **monster muncul di jalan lingkar** lewat portal ungu: slime berwarna dan imp bayangan bermata merah, tiap monster berlabel ID tiket BUG (contoh bila tidak ada tiket BUG). Maksimal tiga sekaligus.
+- Monster memburu pejalan kaki di trotoar, menerkam, lalu pejalan kaki **terjatuh, berteriak ("Monster!", "Tolong!", "Lari!"), dan lari ke arah sebaliknya**. Setelah tiga serangan atau sekitar 17 detik monster menghilang; saat Mode dungeon dimatikan semuanya ikut hilang.
+- **Mobil dan motor berhenti** di depan monster yang ada di jalan, seperti berhenti di zebra cross.
+- Tanpa lampu tambahan (cahaya monster berupa emissive) supaya tidak melewati batas shader.
+- Percobaan membuat tiga karakter dungeon (ksatria, penyihir, penyihir waktu) menjadi model 3D dibatalkan karena tidak mirip sprite 2D aslinya; sprite 2D dan mini-game Dungeon Arena tetap seperti di 2.5.0.
+
+## 2.5.0 — 2026-11-08
+
+### Ditambah — karakter sprite dan mini-game di Mode dungeon
+- **Penghuni dungeon.** Tiga karakter dari sprite sheet yang disediakan (ksatria berjubah hijau, penyihir ungu, dan penyihir waktu berkerudung) berdiri di kantor sebagai sprite 2D animasi: ksatria di samping singgasana (menebas saat reviewer terakhir memberi `CHANGES_REQUESTED`), penyihir di Ruang rapat, dan penyihir waktu di dekat Ruang uji.
+- **Dungeon Arena, mini-game 2D sisi-samping.** Tombol baru muncul di toolbar saat Mode dungeon aktif. Kamu menjadi ksatria (←/→/↑/↓ atau WASD jalan, Spasi lompat, J/X/klik serang, Esc keluar), penyihir ungu ikut menembak dari belakang, dan **tiap tiket BUG menjadi satu slime berlabel ID tiketnya** (minimal 3, maksimal 6; contoh bila tidak ada tiket BUG). Setelah semua slime kalah, muncul bos **Tenggat** (penyihir waktu) yang melempar gelombang dan menyerbu. Menang atau kalah tidak mengubah tiket: kantor tetap hanya membaca tiket. Skor tidak disimpan.
+- Sprite dipotong dari sheet (latar kotak-kotak dihapus, frame dikecilkan dan warnanya disederhanakan) dan ditanam sebagai tiga atlas PNG base64 (±300 KB) di dalam halaman, supaya tetap satu file. Latar arena digambar lewat kode karena gambar latar yang ada sudah memuat karakter di dalamnya; ilustrasi bos kristal dan pemanah tidak dipakai karena tidak punya animasi.
+- Saat arena terbuka, dunia 3D berhenti dirender supaya ringan.
+
+## 2.4.0 — 2026-11-08
+
+### Ditambah — Mode dungeon, tema tambahan Kantor
+- **Tombol Mode dungeon** di toolbar panel mengubah kantor jadi reruntuhan kastil malam hari: lantai batu berlumut, dinding bata, obor dinding berkedip, pilar batu beriven, pedang tergeletak, singgasana dan dua perapian di samping papan Hafiz, serta pintu jeruji dengan mata merah di Ruang uji yang melotot saat reviewer terakhir memberi `CHANGES_REQUESTED`.
+- Dunia jadi gelap dengan vignette di tepi layar, panel ikut bertema gelap-amber, dan mode malam biasa dinonaktifkan selama dungeon aktif (kembali ke pilihan sebelumnya saat keluar). Pilihan tema diingat di browser; tampilan kantor biasa tetap default dan tidak berubah.
+- Cahaya obor memakai ulang lampu meja (tidak menambah lampu), karena lampu tambahan melewati batas shader dan membuat seluruh dunia 3D berhenti tampil.
+- Dibangun di atas tampilan 2.3.0 (render realistis, pulau, interior Jepang): lantai hinoki dan tatami digambar ulang sebagai batu, dan dinding belakang serta barat diberi tekstur bata.
+
 ## 2.3.0 — 2026-11-04
 
 ### Diubah — Kantor 3D lebih realistis dengan karakter chibi 3D
