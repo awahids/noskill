@@ -2,6 +2,15 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.7.0 — 2026-11-09
+
+### Diubah — Dungeon Arena dengan latar baru, pemanah, dan tiga jenis monster
+- **Latar arena kini halaman reruntuhan malam hari** (singgasana, dua obor berkedip, lengkungan, pintu jeruji bermata merah, pagar, lantai batu retak). Gambar latarnya sudah dibersihkan dari karakter bawaannya dan ditanam sebagai JPEG di dalam halaman.
+- **Karakter baru: pemanah.** Ia ikut membantu di arena dan menembakkan panah lurus ke monster terdekat; penyihir tetap menembakkan bola sihir. Di kantor, pemanah berdiri di lantai 3 sisi barat dan sesekali menarik busur.
+- **Tiga jenis monster, semuanya sprite:** goblin berpentungan (jalan mendekat dan mengayunkan pentungan, 3 nyawa), slime biru-hijau (merayap dan meludahkan gumpalan dari jauh, 2 nyawa), dan kelelawar (melayang lalu menyambar, 2 nyawa; serangan jarak dekat hanya kena bila kamu juga dekat tingginya, panah dan bola sihir tetap bisa mengenainya). Tiket BUG dibagi bergantian ke ketiganya, tiap monster berlabel ID tiketnya. Bos Tenggat tetap sama.
+- **Monster di jalan kantor kini memakai ketiga jenis itu juga** (menggantikan model 3D slime dan imp), dan menghadap ke arah pejalan kaki yang diburu.
+- Atlas sprite bertambah empat (pemanah, goblin, slime, kelelawar; warna disederhanakan, ±250 KB base64). Hanya membaca tiket; status tiket tidak berubah.
+
 ## 2.6.0 — 2026-11-09
 
 ### Diubah — papan tiket pindah ke lantai 3
