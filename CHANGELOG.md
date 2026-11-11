@@ -2,6 +2,16 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.11.1 — 2026-11-11
+
+### Diubah — hasil menjalankan suite eval pertama (25 kasus)
+Hasil awal: 21 lulus, 4 gagal, skor rata-rata 0,95, selisih rata-rata terhadap tanpa plugin +0,39 ($6,04). Dijalankan ulang 3 kali:
+- `developer-worktree` (lulus 3 dari 3) dan `pm-write-prd` (2 dari 3) ternyata kegagalan sesekali, bukan regresi.
+- **Kasus reviewer gagal juga di versi sebelum 2.8.0**, jadi bukan regresi. Penyebabnya eval: Bash di sandbox eval read-only, sementara `ticket-reviewer` (yang sengaja tanpa tool Write) menulis laporan lewat Bash, sehingga file laporan tidak pernah ada. Pemeriksa di `reviewer-approves-correct`, `reviewer-fe-no-db`, dan `reviewer-rejects-duplication` kini memeriksa jawaban akhir dan path laporan yang dikembalikan, bukan file-nya. Hasil: ketiganya lulus 3 dari 3 kecuali satu pemeriksa.
+- **Kelemahan agent yang ditemukan:** reviewer kadang tidak mendeteksi duplikasi `clamp` karena men-grep nama fitur ("discount"), bukan konsep. Aturan reuse di `ticket-reviewer` kini memberi kata kunci per konsep (`clamp|limit|min|max`, `format|currency`, dst.). `names-clamp` lulus 5 dari 5 run sesudahnya.
+- Deskripsi YAML dua eval baru dikutip (titik dua membuat file gagal dimuat).
+- Belum terbukti: `developer-scope-reuse`, `project-profile-scan`, `quick-mode-ticket`, dan `reviewer-fe-no-db` skornya sama dengan tanpa plugin (+0,00), jadi kasusnya belum membedakan plugin dari model polos.
+
 ## 2.11.0 — 2026-11-11
 
 ### Ditambah — rapat tiket: semua agent yang terlibat ikut rapat di ruang rapat

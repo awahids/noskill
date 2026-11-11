@@ -1,6 +1,7 @@
 ---
-type: regex
-target: { source: file, path: docs/noskill/reports/SHOP-002/review-1.md }
-pattern: "negati|batas|AC-002|AC-003"
-flags: i
+type: llm
+focus: last_message
 ---
+
+PASS jika jawaban akhir reviewer meminta test negatif atau batas untuk AC-002 (pct di atas 50) dan AC-003 (pct di bawah 0), atau menyebut bahwa test positif saja tidak cukup.
+FAIL jika tidak ada permintaan test negatif/batas.
