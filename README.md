@@ -48,7 +48,8 @@ Yang muncul di menu `/`: `feature-flow`, `tiket`, `lazy`, `kantor`, `project-pro
 | [`kantor`](skills/kantor/) | Shortcut: buka **Kantor noskill**, kantor 3D tiga lantai tempat agent noskill bekerja dan berjalan mengantar tiket, live dari tiket `docs/noskill` (lewat artifact claude.ai) |
 | [`lazy`](skills/lazy/) | Shortcut: kerjakan langsung dengan solusi paling sederhana, tanpa tiket/review/QA |
 | [`prd-writer`](skills/prd-writer/) | PRD baku dengan diagram Mermaid, didahului minimal 5 pertanyaan klarifikasi; juga Reverse-PRD dari kode |
-| [`erp-requirements`](skills/erp-requirements/) *internal* | ERP/WMS: (A) checklist desain domain — master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP; (B) rantai requirement traceability |
+| [`erp-domain-design`](skills/erp-domain-design/) *internal* | ERP/WMS: checklist desain domain — master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP |
+| [`erp-requirements`](skills/erp-requirements/) *internal* | ERP/WMS: rantai requirement traceability BR→PROC→US→AC→TECH→TC→UAT |
 | [`task-breakdown`](skills/task-breakdown/) *internal* | PRD/BRD → tiket: satu per endpoint (BE, dengan Kontrak API), per fitur (FE), atau per bug |
 | [`coding-standards`](skills/coding-standards/) *internal* | Naming, struktur folder, ORM, API, dokumentasi Swagger/OpenAPI, TDD, quality gate, dan checklist review untuk NestJS/Laravel/Golang/Vue/Next.js |
 | [`ticket-implementation`](skills/ticket-implementation/) *internal* | Prosedur bersama ketiga agent developer: scope, reuse, rencana, test RED, quality gate, laporan |
@@ -73,7 +74,7 @@ Semua agent bekerja sebagai **senior dengan prinsip lazy**: memutuskan sendiri d
 
 | Agent | Peran | Skill yang dimuat | Bisa ubah kode? |
 |---|---|---|---|
-| [`product-manager`](agents/product-manager.md) | Product Manager: menyusun pertanyaan klarifikasi, lalu menulis PRD (atau Reverse-PRD dari kode) | `prd-writer`, `erp-requirements` | Tidak (hanya tulis PRD) |
+| [`product-manager`](agents/product-manager.md) | Product Manager: menyusun pertanyaan klarifikasi, lalu menulis PRD (atau Reverse-PRD dari kode) | `prd-writer`, `erp-domain-design` | Tidak (hanya tulis PRD) |
 | [`cto`](agents/cto.md) | CTO: review arsitektur setelah PRD (ADR, GO / GO_WITH_NOTES / NO_GO) dan sign-off akhir seluruh branch (SIGN_OFF / CONCERNS) | `coding-standards` | Tidak (hanya tulis ADR & laporan) |
 | [`brd-tracer`](agents/brd-tracer.md) | PRD → BR/PROC/US/AC/TECH/TC di `docs/noskill/01..05` | `erp-requirements` | Tidak (hanya tulis dokumen) |
 | [`task-planner`](agents/task-planner.md) | Permintaan (atau PRD/BRD di mode lengkap) → tiket `docs/noskill/tickets/*.md` status TODO, sesedikit mungkin | `task-breakdown`, `ticket-workflow` | Tidak (hanya tulis tiket) |

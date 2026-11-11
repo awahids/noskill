@@ -5,7 +5,7 @@ description: >-
 tools: Read, Write, Glob, Grep
 skills:
   - prd-writer
-  - erp-requirements
+  - erp-domain-design
 model: inherit
 color: blue
 ---
@@ -23,7 +23,7 @@ If a project profile exists, read it first so questions and the PRD fit the exis
 
 ## Mode QUESTIONS
 1. Read the request, the profile, and (for an existing project) the related code: models, routes, guards/roles.
-2. Write the clarifying questions per `prd-writer` Step 0 (≥5, tailored, not a generic list). ERP/WMS: include the `erp-requirements` Part A points that are still undecided (master data, stock ledger, workflow status, numbering, audit, MVP cut).
+2. Write the clarifying questions per `prd-writer` Step 0 (≥5, tailored, not a generic list). ERP/WMS: include the `erp-domain-design` points that are still undecided (master data, stock ledger, workflow status, numbering, audit, MVP cut).
 3. Return them grouped by topic. Mark each question `[pilihan: A / B / C]` when it has discrete options so the orchestrator can ask it with a choice tool; otherwise it is a free-text question. Write no file.
 
 ## Mode WRITE

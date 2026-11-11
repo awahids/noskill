@@ -20,7 +20,7 @@ If an ADR folder is given, read it first: TECH items must follow its decisions; 
 
 Steps:
 1. Read the full PRD. If old BRD documents exist in `<docs>/`, read them first and continue their numbering — do not overwrite existing IDs.
-2. Write documents per layer into the folder structure per the `erp-requirements` skill Part B:
+2. Write documents per layer into the folder structure per the `erp-requirements` skill:
    - **Full level:** `<docs>/01-business/` … `<docs>/05-testing/`, including UAT.
    - **Brief level:** only `<docs>/03-functional/` (US + AC), `<docs>/04-technical/` (TECH), and `<docs>/05-testing/` (TC). Do not create `01-business/`, `02-process/`, or UAT — any needed business context is written briefly at the top of the 03-functional document.
 3. Ensure the chain is complete: every US has AC (happy path, reject path, side-effect, prohibition), every AC is derived into TECH, and every AC has at least one TC.

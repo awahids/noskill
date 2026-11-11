@@ -4,7 +4,7 @@ Baca file ini hanya saat user meminta PRD/BRD/ADR (full mode). `<docs>` = folder
 
 ## Stage 1–2 — PRD (Product Manager) — full mode only
 
-Agent `product-manager` cannot talk to the user, so you relay in two calls (ERP/WMS domain design from `erp-requirements` Part A is folded into its questions):
+Agent `product-manager` cannot talk to the user, so you relay in two calls (ERP/WMS domain design from `erp-domain-design` is folded into its questions):
 1. Call `product-manager` mode `QUESTIONS` with the user's request verbatim, PRD path `<docs>/prd.md`, and the profile path. Ask the user all returned questions at once — questions marked `[pilihan: …]` through the interactive choice tool if available, the rest as a numbered list. Wait for the answers.
 2. Call the same agent (SendMessage to its ID) with mode `WRITE` and the answers. If the user asked for "PRD dari kode yang ada", use mode `REVERSE` instead of these two steps. If the user said to skip questions, go straight to `WRITE` with assumptions marked.
 

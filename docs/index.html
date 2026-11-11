@@ -272,7 +272,8 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <h3>Requirement &amp; desain</h3>
       <div class="tbl"><table><tbody>
         <tr><td><code>prd-writer</code></td><td>PRD baku dengan diagram Mermaid, didahului minimal 5 pertanyaan klarifikasi. Ada juga mode Reverse-PRD dari kode yang sudah ada.</td></tr>
-        <tr><td><code>erp-requirements</code> <em>internal</em></td><td>ERP/WMS dalam dua bagian: checklist desain domain (master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP) dan traceability.</td></tr>
+        <tr><td><code>erp-domain-design</code> <em>internal</em></td><td>Checklist desain domain ERP/WMS sebelum schema: master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP. Dipakai product-manager.</td></tr>
+        <tr><td><code>erp-requirements</code> <em>internal</em></td><td>BRD traceability BR → UAT untuk fitur ERP/enterprise. Dipakai brd-tracer.</td></tr>
         <tr><td><code>task-breakdown</code> <em>internal</em></td><td>Memecah PRD/BRD menjadi task yang punya dependency, cara verifikasi, dan kolom Trace.</td></tr>
       </tbody></table></div>
       <h3>Standar &amp; kualitas</h3>

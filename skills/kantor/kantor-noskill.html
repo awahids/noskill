@@ -1753,7 +1753,7 @@
   // ---------- Agent details (click an agent) ----------
   const INFO = {
     pm: { desc: 'Mengubah permintaan user jadi PRD. Menyusun minimal 5 pertanyaan klarifikasi, lalu menulis PRD lengkap dengan diagram Mermaid. Bisa juga Reverse-PRD dari kode yang sudah ada.',
-      skills: ['prd-writer', 'erp-requirements'], tools: 'Read, Write, Glob, Grep', model: 'Model sesi', code: 'Tidak, hanya menulis PRD', verdict: 'Daftar pertanyaan, lalu PRD' },
+      skills: ['prd-writer', 'erp-domain-design'], tools: 'Read, Write, Glob, Grep', model: 'Model sesi', code: 'Tidak, hanya menulis PRD', verdict: 'Daftar pertanyaan, lalu PRD' },
     cto: { desc: 'Penjaga arsitektur. Setelah PRD disetujui, me-review stack, risiko, dan kebutuhan non-fungsional lalu menulis ADR. Sebelum PR, memeriksa seluruh branch lintas tiket.',
       skills: ['coding-standards'], tools: 'Read, Write, Bash, Glob, Grep', model: 'Model sesi', code: 'Tidak, hanya ADR dan laporan', verdict: 'GO, GO_WITH_NOTES, NO_GO, lalu SIGN_OFF atau CONCERNS' },
     analyst: { desc: 'Business/system analyst. Menurunkan PRD jadi BR, PROC, US, AC, TECH, dan TC yang saling terlacak di folder 01 sampai 05.',
