@@ -70,7 +70,7 @@ Skill di luar alur tiket dipisah ke plugin sendiri supaya plugin inti tetap ring
 
 Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field `skills:`.
 
-**Rapat tiket:** sebelum tiket ditulis, semua agent yang terlibat (task-planner, ticket-reviewer, developer BE/FE sesuai layer, dan PM/CTO/analyst di mode lengkap) memberi masukan dalam satu putaran paralel (maks. 8 baris tiap agent), notulennya masuk `docs/noskill/reports/_rapat/`, dan di Kantor noskill mereka semua berjalan ke ruang rapat.
+**Rapat tiket:** (dilewati untuk satu tiket sederhana satu layer) sebelum tiket ditulis, semua agent yang terlibat (task-planner, ticket-reviewer, developer BE/FE sesuai layer, dan PM/CTO/analyst di mode lengkap) memberi masukan dalam satu putaran paralel (maks. 8 baris tiap agent), notulennya masuk `docs/noskill/reports/_rapat/`, dan di Kantor noskill mereka semua berjalan ke ruang rapat.
 
 Semua agent bekerja sebagai **senior dengan prinsip lazy**: memutuskan sendiri dari kode dan dokumen, bertanya hanya kalau jawabannya mengubah hasil, dan memilih perubahan terkecil yang memenuhi kebutuhan (PRD sebatas MVP, tiket hanya untuk yang diminta, kode tanpa abstraksi atau poles yang tidak diminta). Validasi, keamanan, dan test tidak pernah dipangkas.
 
@@ -165,7 +165,7 @@ Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-
 
 ## Eval
 
-`evals/` berisi 24 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, tiket `layer: be` diarahkan ke backend-developer, PM bertanya dulu sebelum menulis PRD, CTO memberi verdict arsitektur, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan reviewer memverifikasi tiket FE dengan mock Kontrak API tanpa menyalakan DB/server.
+`evals/` berisi 25 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, tiket `layer: be` diarahkan ke backend-developer, PM bertanya dulu sebelum menulis PRD, CTO memberi verdict arsitektur, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan reviewer memverifikasi tiket FE dengan mock Kontrak API tanpa menyalakan DB/server.
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash

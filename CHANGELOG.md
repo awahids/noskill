@@ -6,6 +6,7 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 
 ### Ditambah — rapat tiket: semua agent yang terlibat ikut rapat di ruang rapat
 - **Alur:** sebelum tiket ditulis (langkah Plan di mode default, Stage 4 di mode lengkap), `feature-flow` menggelar rapat tiket (`skills/feature-flow/references/meeting.md`): draf pembagian tiket → semua peserta memberi masukan dalam **satu putaran paralel** (maksimal 8 baris tiap agent: `Setuju`/perubahan, `Risiko:`, `Asumsi:`) → notulen `docs/noskill/reports/_rapat/rapat-<n>.md` → keputusan diterapkan ke tiket. Peserta: `task-planner` dan `ticket-reviewer` selalu; developer BE/FE/umum sesuai layer tiket; di mode lengkap juga `product-manager`, `cto`, `brd-tracer`. Perbedaan pendapat yang tidak bisa diselesaikan dari kode atau PRD ditanyakan ke user di gate, tanpa putaran kedua.
+- **Dilewati bila tidak perlu:** satu tiket `simple`, satu layer, tanpa kontrak API langsung ditulis tanpa rapat (dicatat satu baris di gate). Dua tiket atau lebih, tiket `complex`, atau pasangan BE–FE selalu rapat; user bisa memaksa ("pakai rapat") atau melewati ("tanpa rapat").
 - **Mode RAPAT** didefinisikan di tiap agent (dan di `ticket-implementation` untuk developer): jawab ringkas, tidak menulis file, tidak mengubah apa pun.
 - **Kantor noskill:** `activity.json` mendukung `"status": "meeting"` dengan daftar `"meeting": [nama agent]`. Eng. Manager dan semua agent itu berjalan ke ruang rapat (kini delapan kursi, sebelumnya enam), punya obrolan khusus rapat tiket, dan keluar saat aktivitas berikutnya ditulis atau setelah 30 menit. Label ruangan menjadi "HOLD & rapat tiket". Diuji di Chromium dengan data simulasi: delapan agent mendapat delapan kursi berbeda dan berjalan ke ruang rapat.
 
@@ -13,7 +14,7 @@ Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan s
 - **Bagian `Senior conduct`** di `ticket-implementation` (dibaca ketiga developer): putuskan dan catat asumsi, eskalasi tiga tingkat (asumsi yang bisa dibatalkan → lanjut; risiko yang tidak merusak AC → lanjut dan catat di `## Risiko`; AC tidak bisa dipenuhi → `BLOCKED`), sebut masalah di luar tiket tanpa memperbaikinya.
 - **Laporan developer** punya `## Asumsi` dan `## Risiko`. `ticket-reviewer` menilainya: asumsi yang bertentangan dengan AC ditolak, risiko yang terbukti nyata jadi temuan wajib. `feature-flow` membawa asumsi dan risiko yang masih relevan ke `## Catatan` PR.
 - **Memori proyek `<docs>/lessons.md`:** orkestrator menambah satu baris saat tiket mencapai `rounds` = 2 untuk jenis temuan yang sama atau saat HOLD dijawab user (maksimal 40 baris). Developer, reviewer, dan task-planner membacanya sebelum bekerja.
-- Eval baru `ticket-meeting` (total 24); `quick-mode-ticket` kini mengizinkan `Agent` dan `Write` karena alurnya memanggil rapat.
+- Eval baru `ticket-meeting` (total 25, termasuk `ticket-meeting-skip`); `quick-mode-ticket` kini mengizinkan `Agent` dan `Write` karena alurnya memanggil rapat.
 
 ## 2.10.0 — 2026-11-11
 

@@ -2,6 +2,9 @@
 
 Hold this every time tickets are about to be written: in Plan after step 1 (default mode), and in Stage 4 before calling `task-planner` (full mode). Everyone who will touch the tickets gives input once, before the split is final — like a refinement meeting. In `/noskill:kantor` they all walk to the meeting room.
 
+## When to skip
+Skip the meeting when the draft is **one ticket**, `complexity: simple`, a single layer, with no `integrates_with`/`## Kontrak API` — one developer and one reviewer would only echo the ticket. Say so in one line at the gate (`Rapat dilewati: satu tiket sederhana`) and go on. Two or more tickets, any `complex` ticket, or any BE–FE pair always get the meeting. The user can also ask for it ("pakai rapat") or to skip it ("tanpa rapat").
+
 ## Attendees
 - `task-planner` (the tech lead) — always, even when you write the tickets yourself (≤ 3).
 - `ticket-reviewer` — always (testability of the AC).
