@@ -1,5 +1,5 @@
 ---
-description: feature-flow mode default (dua tiket, salah satunya kompleks, jadi aturan lewati rapat tidak berlaku) menggelar rapat tiket sebelum menulis tiket: planner, reviewer, dan developer dipanggil dengan Mode RAPAT dalam satu putaran, notulen ditulis, tiket dibuat, kode tidak diubah, berhenti di gate.
+description: "feature-flow mode default (dua tiket, salah satunya kompleks, jadi aturan lewati rapat tidak berlaku) menggelar rapat tiket sebelum menulis tiket: planner, reviewer, dan developer dipanggil dengan Mode RAPAT dalam satu putaran, notulen ditulis, tiket dibuat, kode tidak diubah, berhenti di gate."
 max_turns: 60
 timeout_seconds: 1200
 allowed_tools: [Read, Write, Edit, Bash, Glob, Grep, Skill, Agent]

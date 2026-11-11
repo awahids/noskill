@@ -1,5 +1,5 @@
 ---
-description: Developer pada revisi memverifikasi catatan review: menolak saran yang menduplikasi helper clamp (lengkap dengan bukti di bagian Tanggapan) dan mengerjakan saran yang benar (test batas di atas 50).
+description: "Developer pada revisi memverifikasi catatan review: menolak saran yang menduplikasi helper clamp (lengkap dengan bukti di bagian Tanggapan) dan mengerjakan saran yang benar (test batas di atas 50)."
 max_turns: 60
 timeout_seconds: 900
 allowed_tools: [Read, Write, Edit, Bash, Glob, Grep, Skill, Agent]
