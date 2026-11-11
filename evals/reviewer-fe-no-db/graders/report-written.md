@@ -1,4 +1,5 @@
 ---
-type: file_exists
-path: "docs/noskill/reports/SHOP-FE-003/review-*.md"
+type: regex
+target: trace
+pattern: "reports/SHOP-FE-003/review-\\d+\\.md"
 ---
