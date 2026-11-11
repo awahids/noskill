@@ -124,7 +124,7 @@
         <div class="eyebrow">Plugin Claude Code</div>
         <h1>noskill</h1>
         <div align="center">
-          <img alt="Version 2.7.0" src="https://img.shields.io/badge/version-2.7.0-1d6b57?style=flat-square&logo=github" />
+          <img alt="Version 2.11.0" src="https://img.shields.io/badge/version-2.11.0-1d6b57?style=flat-square&logo=github" />
         </div>
         <p class="lede">Skill dan agent untuk kerja development seperti tim engineering: tiket dikerjakan developer, lalu reviewer mengecek kode sekaligus menjalankan test dan cara verifikasinya, lalu masuk DONE. Kodenya hanya mengubah yang diminta, bukan refactor tanpa alasan. Cocok untuk bug fix, fitur kecil, fitur besar, dan multi-repo.</p>
         <div class="cmd"><pre>/plugin install noskill --marketplace awahids/noskill</pre><button type="button" data-copy>Salin</button></div>
@@ -272,7 +272,8 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
       <h3>Requirement &amp; desain</h3>
       <div class="tbl"><table><tbody>
         <tr><td><code>prd-writer</code></td><td>PRD baku dengan diagram Mermaid, didahului minimal 5 pertanyaan klarifikasi. Ada juga mode Reverse-PRD dari kode yang sudah ada.</td></tr>
-        <tr><td><code>erp-requirements</code> <em>internal</em></td><td>ERP/WMS dalam dua bagian: checklist desain domain (master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP) dan traceability.</td></tr>
+        <tr><td><code>erp-domain-design</code> <em>internal</em></td><td>Checklist desain domain ERP/WMS sebelum schema: master data, stock ledger, workflow status, RBAC, audit trail, roadmap MVP. Dipakai product-manager.</td></tr>
+        <tr><td><code>erp-requirements</code> <em>internal</em></td><td>BRD traceability BR → UAT untuk fitur ERP/enterprise. Dipakai brd-tracer.</td></tr>
         <tr><td><code>task-breakdown</code> <em>internal</em></td><td>Memecah PRD/BRD menjadi task yang punya dependency, cara verifikasi, dan kolom Trace.</td></tr>
       </tbody></table></div>
       <h3>Standar &amp; kualitas</h3>
@@ -297,6 +298,8 @@ claude --plugin-dir ./noskill</pre><button type="button" data-copy>Salin</button
           <tr><td><code>/noskill:tiket fix &lt;deskripsi&gt;</code></td><td>Bug fix atau perubahan kecil lewat satu tiket.</td></tr>
           <tr><td><code>/noskill:tiket lanjut [jawaban]</code></td><td>Melanjutkan tiket yang tertunda dari sesi sebelumnya.</td></tr>
           <tr><td><code>/noskill:tiket rapikan [ID]</code></td><td>Rapikan tiket lama agar sesuai aturan tiket terbaru. Usulan ditampilkan dulu, diterapkan setelah kamu setujui.</td></tr>
+          <tr><td><code>/noskill:tiket utang</code></td><td>Daftar komentar <code>shortcut:</code> di kode beserta batas dan pemicu upgrade-nya. Hanya membaca.</td></tr>
+          <tr><td><code>/noskill:tiket audit [folder]</code></td><td>Audit kualitas folder atau repo: bug, risiko, skala, test yang kurang, kode yang bisa dihapus. Hanya membaca; temuan bisa dijadikan tiket.</td></tr>
           <tr><td><code>/noskill:kantor</code></td><td>Buka Kantor noskill. Di Cowork/claude.ai diterbitkan sebagai artifact milikmu; di Claude Code terminal disalin ke folder docs dan berjalan dalam mode demo.</td></tr>
           <tr><td><code>/noskill:lazy &lt;permintaan&gt;</code></td><td>Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan, tanpa tiket, review, atau QA.</td></tr>
           <tr><td><code>/noskill:feature-flow</code></td><td>Alur tiket: default plan langsung, PRD/BRD bila diminta.</td></tr>

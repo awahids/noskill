@@ -11,6 +11,8 @@ Use this structured flow whenever helping debug, instead of guessing a fix right
 ## Debugging Flow
 
 ### 1. Reproduce
+**Build a feedback loop first — it is the core of debugging.** Before forming theories, have ONE command you have already run (failing test, curl/HTTP script, CLI with a fixture, replayed captured payload, throwaway harness with mocks, or a loop of N random inputs) that is *red-capable* (asserts the user's exact symptom, not "does not crash"), deterministic (flaky bug: raise the reproduction rate by looping/stressing until debuggable), fast (seconds), and runnable unattended. Tighten it (faster, sharper, more deterministic) once it exists. If you cannot build one, say so, list what you tried, and ask for access, a redacted captured artifact, or permission to add temporary instrumentation — do not hypothesise without a loop. Redact secrets (`<REDACTED>`) in any command output or artifact you show. Once red, minimise: cut inputs, callers, config, and steps one at a time, re-running after each cut, and keep only what keeps it red.
+
 Before concluding anything, make sure the problem can be reproduced:
 - Ask for the exact steps the user took (request, input, environment)
 - If there's an error message/stack trace, ask for the full text, not truncated

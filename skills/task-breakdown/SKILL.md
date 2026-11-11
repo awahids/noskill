@@ -16,7 +16,7 @@ Turns a PRD into a task list ready for a tracker (Notion/Jira/Trello/GitHub Issu
 1. **Pure new project (greenfield)** or **integration/addition to an existing project**? Check the PRD's Architecture section — if it mentions other running systems (existing repo, stack that must match, existing endpoints), it's an integration case.
 2. If **integrating into an existing project**, tasks **must follow the folder structure, code patterns, and conventions the PRD names as existing** — not a "set up a new project from scratch" task. Quote the concrete paths/files the PRD names (e.g. `server/internal/delivery/handlers/canteen_proxy.handler.go`, the `stores/attendance.js` pattern) as direct references in the task, not generic folders like `src/handlers/`.
 3. If the PRD doesn't detail the existing structure but says "integrated with system X", **ask the user** whether there is access to that existing codebase (local path, repo) so tasks are precise — don't guess an unmentioned folder structure.
-4. **Check whether a BRD document (`erp-requirements` Part B) already exists** (US-xxx, AC-xxx, TECH-xxx) for this feature. If so, it is the primary source for the breakdown — see the traceability rules in Step 4. If not, the source is the PRD only.
+4. **Check whether a BRD document (`erp-requirements`) already exists** (US-xxx, AC-xxx, TECH-xxx) for this feature. If so, it is the primary source for the breakdown — see the traceability rules in Step 4. If not, the source is the PRD only.
 5. Identify **how many systems/codebases are affected** (e.g. 2 — backend/frontend of the new Kantin system, plus a thin addition to the existing HRIS backend/frontend). Each affected system gets a separate task group; if that system is a separate repo, its tickets get a `repo:` field (see `feature-flow` Multi-Repo section).
 
 ## Ticket Rules (Aturan Tiket) — One Ticket per Endpoint, per Feature, or per Bug
@@ -89,7 +89,7 @@ Group tasks by **phase** (logical work order, not just per module), then by **sy
 - [ ] **[TASK-ID]** [Judul task singkat, actionable]
   - **Deskripsi:** [apa yang dikerjakan, 1-2 kalimat]
   - **Acuan PRD:** [section/bagian PRD terkait, misal "Database Schema — tabel orders"]
-  - **Trace:** [hanya kalau ada dokumen BRD (`erp-requirements` Bagian B) — `US-INV-001 / TECH-003 / AC-002` yang dipenuhi task ini]
+  - **Trace:** [hanya kalau ada dokumen BRD (`erp-requirements`) — `US-INV-001 / TECH-003 / AC-002` yang dipenuhi task ini]
   - **File/lokasi:** [path konkret kalau project existing, atau struktur folder yang berlaku dari `coding-standards`]
   - **Acceptance Criteria:**
     - [ ] [kriteria terverifikasi 1]
@@ -104,7 +104,7 @@ Group tasks by **phase** (logical work order, not just per module), then by **sy
 
 **Task-ID numbering rule:** prefix per system/module so it's easy to track, e.g. `KTN-BE-001` (Kantin Backend), `KTN-FE-001` (Kantin Frontend), `HR-INT-001` (integration in HRIS) — consistent and short.
 
-**Traceability to the BRD document (`erp-requirements` Part B, if the document exists):**
+**Traceability to the BRD document (`erp-requirements`, if the document exists):**
 - Every TECH-xxx is covered by **at least one** task; several small TECHs for the same behavior may be merged into one task (the Trace column lists all of them). A TECH that is too large may be split into several tasks, but all refer to the same TECH in the **Trace** column — don't recreate tasks from the PRD for things already covered by a TECH.
 - Task Acceptance Criteria come from the AC-xxx referenced by that TECH (write the ID, e.g. `AC-002: qty > outstanding ditolak`), not rewritten in new words.
 - Extra tasks not derived from any TECH (setup, CI/CD, existing integration) are still allowed, but the Trace column is `—` with the reason in Deskripsi.
@@ -147,6 +147,6 @@ Mark which tasks **can run in parallel** vs which are **strictly sequential** vi
 
 ## Related Skills
 - `prd-writer` — source PRD for the breakdown
-- `erp-requirements` — if a BRD document (Part B) exists, the source of US/AC/TECH that must be referenced in the Trace column
+- `erp-requirements` — if a BRD document exists, the source of US/AC/TECH that must be referenced in the Trace column
 - `coding-standards` — used for backend/frontend folder structure/conventions in new projects (no existing pattern to follow)
 - `standup-update` (plugin `noskill-extras`) — after tasks are worked on, progress can be summarized with this skill

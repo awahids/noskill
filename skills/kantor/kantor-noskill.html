@@ -1090,6 +1090,7 @@
   // Ruang rapat (floor 3, beside the coffee corner): where the Eng. Manager and the agents of HOLD tickets wait for your decision
   const MEETING_FLOOR = 2;
   const MEETING = { x: 5.2, z: 7.0 };
+  const MEETING_SPOTS = [[-1.0, -0.95], [0, -0.95], [1.0, -0.95], [-1.0, 0.95], [0, 0.95], [1.0, 0.95], [-1.75, 0], [1.75, 0]];   // 8 chairs: the whole team fits for a ticket meeting
   const LOUNGE = { x: -2.6, z: 6.8 };
   // nine standing spots in a ring around the table, one for every agent that can be idle
   const LOUNGE_SPOTS = [];
@@ -1135,7 +1136,7 @@
     const rug = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.03, 3.2), floorMat); rug.position.set(x, y + 0.02, z); g.add(rug);
     box(2.6, 0.08, 1.2, HINOKI, x, y + 0.76, z, { parent: g });
     [[-1.1, -0.45], [1.1, -0.45], [-1.1, 0.45], [1.1, 0.45]].forEach(function (l) { box(0.08, 0.72, 0.08, WOOD, x + l[0], y + 0.36, z + l[1], { parent: g }); });
-    [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]].forEach(function (sp) {   // one chair per spot
+    MEETING_SPOTS.forEach(function (sp) {   // one chair per spot
       chairAt(g, y, x + sp[0], z + sp[1], x, z, 0x2b3a55);
     });
     box(0.5, 0.03, 0.35, 0xf7f5ef, x - 0.5, y + 0.815, z - 0.1, { parent: g, cast: false });   // papers and a laptop on the table
@@ -1143,7 +1144,7 @@
     box(0.45, 0.3, 0.02, 0x2a2f36, x + 0.55, y + 0.97, z + 0.27, { parent: g, cast: false }).rotation.x = -0.25;
     box(0.05, 1.2, 1.6, C.white, x + 2.45, y + 1.4, z, { parent: g });                // small whiteboard
     box(0.08, 0.08, 1.7, WOOD, x + 2.45, y + 2.02, z, { parent: g, cast: false });
-    const sign = makeLabel('Ruang rapat', 'tiket HOLD', 0x3d5a80);
+    const sign = makeLabel('Ruang rapat', 'HOLD & rapat tiket', 0x3d5a80);
     sign.position.set(x, y + 3.1, z + 1.7); sign.scale.set(3.8, 1.24, 1); g.add(sign);
   })();
 
@@ -1339,7 +1340,7 @@
   // Places agents can walk to: the shared coffee corner and the meeting room
   const PLACES = {
     lounge: { floor: LOUNGE_FLOOR, x: LOUNGE.x, z: LOUNGE.z, spots: LOUNGE_SPOTS, taken: loungeTaken },
-    meeting: { floor: MEETING_FLOOR, x: MEETING.x, z: MEETING.z, spots: [[-0.7, -0.95], [0.7, -0.95], [-0.7, 0.95], [0.7, 0.95], [-1.75, 0], [1.75, 0]], taken: {}, seat: 0.01 },
+    meeting: { floor: MEETING_FLOOR, x: MEETING.x, z: MEETING.z, spots: MEETING_SPOTS, taken: {}, seat: 0.01 },
     pantry: { floor: 0, x: PANTRY.x, z: PANTRY.z, spots: [[0, -0.85], [0.85, 0], [-0.85, 0], [0, 0.85]], taken: {}, stay: [18, 35] },
     toilet: { floor: 1, x: TOILET.x, z: TOILET.z, spots: [[-1.1, 0.4], [1.1, 0.4]], taken: {}, stay: [7, 11], hide: true },
     musholla: { floor: 1, x: MUSHOLLA.x, z: MUSHOLLA.z, spots: [[-1.3, 0, -Math.PI / 2], [0.2, -1.1, -Math.PI / 2], [0.2, 0, -Math.PI / 2], [0.2, 1.1, -Math.PI / 2], [1.4, -1.1, -Math.PI / 2], [1.4, 0, -Math.PI / 2], [1.4, 1.1, -Math.PI / 2]], taken: {}, stay: [22, 35] }
@@ -1470,7 +1471,8 @@
   const TALK = {
     lounge: ['Kopinya enak nih', 'Sudah push belum?', 'Deploy aman kan?', 'Nanti zuhur bareng ya', 'Ada meeting jam 3?', 'Alhamdulillah, lancar', 'Mantap, PR sudah merge', 'Teh atau kopi?', 'Bismillah, lanjut lagi', 'Test-nya hijau semua'],
     pantry: ['Ada yang mau air hangat?', 'Kulkasnya penuh nih', 'Mie instan lagi?', 'Jangan lupa cuci gelas', 'Kopi sachet tinggal dua'],
-    meeting: ['Kita tunggu keputusan dulu', 'Opsi A atau B ya?', 'Saya catat di Riwayat']
+    meeting: ['Kita tunggu keputusan dulu', 'Opsi A atau B ya?', 'Saya catat di Riwayat'],
+    rapat: ['Kontrak API-nya sudah jelas?', 'Ini bisa dites tanpa DB?', 'Scope-nya jangan melebar ya', 'Helper-nya sudah ada, pakai itu', 'AC negatifnya apa saja?', 'Dependensinya BE dulu atau FE?', 'Satu tiket cukup, tidak perlu dipecah']
   };
   const OPENERS = ['Assalamualaikum, sibuk?', 'Ada waktu sebentar?', 'Mau tanya soal tiket', 'Ngopi yuk nanti', 'Sudah makan siang?', 'Review-nya aman?'];
   const REPLIES = ['Waalaikumsalam, boleh', 'Bentar ya, lagi fokus', 'Boleh, kenapa?', 'Siap, nanti nyusul', 'Aman, insyaAllah', 'Belum, yuk ke pantri'];
@@ -1486,7 +1488,7 @@
     const busy = Object.keys(groups).filter(function (pl) { return groups[pl].length >= 2; });
     if (!busy.length) return;
     const pl = anyOf(busy), k = anyOf(groups[pl]);
-    if (!says[k]) say(k, anyOf(TALK[pl]), 2.6);
+    if (!says[k]) say(k, anyOf(pl === 'meeting' && rapatFor[k] ? TALK.rapat : TALK[pl]), 2.6);
   }
 
   function dropBubble(w) {
@@ -1753,7 +1755,7 @@
   // ---------- Agent details (click an agent) ----------
   const INFO = {
     pm: { desc: 'Mengubah permintaan user jadi PRD. Menyusun minimal 5 pertanyaan klarifikasi, lalu menulis PRD lengkap dengan diagram Mermaid. Bisa juga Reverse-PRD dari kode yang sudah ada.',
-      skills: ['prd-writer', 'erp-requirements'], tools: 'Read, Write, Glob, Grep', model: 'Model sesi', code: 'Tidak, hanya menulis PRD', verdict: 'Daftar pertanyaan, lalu PRD' },
+      skills: ['prd-writer', 'erp-domain-design'], tools: 'Read, Write, Glob, Grep', model: 'Model sesi', code: 'Tidak, hanya menulis PRD', verdict: 'Daftar pertanyaan, lalu PRD' },
     cto: { desc: 'Penjaga arsitektur. Setelah PRD disetujui, me-review stack, risiko, dan kebutuhan non-fungsional lalu menulis ADR. Sebelum PR, memeriksa seluruh branch lintas tiket.',
       skills: ['coding-standards'], tools: 'Read, Write, Bash, Glob, Grep', model: 'Model sesi', code: 'Tidak, hanya ADR dan laporan', verdict: 'GO, GO_WITH_NOTES, NO_GO, lalu SIGN_OFF atau CONCERNS' },
     analyst: { desc: 'Business/system analyst. Menurunkan PRD jadi BR, PROC, US, AC, TECH, dan TC yang saling terlacak di folder 01 sampai 05.',
@@ -1783,11 +1785,11 @@
     if (!selected) return;
     renderInfoBody();
     const w = walkers[selected];
-    if (w && w.mode === 'place') el('infoTask').textContent = ({ meeting: 'Berjalan ke ruang rapat untuk tiket HOLD. ', lounge: 'Tidak ada pekerjaan, ke ruang ngopi. ', pantry: 'Tidak ada pekerjaan, ke pantri. ', toilet: 'Ke toilet. ', musholla: 'Waktu salat, ke musholla. ' }[w.place] || '') + el('infoTask').textContent;
+    if (w && w.mode === 'place') el('infoTask').textContent = ({ meeting: (rapatFor[selected] ? 'Berjalan ke ruang rapat untuk rapat pembuatan tiket. ' : 'Berjalan ke ruang rapat untuk tiket HOLD. '), lounge: 'Tidak ada pekerjaan, ke ruang ngopi. ', pantry: 'Tidak ada pekerjaan, ke pantri. ', toilet: 'Ke toilet. ', musholla: 'Waktu salat, ke musholla. ' }[w.place] || '') + el('infoTask').textContent;
     else if (w && w.mode === 'home') el('infoTask').textContent = 'Kembali ke mejanya. ' + el('infoTask').textContent;
     else if (w && w.chat) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya setelah ngobrol. ' : 'Mampir ngobrol dengan ' + who(w.job.to) + '. ') + el('infoTask').textContent;
     else if (w) el('infoTask').textContent = (w.back ? 'Kembali ke mejanya. ' : 'Sedang berjalan mengantar tiket ke ' + who(w.job.to) + '. ') + el('infoTask').textContent;
-    else if (hang[selected] && hang[selected].place === 'meeting') el('infoTask').textContent = 'Di ruang rapat, menunggu keputusanmu untuk ' + (meetingFor[selected] || []).join(', ') + '. ' + el('infoTask').textContent;
+    else if (hang[selected] && hang[selected].place === 'meeting') el('infoTask').textContent = (rapatFor[selected] ? 'Di ruang rapat, ikut rapat pembuatan tiket. ' : 'Di ruang rapat, menunggu keputusanmu untuk ' + (meetingFor[selected] || []).join(', ') + '. ') + el('infoTask').textContent;
     else if (hang[selected]) el('infoTask').textContent = ({ lounge: 'Sedang ngopi di ruang ngopi lantai 3', pantry: 'Sedang di pantri lantai 1', toilet: 'Sedang ke toilet', musholla: 'Sedang salat di musholla lantai 2' }[hang[selected].place] || 'Sedang istirahat') + ' karena tidak ada pekerjaan. ' + el('infoTask').textContent;
   }
   function renderInfoBody() {
@@ -1885,12 +1887,13 @@
   const PATH_KEY = 'noskill-ticket-dir';
   let multi = false;
   let acts = [], actBy = {};
+  let rapatFor = {};        // agent key -> true while it is in a ticket meeting (activity status 'meeting'); it leaves its desk even if it has tickets
   let meetingFor = {};      // agent key -> HOLD ticket ids it waits on in the meeting room
   // An activity counts while it is in progress and not older than 6 hours
   function activeAct(a) {
-    if (a.status !== 'working' && a.status !== 'waiting_user') return false;
+    if (a.status !== 'working' && a.status !== 'waiting_user' && a.status !== 'meeting') return false;
     const t = Date.parse(a.at);
-    return isNaN(t) || Date.now() - t < 6 * 3600000;
+    return isNaN(t) || Date.now() - t < (a.status === 'meeting' ? 30 * 60000 : 6 * 3600000);   // a ticket meeting that was never closed ends after 30 minutes
   }
   let mode = 'demo', live = [], liveBy = {}, liveAt = null, liveTimer = null, liveRun = 0, mcpNs = null;
   const srcPill = el('srcPill'), srcText = el('srcText'), srcForm = el('srcForm'), srcPath = el('srcPath'), btnSrc = el('btnSrc');
@@ -2040,7 +2043,8 @@
     const key = AGENT_DESK[agent];
     if (!key) return null;
     return { project: project, agent: agent, key: key, status: String(a.status || 'working'), stage: String(a.stage || '').slice(0, 80),
-      task: String(a.task || '').slice(0, 240), ticket: a.ticket ? String(a.ticket).slice(0, 40) : '', at: String(a.at || '') };
+      task: String(a.task || '').slice(0, 240), ticket: a.ticket ? String(a.ticket).slice(0, 40) : '', at: String(a.at || ''),
+      meet: Array.isArray(a.meeting) ? a.meeting.map(function (n) { return AGENT_DESK[String(n).replace(/^noskill:/, '')]; }).filter(Boolean) : [] };
   }
   async function readBase(f) {
     const project = projectOf(f.base + '/tickets');
@@ -2126,6 +2130,7 @@
     shownTk.forEach(function (tk) { const k = stationFor(tk); if (k) (liveBy[k] = liveBy[k] || []).push(tk); });
     actBy = {};
     acts.filter(function (a) { return activeAct(a) && (!projFilter || a.project === projFilter); }).forEach(function (a) {
+      if (a.status === 'meeting') return;      // a meeting is not desk work: attendees go to the meeting room, see below
       actBy[a.status === 'waiting_user' ? 'em' : a.key] = a;
     });
     // Without activity.json, freshly created TODO tickets still mean the Tech Lead is writing tickets:
@@ -2146,7 +2151,10 @@
       if (newest) actBy.lead = { project: newest.tk.project, agent: 'task-planner', key: 'lead', status: 'working', stage: 'Stage 4 Tiket',
         task: 'Menulis tiket, terakhir ' + newest.tk.id + (newest.tk.title ? ': ' + newest.tk.title.slice(0, 80) : ''), ticket: '', at: new Date(newest.t).toISOString() };
     }
-    meetingFor = {};
+    meetingFor = {}; rapatFor = {};
+    acts.filter(function (a) { return a.status === 'meeting' && activeAct(a) && (!projFilter || a.project === projFilter); }).forEach(function (a) {
+      ['em'].concat(a.meet).forEach(function (k) { rapatFor[k] = true; (meetingFor[k] = meetingFor[k] || []).push('rapat tiket'); });
+    });
     shownTk.filter(function (tk) { return tk.status === 'HOLD'; }).forEach(function (tk) {
       const h = tk.hist || [];
       let prev = null;
@@ -2215,7 +2223,7 @@
   function stopLive(msg) {
     liveRun++;
     clearTimeout(liveTimer);
-    mode = 'demo'; live = []; liveBy = {}; liveSource = null; acts = []; actBy = {}; meetingFor = {};
+    mode = 'demo'; live = []; liveBy = {}; liveSource = null; acts = []; actBy = {}; meetingFor = {}; rapatFor = {};
     Object.keys(liveCards).forEach(function (k) { liveCards[k].g.visible = false; });
     card.visible = true;
     stepIdx = -1; stepT = 0; waiting = false; curKey = null; active = null;
@@ -3882,7 +3890,7 @@
       const wantMeeting = !!meetingFor[k];
       const deskWork = k === 'em' ? !!actBy.em : isAct;
       if (!walkers[k] && !replaying) {
-        if (wantMeeting && !deskWork) {
+        if (wantMeeting && (!deskWork || rapatFor[k])) {
           if (hang[k] && !inMeeting) comeBack(k);
           else if (!hang[k] && !queue.some(function (j) { return j.from === k; })) goPlace(k, 'meeting');
         } else if (hang[k] && (inMeeting || deskWork)) comeBack(k);   // work at the desk ends any break

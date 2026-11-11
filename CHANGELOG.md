@@ -2,6 +2,57 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.11.0 — 2026-11-11
+
+### Ditambah — rapat tiket: semua agent yang terlibat ikut rapat di ruang rapat
+- **Alur:** sebelum tiket ditulis (langkah Plan di mode default, Stage 4 di mode lengkap), `feature-flow` menggelar rapat tiket (`skills/feature-flow/references/meeting.md`): draf pembagian tiket → semua peserta memberi masukan dalam **satu putaran paralel** (maksimal 8 baris tiap agent: `Setuju`/perubahan, `Risiko:`, `Asumsi:`) → notulen `docs/noskill/reports/_rapat/rapat-<n>.md` → keputusan diterapkan ke tiket. Peserta: `task-planner` dan `ticket-reviewer` selalu; developer BE/FE/umum sesuai layer tiket; di mode lengkap juga `product-manager`, `cto`, `brd-tracer`. Perbedaan pendapat yang tidak bisa diselesaikan dari kode atau PRD ditanyakan ke user di gate, tanpa putaran kedua.
+- **Dilewati bila tidak perlu:** satu tiket `simple`, satu layer, tanpa kontrak API langsung ditulis tanpa rapat (dicatat satu baris di gate). Dua tiket atau lebih, tiket `complex`, atau pasangan BE–FE selalu rapat; user bisa memaksa ("pakai rapat") atau melewati ("tanpa rapat").
+- **Mode RAPAT** didefinisikan di tiap agent (dan di `ticket-implementation` untuk developer): jawab ringkas, tidak menulis file, tidak mengubah apa pun.
+- **Kantor noskill:** `activity.json` mendukung `"status": "meeting"` dengan daftar `"meeting": [nama agent]`. Eng. Manager dan semua agent itu berjalan ke ruang rapat (kini delapan kursi, sebelumnya enam), punya obrolan khusus rapat tiket, dan keluar saat aktivitas berikutnya ditulis atau setelah 30 menit. Label ruangan menjadi "HOLD & rapat tiket". Diuji di Chromium dengan data simulasi: delapan agent mendapat delapan kursi berbeda dan berjalan ke ruang rapat.
+
+### Ditambah — agent lebih seperti senior
+- **Bagian `Senior conduct`** di `ticket-implementation` (dibaca ketiga developer): putuskan dan catat asumsi, eskalasi tiga tingkat (asumsi yang bisa dibatalkan → lanjut; risiko yang tidak merusak AC → lanjut dan catat di `## Risiko`; AC tidak bisa dipenuhi → `BLOCKED`), sebut masalah di luar tiket tanpa memperbaikinya.
+- **Laporan developer** punya `## Asumsi` dan `## Risiko`. `ticket-reviewer` menilainya: asumsi yang bertentangan dengan AC ditolak, risiko yang terbukti nyata jadi temuan wajib. `feature-flow` membawa asumsi dan risiko yang masih relevan ke `## Catatan` PR.
+- **Memori proyek `<docs>/lessons.md`:** orkestrator menambah satu baris saat tiket mencapai `rounds` = 2 untuk jenis temuan yang sama atau saat HOLD dijawab user (maksimal 40 baris). Developer, reviewer, dan task-planner membacanya sebelum bekerja.
+- Eval baru `ticket-meeting` (total 25, termasuk `ticket-meeting-skip`); `quick-mode-ticket` kini mengizinkan `Agent` dan `Write` karena alurnya memanggil rapat.
+
+## 2.10.0 — 2026-11-11
+
+### Ditambah — `/noskill:tiket utang` dan `/noskill:tiket audit` (dari ponytail-debt dan ponytail-audit)
+- **`tiket utang`:** ledger semua komentar `shortcut: <batas>, <kapan di-upgrade>` di kode, dikelompokkan per file; penanda tanpa pemicu upgrade diberi tag `tanpa-pemicu` karena paling mudah membusuk. Hanya membaca; file ledger atau tiket baru hanya dibuat bila kamu minta.
+- **`tiket audit [folder]`:** audit kualitas satu folder atau seluruh repo, hanya membaca. Urutan penilaian: benar, aman, tahan beban, teruji, cepat, ramping. Tiap temuan wajib punya kasus konkret dan perbaikan terkecil; hasil dikelompokkan (harus / sebaiknya / boleh nanti), diberi nomor, maksimal 20, dan ditutup dengan verdict serta bagian yang belum dicek. Nomor yang dipilih bisa dijadikan tiket lewat `feature-flow` mode default.
+- Keduanya berupa file di `skills/tiket/references/`, jadi hanya dibaca saat aksinya dipilih. Teks ditulis ulang dalam Bahasa Indonesia mengikuti konvensi noskill.
+- Eval baru `tiket-utang` (total 23).
+
+## 2.9.0 — 2026-11-11
+
+### Ditambah — diadopsi dari skill populer di GitHub
+Setelah membaca `obra/superpowers`, `DietrichGebert/ponytail`, dan `mattpocock/skills`, hanya hal yang belum dimiliki noskill yang diambil (bukti sebelum klaim, root-cause tracing, dan prinsip lazy senior sudah ada):
+- **Developer saat revisi** (`ticket-implementation`, dari superpowers `receiving-code-review`): setiap catatan review diverifikasi ke kode dulu. Catatan yang keliru ditolak dengan bukti di bagian `## Tanggapan` laporan; catatan yang tidak jelas jadi `BLOCKED`; urutan kerja blocking → sederhana → kompleks. Tidak ada persetujuan kosong.
+- **Perbaikan bug** (dari ponytail): grep semua pemanggil fungsi yang diubah dan perbaiki sekali di kode bersama. Pintasan sadar diberi komentar `shortcut: <batas>, <kapan di-upgrade>` (juga di `coding-standards` prinsip 9).
+- **Laporan developer** punya baris "Dilewati / belum dicek", dan tidak boleh berisi "seharusnya lolos".
+- **`ticket-reviewer`** (dari ponytail-review): temuan wajib punya kasus konkret (input → hasil salah), pemanggil dicek saat signature berubah, komentar `shortcut:` dianggap keputusan. `references/review-checklist.md` bertambah bagian Skala & Konkurensi dan daftar code smell sebagai penilaian, bukan pelanggaran.
+- **`debug-assistant`** (dari mattpocock `diagnosing-bugs`): bangun feedback loop yang bisa merah, deterministik, dan cepat sebelum berteori; kecilkan repro; samarkan rahasia; bila loop tidak bisa dibuat, katakan dan minta akses.
+- **`feature-flow`**: laporan "siap review" dikonfirmasi dari `git status` dan file laporan sebelum reviewer dipanggil; ringkasan cek akhir hanya dari output perintah di sesi ini.
+- Eval baru `developer-revision-pushback` (total 22).
+
+## 2.8.0 — 2026-11-11
+
+### Diubah — agent dan skill lebih hemat konteks
+Field `skills:` memasukkan seluruh isi skill ke konteks agent, jadi skill besar yang tidak dipakai penuh langsung membebani tiap panggilan. Ukuran SKILL.md yang dimuat:
+- **`feature-flow` 24,9 KB → 18,0 KB.** Mode penuh (Stage 1–4), mode paralel, multi-repo, dan tracker sync pindah ke `skills/feature-flow/references/` dan dibaca hanya saat dipakai. Mode default tidak membacanya. Pilihan mode jalan dan tips sesi baru dipindah ke langkah Plan.
+- **`coding-standards` 17,6 KB → 13,2 KB.** Checklist review (bagian 9) pindah ke `references/review-checklist.md`; developer tidak lagi memuatnya, `ticket-reviewer` membacanya sebelum review.
+- **`erp-requirements` dipecah.** Bagian A jadi skill `erp-domain-design` (6,8 KB, dimuat `product-manager`); Bagian B tetap `erp-requirements` (9,7 KB, dimuat `brd-tracer`). Sebelumnya keduanya memuat 16,3 KB penuh.
+- Total per panggilan: developer 27,3 → 22,9 KB, `brd-tracer` 16,3 → 9,7 KB, `product-manager` 16,3 → 6,8 KB (di luar prompt agent itu sendiri).
+
+### Diubah — `activity.json` ditulis orkestrator
+- Paragraf "Activity" dihapus dari `product-manager`, `cto`, `brd-tracer`, dan `task-planner`. `feature-flow` kini menulis `activity.json` sebelum memanggil agent mana pun, dengan label `stage` yang sama seperti sebelumnya, sehingga Kantor noskill tidak berubah. Sebelumnya cara menulis `at` berbeda antar agent dan reviewer/developer tidak punya aturan ini.
+- Deskripsi `cto` dan `ticket-reviewer` dipersingkat (masuk daftar skill/agent yang selalu dimuat).
+
+### Ditambah — eval
+- Tiga case baru (total 21): `pm-write-prd` (mode WRITE), `cto-signoff` (SIGN_OFF menemukan duplikasi lintas tiket), `project-profile-scan`.
+- Catatan: pemangkasan di atas belum dijalankan terhadap suite eval; jalankan suite sebelum rilis.
+
 ## 2.7.0 — 2026-11-09
 
 ### Diubah — Dungeon Arena dengan latar baru, pemanah, dan tiga jenis monster
