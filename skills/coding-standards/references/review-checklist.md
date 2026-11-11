@@ -56,4 +56,12 @@ Baca saat me-review kode (reviewer, CTO). Developer yang menulis kode tidak perl
 - [ ] If this is a large refactor PR, a plan was followed (not ad-hoc changes midway without clear direction)
 - [ ] Schema migrations are not destructive without a staged strategy (if they touch tables that already have production data)
 
+**Scale & Concurrency** (judge against the load the project expects; say which load you assumed)
+- [ ] No check-then-write race on shared state (stock, quota, numbering) — atomic update, lock, or unique constraint
+- [ ] No work repeated per item that could be done once (a query per row, a call per loop turn); no list/cache that only grows
+- [ ] Per-process state that must be shared across instances is not kept in memory
+
+**Code smells (judgement calls, never hard violations; a documented repo standard overrides them)**
+Mysterious Name · Duplicated Code · Feature Envy (method mostly uses another object's data) · Data Clumps (same fields travel together) · Primitive Obsession · Repeated Switches (same cascade on one type) · Shotgun Surgery (one change scatters edits) · Divergent Change (one file edited for unrelated reasons) · Speculative Generality · Message Chains · Middle Man. Name the smell and quote the hunk; skip anything tooling already enforces.
+
 Give feedback with labels: `[blocking]` (must fix), `[nit]` (optional), `[question]` (clarification).

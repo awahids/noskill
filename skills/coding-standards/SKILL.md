@@ -39,6 +39,8 @@ If the user's stack differs from what is covered here, still apply the **general
    4. In an already-installed dependency? Use that. Don't add a new dependency for a few lines of code.
    5. If it still must be written: the minimal correct code, with no abstractions, wrappers, config, or "for later" code not needed now.
 
+   A shortcut with a known limit gets a one-line code comment: `shortcut: <the limit>, <when to upgrade>`. A reviewer treats it as a decision, not a finding, unless the expected load already crosses the limit.
+
    Simple does not mean sloppy: input validation at system boundaries, error handling that prevents data corruption, and security must not be cut. Between two equally simple solutions, pick the one that is correct for edge cases.
 
 ---

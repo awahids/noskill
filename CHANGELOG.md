@@ -2,6 +2,18 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.9.0 — 2026-11-11
+
+### Ditambah — diadopsi dari skill populer di GitHub
+Setelah membaca `obra/superpowers`, `DietrichGebert/ponytail`, dan `mattpocock/skills`, hanya hal yang belum dimiliki noskill yang diambil (bukti sebelum klaim, root-cause tracing, dan prinsip lazy senior sudah ada):
+- **Developer saat revisi** (`ticket-implementation`, dari superpowers `receiving-code-review`): setiap catatan review diverifikasi ke kode dulu. Catatan yang keliru ditolak dengan bukti di bagian `## Tanggapan` laporan; catatan yang tidak jelas jadi `BLOCKED`; urutan kerja blocking → sederhana → kompleks. Tidak ada persetujuan kosong.
+- **Perbaikan bug** (dari ponytail): grep semua pemanggil fungsi yang diubah dan perbaiki sekali di kode bersama. Pintasan sadar diberi komentar `shortcut: <batas>, <kapan di-upgrade>` (juga di `coding-standards` prinsip 9).
+- **Laporan developer** punya baris "Dilewati / belum dicek", dan tidak boleh berisi "seharusnya lolos".
+- **`ticket-reviewer`** (dari ponytail-review): temuan wajib punya kasus konkret (input → hasil salah), pemanggil dicek saat signature berubah, komentar `shortcut:` dianggap keputusan. `references/review-checklist.md` bertambah bagian Skala & Konkurensi dan daftar code smell sebagai penilaian, bukan pelanggaran.
+- **`debug-assistant`** (dari mattpocock `diagnosing-bugs`): bangun feedback loop yang bisa merah, deterministik, dan cepat sebelum berteori; kecilkan repro; samarkan rahasia; bila loop tidak bisa dibuat, katakan dan minta akses.
+- **`feature-flow`**: laporan "siap review" dikonfirmasi dari `git status` dan file laporan sebelum reviewer dipanggil; ringkasan cek akhir hanya dari output perintah di sesi ini.
+- Eval baru `developer-revision-pushback` (total 22).
+
 ## 2.8.0 — 2026-11-11
 
 ### Diubah — agent dan skill lebih hemat konteks
