@@ -8,7 +8,7 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 2.9.0" src="https://img.shields.io/badge/version-2.9.0-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 2.10.0" src="https://img.shields.io/badge/version-2.10.0-1d6b57?style=flat-square&logo=github" />
 </div>
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, dan reviewer (sekaligus QA).
@@ -44,7 +44,7 @@ Yang muncul di menu `/`: `feature-flow`, `tiket`, `lazy`, `kantor`, `project-pro
 | [`feature-flow`](skills/feature-flow/) | Orkestrator (engineering manager), alur ramping ala superpowers: plan → developer BE/FE → reviewer (review + verifikasi) → DONE (atau BUG/HOLD) → cek akhir. PRD/CTO/BRD hanya bila diminta, paralel, multi-repo, branch dan PR |
 | [`ticket-workflow`](skills/ticket-workflow/) *internal* | Format file tiket, arti tiap status, aturan transisi, verdict agent, dan board |
 | [`project-profile`](skills/project-profile/) | Scan repo sekali → `docs/noskill/project-profile.md` (stack, command, struktur, helper, aturan) yang dibaca semua agent |
-| [`tiket`](skills/tiket/) | Shortcut tiket dalam satu perintah: lihat board, lanjutkan tiket dari sesi sebelumnya, bug fix lewat satu tiket, rapikan tiket lama atau review ulang tiket DONE |
+| [`tiket`](skills/tiket/) | Shortcut tiket dalam satu perintah: lihat board, lanjutkan tiket dari sesi sebelumnya, bug fix lewat satu tiket, rapikan tiket lama, review ulang tiket DONE, daftar utang shortcut, atau audit kualitas repo |
 | [`kantor`](skills/kantor/) | Shortcut: buka **Kantor noskill**, kantor 3D tiga lantai tempat agent noskill bekerja dan berjalan mengantar tiket, live dari tiket `docs/noskill` (lewat artifact claude.ai) |
 | [`lazy`](skills/lazy/) | Shortcut: kerjakan langsung dengan solusi paling sederhana, tanpa tiket/review/QA |
 | [`prd-writer`](skills/prd-writer/) | PRD baku dengan diagram Mermaid, didahului minimal 5 pertanyaan klarifikasi; juga Reverse-PRD dari kode |
@@ -119,6 +119,8 @@ Pengaturan ini berlaku untuk semua project di komputer itu.
 | `/noskill:tiket lanjut [jawaban]` | Lanjutkan tiket yang tertunda dari sesi sebelumnya |
 | `/noskill:tiket rapikan [ID]` | Rapikan tiket TODO/HOLD agar sesuai aturan tiket terbaru (gabung tiket per layer, lengkapi Kontrak API, `integrates_with`, `complexity`); usulan ditampilkan dulu, diterapkan setelah kamu setujui |
 | `/noskill:tiket rapikan review <ID>` | Review ulang kode tiket DONE; temuan jadi tiket BUG baru |
+| `/noskill:tiket utang` | Daftar semua komentar `shortcut: <batas>, <kapan di-upgrade>` di kode; yang tanpa pemicu ditandai. Hanya membaca |
+| `/noskill:tiket audit [folder]` | Audit kualitas satu folder atau seluruh repo (bug, risiko, skala, test yang kurang, kode yang bisa dihapus), peringkat dan siap dijadikan tiket. Hanya membaca |
 | `/noskill:lazy <permintaan>` | Lazy senior dev mode: langsung kerjakan solusi paling sederhana dan terpendek yang jalan (YAGNI, stdlib dulu, tanpa abstraksi), tanpa tiket/review/QA |
 | `/noskill:feature-flow` | Alur tiket (default: plan langsung; PRD/BRD bila diminta) |
 | `/noskill:project-profile` | Buat/refresh profil project |
@@ -161,7 +163,7 @@ Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-
 
 ## Eval
 
-`evals/` berisi 22 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, tiket `layer: be` diarahkan ke backend-developer, PM bertanya dulu sebelum menulis PRD, CTO memberi verdict arsitektur, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan reviewer memverifikasi tiket FE dengan mock Kontrak API tanpa menyalakan DB/server.
+`evals/` berisi 23 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, tiket `layer: be` diarahkan ke backend-developer, PM bertanya dulu sebelum menulis PRD, CTO memberi verdict arsitektur, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan reviewer memverifikasi tiket FE dengan mock Kontrak API tanpa menyalakan DB/server.
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash

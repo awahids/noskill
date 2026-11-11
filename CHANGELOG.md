@@ -2,6 +2,14 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.10.0 — 2026-11-11
+
+### Ditambah — `/noskill:tiket utang` dan `/noskill:tiket audit` (dari ponytail-debt dan ponytail-audit)
+- **`tiket utang`:** ledger semua komentar `shortcut: <batas>, <kapan di-upgrade>` di kode, dikelompokkan per file; penanda tanpa pemicu upgrade diberi tag `tanpa-pemicu` karena paling mudah membusuk. Hanya membaca; file ledger atau tiket baru hanya dibuat bila kamu minta.
+- **`tiket audit [folder]`:** audit kualitas satu folder atau seluruh repo, hanya membaca. Urutan penilaian: benar, aman, tahan beban, teruji, cepat, ramping. Tiap temuan wajib punya kasus konkret dan perbaikan terkecil; hasil dikelompokkan (harus / sebaiknya / boleh nanti), diberi nomor, maksimal 20, dan ditutup dengan verdict serta bagian yang belum dicek. Nomor yang dipilih bisa dijadikan tiket lewat `feature-flow` mode default.
+- Keduanya berupa file di `skills/tiket/references/`, jadi hanya dibaca saat aksinya dipilih. Teks ditulis ulang dalam Bahasa Indonesia mengikuti konvensi noskill.
+- Eval baru `tiket-utang` (total 23).
+
 ## 2.9.0 — 2026-11-11
 
 ### Ditambah — diadopsi dari skill populer di GitHub
