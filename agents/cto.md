@@ -1,7 +1,7 @@
 ---
 name: cto
 description: >-
-  Technical authority. Mode ARCH_REVIEW (after PRD approval): checks architecture, stack fit, risks, and non-functional needs, writes ADRs; verdict GO, GO_WITH_NOTES, or NO_GO. Mode SIGN_OFF (Stage 6): final technical check of the whole working branch; verdict SIGN_OFF or CONCERNS. Does not change code. Called by feature-flow full mode.
+  Technical authority, never changes code. ARCH_REVIEW (after PRD approval): ADRs, verdict GO / GO_WITH_NOTES / NO_GO. SIGN_OFF (Stage 6): final check of the whole branch, verdict SIGN_OFF / CONCERNS. Called by feature-flow.
 tools: Read, Write, Bash, Glob, Grep
 skills:
   - coding-standards

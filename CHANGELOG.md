@@ -2,6 +2,23 @@
 
 Format: versi terbaru di atas. Versi di `.claude-plugin/plugin.json` dinaikkan setiap rilis supaya pengguna mendapat update.
 
+## 2.8.0 — 2026-11-11
+
+### Diubah — agent dan skill lebih hemat konteks
+Field `skills:` memasukkan seluruh isi skill ke konteks agent, jadi skill besar yang tidak dipakai penuh langsung membebani tiap panggilan. Ukuran SKILL.md yang dimuat:
+- **`feature-flow` 24,9 KB → 18,0 KB.** Mode penuh (Stage 1–4), mode paralel, multi-repo, dan tracker sync pindah ke `skills/feature-flow/references/` dan dibaca hanya saat dipakai. Mode default tidak membacanya. Pilihan mode jalan dan tips sesi baru dipindah ke langkah Plan.
+- **`coding-standards` 17,6 KB → 13,2 KB.** Checklist review (bagian 9) pindah ke `references/review-checklist.md`; developer tidak lagi memuatnya, `ticket-reviewer` membacanya sebelum review.
+- **`erp-requirements` dipecah.** Bagian A jadi skill `erp-domain-design` (6,8 KB, dimuat `product-manager`); Bagian B tetap `erp-requirements` (9,7 KB, dimuat `brd-tracer`). Sebelumnya keduanya memuat 16,3 KB penuh.
+- Total per panggilan: developer 27,3 → 22,9 KB, `brd-tracer` 16,3 → 9,7 KB, `product-manager` 16,3 → 6,8 KB (di luar prompt agent itu sendiri).
+
+### Diubah — `activity.json` ditulis orkestrator
+- Paragraf "Activity" dihapus dari `product-manager`, `cto`, `brd-tracer`, dan `task-planner`. `feature-flow` kini menulis `activity.json` sebelum memanggil agent mana pun, dengan label `stage` yang sama seperti sebelumnya, sehingga Kantor noskill tidak berubah. Sebelumnya cara menulis `at` berbeda antar agent dan reviewer/developer tidak punya aturan ini.
+- Deskripsi `cto` dan `ticket-reviewer` dipersingkat (masuk daftar skill/agent yang selalu dimuat).
+
+### Ditambah — eval
+- Tiga case baru (total 21): `pm-write-prd` (mode WRITE), `cto-signoff` (SIGN_OFF menemukan duplikasi lintas tiket), `project-profile-scan`.
+- Catatan: pemangkasan di atas belum dijalankan terhadap suite eval; jalankan suite sebelum rilis.
+
 ## 2.7.0 — 2026-11-09
 
 ### Diubah — Dungeon Arena dengan latar baru, pemanah, dan tiga jenis monster

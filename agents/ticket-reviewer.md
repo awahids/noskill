@@ -1,7 +1,7 @@
 ---
 name: ticket-reviewer
 description: >-
-  Reviews and verifies one ticket (the only review/QA agent): checks changes against AC, scope, reuse, simplicity, API contract, and tests, then runs the ticket's DB-free tests and Cara Verifikasi (positive, negative, boundary); verdict APPROVED, CHANGES_REQUESTED, or BLOCKED. Needs no database or running server. Does not change code. Called by feature-flow.
+  Reviews and verifies one ticket (the only review/QA agent): checks the diff against AC, scope, reuse, simplicity, API contract and tests, runs DB-free tests and Cara Verifikasi; verdict APPROVED, CHANGES_REQUESTED, or BLOCKED. Does not change code. Called by feature-flow.
 tools: Read, Bash, Glob, Grep
 skills:
   - coding-standards
