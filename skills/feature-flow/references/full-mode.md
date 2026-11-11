@@ -31,6 +31,6 @@ If the agent returns a list of open questions, ask the user, then call it again 
 
 ## Stage 4 — Tickets
 
-Call agent `task-planner` with: PRD path, BRD folder (or the note "tanpa BRD"), ADR folder, ticket prefix, and codebase path (multi-repo: the `## Repo` table from the profile). Output is ticket files `<docs>/tickets/<ID>.md` with status `TODO`.
+First hold the ticket meeting (`meeting.md` in this folder), with the PRD, BRD, and ADR documents' owners as attendees. Then call agent `task-planner` with: PRD path, BRD folder (or the note "tanpa BRD"), ADR folder, ticket prefix, and codebase path (multi-repo: the `## Repo` table from the profile). Output is ticket files `<docs>/tickets/<ID>.md` with status `TODO`.
 
 **Gate:** show the board (see `ticket-workflow` Board section) and ask for approval. If there are per-layer tickets (separate migration/DTO/test), merge them before starting. For BE tickets with an FE counterpart, also show their Kontrak API — the contract is approved together with the ticket list. Also ask the run mode and offer the fresh-session tip exactly as in Plan steps 4–5 of `SKILL.md`.

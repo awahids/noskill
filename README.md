@@ -8,7 +8,7 @@
 # noskill
 
 <div align="center">
-  <img alt="Version 2.10.0" src="https://img.shields.io/badge/version-2.10.0-1d6b57?style=flat-square&logo=github" />
+  <img alt="Version 2.11.0" src="https://img.shields.io/badge/version-2.11.0-1d6b57?style=flat-square&logo=github" />
 </div>
 
 Koleksi Claude Skills & Agent untuk kerja development sehari-hari — dipaketkan sebagai plugin `noskill`, termasuk tim engineering lengkap dalam bentuk agent: Product Manager, CTO, analyst, tech lead, developer backend/frontend, dan reviewer (sekaligus QA).
@@ -69,6 +69,8 @@ Skill di luar alur tiket dipisah ke plugin sendiri supaya plugin inti tetap ring
 ## Agent
 
 Dipanggil oleh `feature-flow`. Tiap agent memuat skill yang relevan lewat field `skills:`.
+
+**Rapat tiket:** sebelum tiket ditulis, semua agent yang terlibat (task-planner, ticket-reviewer, developer BE/FE sesuai layer, dan PM/CTO/analyst di mode lengkap) memberi masukan dalam satu putaran paralel (maks. 8 baris tiap agent), notulennya masuk `docs/noskill/reports/_rapat/`, dan di Kantor noskill mereka semua berjalan ke ruang rapat.
 
 Semua agent bekerja sebagai **senior dengan prinsip lazy**: memutuskan sendiri dari kode dan dokumen, bertanya hanya kalau jawabannya mengubah hasil, dan memilih perubahan terkecil yang memenuhi kebutuhan (PRD sebatas MVP, tiket hanya untuk yang diminta, kode tanpa abstraksi atau poles yang tidak diminta). Validasi, keamanan, dan test tidak pernah dipangkas.
 
@@ -163,7 +165,7 @@ Skill lain tetap bisa dipakai sendiri-sendiri. `freelance-proposal` dan `mockup-
 
 ## Eval
 
-`evals/` berisi 23 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, tiket `layer: be` diarahkan ke backend-developer, PM bertanya dulu sebelum menulis PRD, CTO memberi verdict arsitektur, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan reviewer memverifikasi tiket FE dengan mock Kontrak API tanpa menyalakan DB/server.
+`evals/` berisi 24 case yang menguji perilaku inti: developer memakai helper yang ada dan menulis test negatif/batas, tiket `layer: be` diarahkan ke backend-developer, PM bertanya dulu sebelum menulis PRD, CTO memberi verdict arsitektur, reviewer menolak duplikasi, mode cepat menulis tiket lalu berhenti di gate, dan reviewer memverifikasi tiket FE dengan mock Kontrak API tanpa menyalakan DB/server.
 
 ```bash
 claude plugin eval . --scaffold --trust-plugin --allow-tools Write Edit Bash
